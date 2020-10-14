@@ -33,7 +33,6 @@ class Explorer(object):
         average_returns = []
         collision_cases = []
         timeout_cases = []
-
         if k != 1:
             pbar = tqdm(total=k)
         else:
@@ -86,6 +85,9 @@ class Explorer(object):
 
             if pbar:
                 pbar.update(1)
+
+
+
         success_rate = success / k
         collision_rate = collision / k
         assert success + collision + timeout == k
@@ -102,11 +104,14 @@ class Explorer(object):
             logging.info('Frequency of being in danger: %.2f and average min separate distance in danger: %.2f',
                          discomfort / total_time, average(min_dist))
 
+
+
+
         if print_failure:
             logging.info('Collision cases: ' + ' '.join([str(x) for x in collision_cases]))
             logging.info('Timeout cases: ' + ' '.join([str(x) for x in timeout_cases]))
 
-        self.statistics = success_rate, collision_rate, avg_nav_time, average(cumulative_rewards), average(average_returns)
+        self.statistics = success_rate, collision_rate, avg_nav_time, sum(cumulative_rewards), average(average_returns)
 
         return self.statistics
 

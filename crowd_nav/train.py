@@ -185,6 +185,9 @@ def main(args):
             explorer.log('test', episode // evaluation_interval)
 
     episode = 0
+    reward_rec = []
+    reward_in_100_episodes = 0
+    eps_count = 0
     while episode < train_episodes:
         if args.resume:
             epsilon = epsilon_end
@@ -196,7 +199,13 @@ def main(args):
         robot.policy.set_epsilon(epsilon)
 
         # sample k episodes into memory and optimize over the generated memory
-        explorer.run_k_episodes(sample_episodes, 'train', update_memory=True, episode=episode)
+        _, _, _, avg_reward, _ = explorer.run_k_episodes(sample_episodes, 'train', update_memory=True, episode=episode)
+        eps_count = eps_count + sample_episodes
+        reward_in_100_episodes = reward_in_100_episodes + avg_reward
+        if eps_count % 100 == 0:
+            reward_rec.append(reward_in_100_episodes)
+            logging.info('Train in episode %d reward in last 100 episodes %f', eps_count, reward_rec[-1])
+            reward_in_100_episodes = 0.0
         explorer.log('train', episode)
 
         trainer.optimize_batch(train_batches, episode)
@@ -234,7 +243,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser('Parse configuration file')
     parser.add_argument('--policy', type=str, default='model_predictive_rl')
     parser.add_argument('--config', type=str, default='configs/icra_benchmark/mp_separate.py')
-    parser.add_argument('--output_dir', type=str, default='data/output')
+    parser.add_argument('--output_dir', type=str, default='data/output1')
     parser.add_argument('--overwrite', default=False, action='store_true')
     parser.add_argument('--weights', type=str)
     parser.add_argument('--resume', default=False, action='store_true')
