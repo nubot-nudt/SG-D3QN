@@ -143,7 +143,7 @@ class BaseTrainConfig(object):
     # number of batches to train at the end of training episode il_episodes
     train.train_batches = 100
     # training episodes in outer loop
-    train.train_episodes = 10000
+    train.train_episodes = 20000
     # number of episodes sampled in one training episode
     train.sample_episodes = 1
     train.target_update_interval = 1000

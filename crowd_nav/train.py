@@ -16,6 +16,9 @@ from crowd_nav.utils.memory import ReplayMemory
 from crowd_nav.utils.explorer import Explorer
 from crowd_nav.policy.policy_factory import policy_factory
 
+import matplotlib.pyplot as plt
+from matplotlib.pyplot import plot, savefig
+import numpy as np
 
 def set_random_seeds(seed):
     """
@@ -202,10 +205,15 @@ def main(args):
         _, _, _, avg_reward, _ = explorer.run_k_episodes(sample_episodes, 'train', update_memory=True, episode=episode)
         eps_count = eps_count + sample_episodes
         reward_in_100_episodes = reward_in_100_episodes + avg_reward
-        if eps_count % 100 == 0:
+        interval = 100
+        if eps_count % interval == 0:
             reward_rec.append(reward_in_100_episodes)
             logging.info('Train in episode %d reward in last 100 episodes %f', eps_count, reward_rec[-1])
             reward_in_100_episodes = 0.0
+            pos = np.array(range(1, len(reward_rec)+1)) * interval
+            plt.plot(pos, reward_rec, color='r', marker='.', linestyle='dashed')
+            plt.axis([0, eps_count, -10, 50])
+            savefig(args.output_dir + "/reward_record.jpg")
         explorer.log('train', episode)
 
         trainer.optimize_batch(train_batches, episode)
