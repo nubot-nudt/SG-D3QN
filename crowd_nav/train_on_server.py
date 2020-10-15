@@ -34,8 +34,7 @@ def main(args):
     # configure paths
     make_new_dir = True
     if os.path.exists(args.output_dir):
-        if args.overwrite:
-            shutil.rmtree(args.output_dir)
+        shutil.rmtree(args.output_dir)
     if make_new_dir:
         os.makedirs(args.output_dir)
         shutil.copy(args.config, os.path.join(args.output_dir, 'config.py'))
