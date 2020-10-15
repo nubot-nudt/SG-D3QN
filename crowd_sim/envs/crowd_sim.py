@@ -273,11 +273,11 @@ class CrowdSim(gym.Env):
             px = human.px - self.robot.px
             py = human.py - self.robot.py
             if self.robot.kinematics == 'holonomic':
-                vx = human.vx - action.vx
-                vy = human.vy - action.vy
+                vx = human_actions[i].vx - action.vx
+                vy = human_actions[i].vy - action.vy
             else:
-                vx = human.vx - action.v * np.cos(action.r + self.robot.theta)
-                vy = human.vy - action.v * np.sin(action.r + self.robot.theta)
+                vx = human_actions[i].v * np.cos(human_actions[i].r + self.robot.theta) - action.v * np.cos(action.r + self.robot.theta)
+                vy = human_actions[i].v * np.sin(human_actions[i].r + self.robot.theta) - action.v * np.sin(action.r + self.robot.theta)
             ex = px + vx * self.time_step
             ey = py + vy * self.time_step
             # closest distance between boundaries of two agents
