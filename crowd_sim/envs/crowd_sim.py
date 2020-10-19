@@ -235,7 +235,7 @@ class CrowdSim(gym.Env):
             self.feats = list()
         if hasattr(self.robot.policy, 'get_X'):
             self.Xs = list()
-        if hasattr(self.robot.policy, 'trajs'):
+        if hasattr(self.robot.policy, 'traj'):
             self.trajs = list()
 
         # get current observation
