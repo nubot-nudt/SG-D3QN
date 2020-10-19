@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 from torch.nn.functional import softmax, relu
 from torch.nn import Parameter
-from crowd_nav.policy.helpers import mlp
+from crowd_nav.policy.helpers import mlp, GAT
 
 
 class RGL(nn.Module):
@@ -129,6 +129,78 @@ class RGL(nn.Module):
 
         return next_H
 
+class GAT_RL(nn.Module):
+    def __init__(self, config, robot_state_dim, human_state_dim):
+        """ The current code might not be compatible with models trained with previous version
+        """
+        super().__init__()
+        self.multiagent_training = config.gcn.multiagent_training
+        num_layer = config.gcn.num_layer
+        X_dim = config.gcn.X_dim
+        wr_dims = config.gcn.wr_dims
+        wh_dims = config.gcn.wh_dims
+        final_state_dim = config.gcn.final_state_dim
+        similarity_function = config.gcn.similarity_function
+        layerwise_graph = config.gcn.layerwise_graph
+        skip_connection = config.gcn.skip_connection
+
+        # design choice
+
+        # 'gaussian', 'embedded_gaussian', 'cosine', 'cosine_softmax', 'concatenation'
+        self.similarity_function = similarity_function
+        self.robot_state_dim = robot_state_dim
+        self.human_state_dim = human_state_dim
+        self.num_layer = num_layer
+        self.X_dim = X_dim
+        self.layerwise_graph = layerwise_graph
+        self.skip_connection = skip_connection
+        self.nheads = 1
+
+        logging.info('Similarity_func: {}'.format(self.similarity_function))
+        logging.info('Layerwise_graph: {}'.format(self.layerwise_graph))
+        logging.info('Skip_connection: {}'.format(self.skip_connection))
+        logging.info('Number of layers: {}'.format(self.num_layer))
+
+        self.w_r = mlp(robot_state_dim, wr_dims, last_relu=True)
+        self.w_h = mlp(human_state_dim, wh_dims, last_relu=True)
+
+        self.gat = GAT(in_feats=self.X_dim, hid_feats=self.X_dim, out_feats=final_state_dim, dropout=0.0, alpha=-0.2,
+                       nheads=self.nheads)
+        self.add_module('GAT1', self.gat)
+
+        # for visualization
+        self.A = None
+
+    def compute_adjectory_matrix(self, state):
+        robot_state = state[0]
+        human_state = state[1]
+        robot_num = robot_state.size()[1]
+        human_num = human_state.size()[1]
+        Num = robot_num + human_num
+        adj = torch.ones((Num, Num))
+        for i in range(robot_num, robot_num+human_num):
+            adj[i][0] = 0
+        adj = adj.repeat(robot_state.size()[0], 1, 1)
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        adj = adj.to(device)
+        return adj
+
+    def forward(self, state):
+        """
+        Embed current state tensor pair (robot_state, human_states) into a latent space
+        Each tensor is of shape (batch_size, # of agent, features)
+        :param state:
+        :return:
+        """
+        robot_state, human_states = state
+        # robot_state.
+        adj = self.compute_adjectory_matrix(state)
+        assert robot_state.shape[0] == human_states.shape[0]
+        robot_state_embedings = self.w_r(robot_state)
+        human_state_embedings = self.w_h(human_states)
+        X = torch.cat([robot_state_embedings, human_state_embedings], dim=1)
+        next_H = self.gat(X, adj) + X
+        return next_H
 
 # class RGL(nn.Module):
 #     def __init__(self, config, robot_state_dim, human_state_dim):
