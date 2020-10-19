@@ -128,7 +128,7 @@ class GAT(nn.Module):
         for i, attention in enumerate(self.attentions):
             self.add_module('attention_{}'.format(i), attention)
         # self.out_att = GraphAttentionLayerSim(hid_feats*nheads, out_feats, dropout=dropout, alpha=alpha, concat=False)
-        self.add_module('out_gat', self.out_att)
+        # self.add_module('out_gat', self.out_att)
 
     def forward(self, x, adj):
         assert len(x.shape) == 3
