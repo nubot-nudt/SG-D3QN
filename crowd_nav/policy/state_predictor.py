@@ -88,7 +88,9 @@ class LinearStatePredictor(object):
     def compute_next_state(self, robot_state, action):
         # currently it can not perform parallel computation
         if robot_state.shape[0] != 1:
-            raise NotImplementedError
+            # raise NotImplementedError
+            next_state = robot_state.clone().squeeze()
+            return next_state
 
         # px, py, vx, vy, radius, gx, gy, v_pref, theta
         next_state = robot_state.clone().squeeze()

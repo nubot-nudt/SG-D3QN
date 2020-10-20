@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
+from crowd_sim.envs.utils.action import ActionXY
 
 
 class MPRLTrainer(object):
@@ -98,6 +99,10 @@ class MPRLTrainer(object):
                         self.s_optimizer.step()
                         epoch_s_loss += loss.data.item()
                     update_counter += 1
+                else:
+                    _, next_human_states_est = self.state_predictor((robot_states, human_states), ActionXY(0, 0))
+                    loss = self.criterion(next_human_states_est, next_human_states)
+                    epoch_s_loss += loss.data.item()
 
             logging.debug('{}-th epoch ends'.format(epoch))
             self.writer.add_scalar('IL/epoch_v_loss', epoch_v_loss / len(self.memory), epoch)
@@ -147,7 +152,11 @@ class MPRLTrainer(object):
                     loss.backward()
                     self.s_optimizer.step()
                     s_losses += loss.data.item()
-
+            else:
+                _, next_human_states_est = self.state_predictor((robot_states, human_states), ActionXY(0, 0),
+                                                                detach=self.detach_state_predictor)
+                loss = self.criterion(next_human_states_est, next_human_states)
+                s_losses += loss.data.item()
             batch_count += 1
             if batch_count > num_batches:
                 break
