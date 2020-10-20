@@ -69,11 +69,8 @@ class GraphAttentionLayerSim(nn.Module):
         self.alpha = alpha
         self.concat = concat
         self.similarity_function = 'embedded_gaussian'
-        self.W = nn.Parameter(torch.zeros(size=(in_features, out_features)))
-        nn.init.xavier_uniform_(self.W.data, gain=1.414)
-        if self.similarity_function == 'embedded_gaussian':
-            self.W_a = nn.Parameter(torch.zeros(size=(in_features, out_features)))
-            nn.init.xavier_uniform_(self.W_a.data, gain=1.414)
+        self.W_a = nn.Parameter(torch.zeros(size=(in_features, out_features)))
+        nn.init.xavier_uniform_(self.W_a.data, gain=1.414)
         self.bias = nn.Parameter(torch.zeros(size=(1, out_features)))
         nn.init.xavier_uniform_(self.bias.data, gain=1.414)
         self.leakyrelu = nn.LeakyReLU(negative_slope=-0.2)
@@ -97,11 +94,11 @@ class GraphAttentionLayerSim(nn.Module):
 
     def compute_similarity_matrix(self, X):
         if self.similarity_function == 'embedded_gaussian':
-            A = torch.matmul(torch.matmul(X, self.W_a), torch.matmul(X, self.W).permute(0, 2, 1))
+            A = torch.matmul(torch.matmul(X, self.W_a), X.permute(0, 2, 1))
         elif self.similarity_function == 'gaussian':
             A = torch.matmul(X, X.permute(0, 2, 1))
         elif self.similarity_function == 'cosine':
-            X = torch.matmul(X, self.W)
+            X = torch.matmul(X, self.W_a)
             A = torch.matmul(X, X.permute(0, 2, 1))
             magnitudes = torch.norm(A, dim=2, keepdim=True)
             norm_matrix = torch.matmul(magnitudes, magnitudes.permute(0, 2, 1))
