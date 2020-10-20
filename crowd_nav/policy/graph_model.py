@@ -164,10 +164,19 @@ class GAT_RL(nn.Module):
         self.w_r = mlp(robot_state_dim, wr_dims, last_relu=True)
         self.w_h = mlp(human_state_dim, wh_dims, last_relu=True)
 
-        self.gat = GAT(in_feats=self.X_dim, hid_feats=self.X_dim, out_feats=final_state_dim, dropout=0.0, alpha=-0.2,
-                       nheads=self.nheads)
-        self.add_module('GAT1', self.gat)
+        # TODO: try other dim size
+        embedding_dim = self.X_dim
+        for i in range(self.num_layer):
+            if i == 0:
+                self.gat0 = GAT(in_feats=self.X_dim, hid_feats=embedding_dim, out_feats=embedding_dim, dropout=0.0,
+                                alpha=-0.2, nheads=self.nheads)
+                self.add_module('GAT0', self.gat0)
+            if i == self.num_layer - 1:
+                self.gat1 = GAT(in_feats=embedding_dim, hid_feats=embedding_dim, out_feats=final_state_dim, dropout=0.0,
+                                alpha=-0.2, nheads=self.nheads)
+                self.add_module('GAT1', self.gat1)
 
+        # TODO: try other dim size
         # for visualization
         self.A = None
 
@@ -199,7 +208,8 @@ class GAT_RL(nn.Module):
         robot_state_embedings = self.w_r(robot_state)
         human_state_embedings = self.w_h(human_states)
         X = torch.cat([robot_state_embedings, human_state_embedings], dim=1)
-        next_H = self.gat(X, adj) + X
+        next_H = self.gat0(X, adj) + X
+        next_H = self.gat1(next_H, adj) + X
         return next_H
 
 # class RGL(nn.Module):

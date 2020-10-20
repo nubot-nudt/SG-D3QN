@@ -124,16 +124,17 @@ class GAT(nn.Module):
         super(GAT, self).__init__()
         self.dropout = dropout
         self.nheads = nheads
-        self.attentions = [GraphAttentionLayerSim(in_feats, hid_feats, dropout=dropout, alpha=alpha, concat=True) for _ in range(self.nheads)]
+        self.attentions = [GraphAttentionLayerSim(in_feats, hid_feats, dropout=dropout, alpha=alpha, concat=True)
+                           for _ in range(self.nheads)]
         for i, attention in enumerate(self.attentions):
             self.add_module('attention_{}'.format(i), attention)
-        # self.out_att = GraphAttentionLayerSim(hid_feats*nheads, out_feats, dropout=dropout, alpha=alpha, concat=False)
-        # self.add_module('out_gat', self.out_att)
+        self.out_att = mlp(hid_feats * nheads, [out_feats], last_relu=True)
+        self.add_module('out_gat', self.out_att)
 
     def forward(self, x, adj):
         assert len(x.shape) == 3
         assert len(adj.shape) == 3
         x = torch.cat([att(x, adj) for att in self.attentions], dim=2)
         x = nn.functional.elu(x)
-        # x = nn.functional.elu(self.out_att(x, adj))
+        x = self.out_att(x)
         return x
