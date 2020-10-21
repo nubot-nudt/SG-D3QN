@@ -132,6 +132,5 @@ class GAT(nn.Module):
         assert len(x.shape) == 3
         assert len(adj.shape) == 3
         x = torch.cat([att(x, adj) for att in self.attentions], dim=2)
-        x = nn.functional.elu(x)
         x = self.out_att(x)
         return x
