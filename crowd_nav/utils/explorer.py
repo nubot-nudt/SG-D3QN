@@ -73,8 +73,9 @@ class Explorer(object):
                 #     # only add positive(success) or negative(collision) experience in experience set
                 self.update_memory(states, actions, rewards, imitation_learning)
 
-            cumulative_rewards.append(sum([pow(self.gamma, t * self.robot.time_step * self.robot.v_pref)
-                                           * reward for t, reward in enumerate(rewards)]))
+            # cumulative_rewards.append(sum([pow(self.gamma, t * self.robot.time_step * self.robot.v_pref)
+            #                                * reward for t, reward in enumerate(rewards)]))
+            cumulative_rewards.append(sum(rewards))
             returns = []
             for step in range(len(rewards)):
                 step_return = sum([pow(self.gamma, t * self.robot.time_step * self.robot.v_pref)
@@ -96,7 +97,7 @@ class Explorer(object):
         extra_info = extra_info + '' if epoch is None else extra_info + ' in epoch {} '.format(epoch)
         logging.info('{:<5} {}has success rate: {:.2f}, collision rate: {:.2f}, nav time: {:.2f}, total reward: {:.4f},'
                      ' average return: {:.4f}'. format(phase.upper(), extra_info, success_rate, collision_rate,
-                                                       avg_nav_time, average(cumulative_rewards),
+                                                       avg_nav_time, sum(cumulative_rewards),
                                                        average(average_returns)))
         if phase in ['val', 'test']:
             total_time = sum(success_times + collision_times + timeout_times)

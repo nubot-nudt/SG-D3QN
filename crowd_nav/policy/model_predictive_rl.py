@@ -220,17 +220,38 @@ class ModelPredictiveRL(Policy):
                 action_space_clipped = self.action_space
             state_tensor = state.to_tensor(add_batch_size=True, device=self.device)
             pre_next_state = self.state_predictor(state_tensor, ActionXY(0, 0))
+            next_robot_states = None
+            next_human_states = None
+            rewards = []
             for action in action_space_clipped:
                 next_robot_state = self.compute_next_robot_state(state_tensor[0], action)
-                next_state = (next_robot_state, pre_next_state[1])
-                # next_state = self.state_predictor(state_tensor, action)
-                max_next_return, max_next_traj = self.V_planning(next_state, self.planning_depth, self.planning_width)
+                if next_robot_states is None and next_human_states is None:
+                    next_robot_states = next_robot_state
+                    next_human_states = pre_next_state[1]
+                else:
+                    next_robot_states = torch.cat((next_robot_states, next_robot_state), dim=0)
+                    next_human_states = torch.cat((next_human_states, pre_next_state[1]), dim=0)
                 reward_est = self.estimate_reward(state, action)
-                value = reward_est + self.get_normalized_gamma() * max_next_return
-                if value > max_value:
-                    max_value = value
-                    max_action = action
-                    max_traj = [(state_tensor, action, reward_est)] + max_next_traj
+                rewards.append(reward_est)
+                # next_state = self.state_predictor(state_tensor, action)
+            # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+            rewards_tensor = torch.tensor(rewards).to(self.device)
+            next_state_batch = (next_robot_states, next_human_states)
+            next_value = self.value_estimator(next_state_batch).squeeze(1)
+            value = rewards_tensor + next_value * self.get_normalized_gamma()
+            best_index = value.argmax()
+            best_value = value[best_index]
+            if best_value > max_value:
+                max_action = action_space_clipped[best_index]
+                next_state = tensor_to_joint_state((next_robot_states[best_index], next_human_states[best_index]))
+                max_next_traj = [(next_state.to_tensor(), None, None)]
+                # max_next_return, max_next_traj = self.V_planning(next_state, self.planning_depth, self.planning_width)
+                # reward_est = self.estimate_reward(state, action)
+                # value = reward_est + self.get_normalized_gamma() * max_next_return
+                # if value > max_value:
+                #     max_value = value
+                #     max_action = action
+                max_traj = [(state_tensor, max_action, rewards[best_index])] + max_next_traj
             if max_action is None:
                 raise ValueError('Value network is not well trained.')
 
