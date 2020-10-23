@@ -120,6 +120,12 @@ def main(args):
                               freeze_state_predictor=train_config.train.freeze_state_predictor,
                               detach_state_predictor=train_config.train.detach_state_predictor,
                               share_graph_model=policy_config.model_predictive_rl.share_graph_model)
+    elif policy_config.name == 'gat_predictive_rl':
+        trainer = MPRLTrainer(model, policy.state_predictor, memory, device, policy, writer, batch_size, optimizer, env.human_num,
+                              reduce_sp_update_frequency=train_config.train.reduce_sp_update_frequency,
+                              freeze_state_predictor=train_config.train.freeze_state_predictor,
+                              detach_state_predictor=train_config.train.detach_state_predictor,
+                              share_graph_model=policy_config.model_predictive_rl.share_graph_model)
     else:
         trainer = VNRLTrainer(model, memory, device, policy, batch_size, optimizer, writer)
     explorer = Explorer(env, robot, device, writer, memory, policy.gamma, target_policy=policy)
@@ -205,7 +211,7 @@ def main(args):
             reward_in_100_episodes = 0.0
             pos = np.array(range(1, len(reward_rec)+1)) * interval
             plt.plot(pos, reward_rec, color='r', marker='.', linestyle='dashed')
-            plt.axis([0, eps_count, -10, 100])
+            plt.axis([0, eps_count, -10, 50])
             savefig(args.output_dir + "/reward_record.jpg")
         explorer.log('train', episode)
 
@@ -261,5 +267,4 @@ if __name__ == '__main__':
     # parser.add_argument('--skip_connection', default=True, action='store_true')
 
     sys_args = parser.parse_args()
-
     main(sys_args)
