@@ -84,7 +84,7 @@ def main(args):
     policy = policy_factory[policy_config.name]()
     if not policy.trainable:
         parser.error('Policy has to be trainable')
-    policy.configure(policy_config)
+    policy.configure(policy_config, device)
     policy.set_device(device)
 
     # configure environment
@@ -205,7 +205,7 @@ def main(args):
             reward_in_100_episodes = 0.0
             pos = np.array(range(1, len(reward_rec)+1)) * interval
             plt.plot(pos, reward_rec, color='r', marker='.', linestyle='dashed')
-            plt.axis([0, eps_count, -10, 50])
+            plt.axis([0, eps_count, -10, 100])
             savefig(args.output_dir + "/reward_record.jpg")
         explorer.log('train', episode)
 
