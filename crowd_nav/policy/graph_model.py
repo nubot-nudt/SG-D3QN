@@ -130,7 +130,7 @@ class RGL(nn.Module):
         return next_H
 
 class GAT_RL(nn.Module):
-    def __init__(self, config, robot_state_dim, human_state_dim):
+    def __init__(self, config, robot_state_dim, human_state_dim, device):
         """ The current code might not be compatible with models trained with previous version
         """
         super().__init__()
@@ -155,6 +155,7 @@ class GAT_RL(nn.Module):
         self.layerwise_graph = layerwise_graph
         self.skip_connection = skip_connection
         self.nheads = 1
+        self.device = device
 
         logging.info('Similarity_func: {}'.format(self.similarity_function))
         logging.info('Layerwise_graph: {}'.format(self.layerwise_graph))
@@ -190,8 +191,7 @@ class GAT_RL(nn.Module):
         for i in range(robot_num, robot_num+human_num):
             adj[i][0] = 0
         adj = adj.repeat(robot_state.size()[0], 1, 1)
-        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        adj = adj.to(device)
+        adj = adj.to(self.device)
         return adj
 
     def forward(self, state):

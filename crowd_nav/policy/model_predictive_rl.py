@@ -45,7 +45,7 @@ class ModelPredictiveRL(Policy):
         self.action_group_index = []
         self.traj = None
 
-    def configure(self, config):
+    def configure(self, config, device):
         self.set_common_parameters(config)
         self.planning_depth = config.model_predictive_rl.planning_depth
         self.do_action_clip = config.model_predictive_rl.do_action_clip
@@ -54,6 +54,9 @@ class ModelPredictiveRL(Policy):
         self.planning_width = config.model_predictive_rl.planning_width
         self.share_graph_model = config.model_predictive_rl.share_graph_model
         self.linear_state_predictor = config.model_predictive_rl.linear_state_predictor
+        # self.set_device(device)
+        self.device = device
+
 
         if self.linear_state_predictor:
             self.state_predictor = LinearStatePredictor(config, self.time_step)
