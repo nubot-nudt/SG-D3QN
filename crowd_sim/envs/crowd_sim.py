@@ -302,9 +302,9 @@ class CrowdSim(gym.Env):
 
         # check if reaching the goal
         end_position = np.array(self.robot.compute_position(action, self.time_step))
-        cur_position = np.array(self.robot.px, self.robot.py)
+        cur_position = np.array((self.robot.px, self.robot.py))
         goal_position = np.array(self.robot.get_goal_position())
-        reward_goal = 0.05 * (norm(cur_position, goal_position) - norm(end_position - goal_position))
+        reward_goal = 0.05 * (norm(cur_position - goal_position) - norm(end_position - goal_position))
         reaching_goal = norm(end_position - goal_position) < self.robot.radius
 
         if self.global_time >= self.time_limit - 1:

@@ -337,10 +337,10 @@ class ModelPredictiveRL(Policy):
         human_states = state.human_states
         robot_state = state.robot_state
 
-        end_position = np.array(robot_state.px + action.vx * self.time_step, robot_state.py + action.vy * self.time_step)
-        cur_position = np.array(robot_state.px, robot_state.py)
-        goal_position = np.array(robot_state.gx, robot_state.gy)
-        reward_goal = 0.05 * (norm(cur_position, goal_position) - norm(end_position - goal_position))
+        cur_position = np.array((robot_state.px, robot_state.py))
+        end_position = cur_position + np.array((action.vx, action.vy)) * self.time_step
+        goal_position = np.array((robot_state.gx, robot_state.gy))
+        reward_goal = 0.05 * (norm(cur_position - goal_position) - norm(end_position - goal_position))
         dmin = float('inf')
         collision = False
         for i, human in enumerate(human_states):
