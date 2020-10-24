@@ -218,7 +218,7 @@ def main(args):
             reward_in_100_episodes = 0.0
             pos = np.array(range(1, len(reward_rec)+1)) * interval
             plt.plot(pos, reward_rec, color='r', marker='.', linestyle='dashed')
-            plt.axis([0, eps_count, -10, 50])
+            plt.axis([0, eps_count, -20, 150])
             savefig(args.output_dir + "/reward_record.jpg")
         explorer.log('train', episode)
 
