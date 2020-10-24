@@ -9,7 +9,7 @@ class EnvConfig(BaseEnvConfig):
 class PolicyConfig(BasePolicyConfig):
     def __init__(self, debug=False):
         super(PolicyConfig, self).__init__(debug)
-        self.name = 'gat_predictive_rl'
+        self.name = 'model_predictive_rl'
 
         # gcn
         self.gcn.num_layer = 2
