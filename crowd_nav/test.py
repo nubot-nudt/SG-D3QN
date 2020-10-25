@@ -60,7 +60,7 @@ def main(args):
     if args.sparse_search:
         policy_config.model_predictive_rl.sparse_search = True
 
-    policy.configure(policy_config)
+    policy.configure(policy_config, device)
     if policy.trainable:
         if args.model_dir is None:
             parser.error('Trainable policy must be specified with a model weights directory')
