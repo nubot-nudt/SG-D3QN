@@ -8,11 +8,11 @@ def mlp(input_dim, mlp_dims, last_relu=False):
     mlp_dims = [input_dim] + mlp_dims
     for i in range(len(mlp_dims) - 1):
         layers.append(nn.Linear(mlp_dims[i], mlp_dims[i + 1]))
+        nn.init.orthogonal(layers[-1].weight)
         if i != len(mlp_dims) - 2 or last_relu:
             layers.append(nn.ReLU())
     net = nn.Sequential(*layers)
     return net
-
 
 class GraphAttentionLayer(nn.Module):
     """
@@ -28,11 +28,11 @@ class GraphAttentionLayer(nn.Module):
         self.concat = concat
 
         self.W = nn.Parameter(torch.zeros(size=(in_features, out_features)))
-        nn.init.xavier_uniform_(self.W.data, gain=1.414)
+        nn.init.orthogonal(self.W.data, gain=1.414)
         self.a = Parameter(torch.zeros(size=(2*out_features, 1)))
-        nn.init.xavier_uniform_(self.a.data, gain=1.414)
+        nn.init.orthogonal(self.a.data, gain=1.414)
         self.bias = nn.Parameter(torch.zeros(size=(1, out_features)))
-        nn.init.xavier_uniform_(self.bias.data, gain=1.414)
+        nn.init.orthogonal(self.bias.data, gain=1.414)
         self.leakyrelu = nn.LeakyReLU(negative_slope=-0.2)
 
     def forward(self, input, adj):
