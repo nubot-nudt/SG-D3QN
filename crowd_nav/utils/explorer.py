@@ -44,10 +44,10 @@ class Explorer(object):
             actions = []
             rewards = []
             while not done:
-                action = self.robot.act(ob)
+                action, action_index = self.robot.act(ob)
                 ob, reward, done, info = self.env.step(action)
                 states.append(self.robot.policy.last_state)
-                actions.append(action)
+                actions.append(action_index)
                 rewards.append(reward)
 
                 if isinstance(info, Discomfort):
@@ -126,11 +126,13 @@ class Explorer(object):
             if imitation_learning:
                 # define the value of states in IL as cumulative discounted rewards, which is the same in RL
                 state = self.target_policy.transform(state)
+                action = actions[i]
                 next_state = self.target_policy.transform(states[i+1])
                 value = sum([pow(self.gamma, (t - i) * self.robot.time_step * self.robot.v_pref) * reward *
                              (1 if t >= i else 0) for t, reward in enumerate(rewards)])
             else:
                 next_state = states[i+1]
+                action = actions[i]
                 if i == len(states) - 1:
                     # terminal state
                     value = reward
@@ -140,7 +142,7 @@ class Explorer(object):
             reward = torch.Tensor([rewards[i]]).to(self.device)
 
             if self.target_policy.name == 'ModelPredictiveRL':
-                self.memory.push((state[0], state[1], value, reward, next_state[0], next_state[1]))
+                self.memory.push((state[0], state[1], action, value, reward, next_state[0], next_state[1]))
             else:
                 self.memory.push((state, value, reward, next_state))
 

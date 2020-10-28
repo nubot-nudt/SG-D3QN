@@ -66,7 +66,6 @@ class MPRLTrainer(object):
             raise ValueError('Learning rate is not set!')
         if self.data_loader is None:
             self.data_loader = DataLoader(self.memory, self.batch_size, shuffle=True)
-
         for epoch in range(num_epochs):
             epoch_v_loss = 0
             epoch_s_loss = 0
@@ -74,11 +73,12 @@ class MPRLTrainer(object):
 
             update_counter = 0
             for data in self.data_loader:
-                robot_states, human_states, values, _, next_robot_state, next_human_states = data
+                robot_states, human_states, actions, values, _, next_robot_state, next_human_states = data
 
                 # optimize value estimator
                 self.v_optimizer.zero_grad()
-                outputs = self.value_estimator((robot_states, human_states))
+                actions = actions.to(self.device)
+                outputs = self.value_estimator((robot_states, human_states)).gather(1, actions.unsqueeze(1))
                 values = values.to(self.device)
                 loss = self.criterion(outputs, values)
                 loss.backward()
@@ -109,7 +109,6 @@ class MPRLTrainer(object):
             self.writer.add_scalar('IL/epoch_s_loss', epoch_s_loss / len(self.memory), epoch)
             logging.info('Average loss in epoch %d: %.2E, %.2E', epoch, epoch_v_loss / len(self.memory),
                          epoch_s_loss / len(self.memory))
-
         return
 
     def optimize_batch(self, num_batches, episode):
@@ -121,14 +120,18 @@ class MPRLTrainer(object):
         s_losses = 0
         batch_count = 0
         for data in self.data_loader:
-            robot_states, human_states, _, rewards, next_robot_states, next_human_states = data
+            robot_states, human_states, actions, _, rewards, next_robot_states, next_human_states = data
 
             # optimize value estimator
             self.v_optimizer.zero_grad()
-            outputs = self.value_estimator((robot_states, human_states))
-
+            actions = actions.to(self.device)
+            # outputs = self.value_estimator((robot_states, human_states))
+            outputs = self.value_estimator((robot_states, human_states)).gather(1, actions.unsqueeze(1))
             gamma_bar = pow(self.gamma, self.time_step * self.v_pref)
-            target_values = rewards + gamma_bar * self.target_model((next_robot_states, next_human_states))
+            max_next_Q = torch.max(self.target_model((next_robot_states, next_human_states)), dim=1)[0]
+            max_next_Q = max_next_Q.unsqueeze(dim=1)
+            target_values = rewards + gamma_bar * max_next_Q
+            # target_values = rewards + gamma_bar * self.target_model((next_robot_states, next_human_states))
 
             # values = values.to(self.device)
             loss = self.criterion(outputs, target_values)

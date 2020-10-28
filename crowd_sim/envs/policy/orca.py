@@ -120,9 +120,20 @@ class ORCA(Policy):
 
         self.sim.doStep()
         action = ActionXY(*self.sim.getAgentVelocity(0))
+        vel_index = (np.sqrt(action.vx * action.vx + action.vy * action.vy) // 0.1 + 1) // 2
+        if vel_index > 5:
+            vel_index = 5
+        rot_index = (np.arctan2(action.vy, action.vx) // (np.pi/16) + 1) // 2
+        if rot_index < 0:
+            rot_index = rot_index + 16
+        if vel_index == 0:
+            action_index = int(0)
+        else:
+            action_index = int((vel_index - 1) * 16 + rot_index + 1)
+        action = ActionXY(vel_index * 0.2 * np.cos(rot_index * np.pi/8), vel_index * 0.2 * np.sin(rot_index * np.pi/8))
         self.last_state = state
 
-        return action
+        return action, action_index
 
 
 class CentralizedORCA(ORCA):
