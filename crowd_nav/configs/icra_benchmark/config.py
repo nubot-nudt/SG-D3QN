@@ -32,7 +32,7 @@ class BaseEnvConfig(object):
     sim.test_scenario = 'circle_crossing'
     sim.square_width = 20
     sim.circle_radius = 4
-    sim.human_num = 2
+    sim.human_num = 3
     sim.nonstop_human = False
     sim.centralized_planning = True
 
@@ -67,8 +67,8 @@ class BasePolicyConfig(object):
 
     action_space = Config()
     action_space.kinematics = 'holonomic'
-    action_space.speed_samples = 5
-    action_space.rotation_samples = 16
+    action_space.speed_samples = 3
+    action_space.rotation_samples = 8
     action_space.sampling = 'exponential'
     action_space.query_env = False
     action_space.rotation_constraint = np.pi / 3

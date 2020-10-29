@@ -388,7 +388,7 @@ class ModelPredictiveRL(Policy):
         cur_position = np.array((robot_state.px, robot_state.py))
         end_position = cur_position + np.array((action.vx, action.vy)) * self.time_step
         goal_position = np.array((robot_state.gx, robot_state.gy))
-        reward_goal = 0.05 * (norm(cur_position - goal_position) - norm(end_position - goal_position))
+        reward_goal = 0.02 * (norm(cur_position - goal_position) - norm(end_position - goal_position))
         dmin = float('inf')
         collision = False
         for i, human in enumerate(human_states):
@@ -428,7 +428,7 @@ class ModelPredictiveRL(Policy):
             reward = 1
         elif dmin < 0.2:
             # adjust the reward based on FPS
-            reward = (dmin - 0.2) * 0.5 * self.time_step
+            reward = (dmin - 0.2) * 1 #* self.time_step
         else:
             reward = 0
         reward = reward + reward_goal

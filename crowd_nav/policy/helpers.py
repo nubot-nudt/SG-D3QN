@@ -15,6 +15,60 @@ def mlp(input_dim, mlp_dims, last_relu=False):
     net = nn.Sequential(*layers)
     return net
 
+
+class DQN(nn.Module):
+    def __init__(self, input_dim, output_dim):
+        super(DQN, self).__init__()
+        self.input_dim = input_dim
+        self.output_dim = output_dim
+
+        self.fc = nn.Sequential(
+            nn.Linear(self.input_dim, 128),
+            nn.ReLU(),
+            nn.Linear(128, 256),
+            nn.ReLU(),
+            nn.Linear(256, self.output_dim)
+        )
+
+    def forward(self, state):
+        qvals = self.fc(state)
+        return qvals
+
+
+class DuelingDQN(nn.Module):
+
+    def __init__(self, input_dim, output_dim):
+        super(DuelingDQN, self).__init__()
+        self.input_dim = input_dim
+        self.output_dim = output_dim
+
+        self.feauture_layer = nn.Sequential(
+            nn.Linear(self.input_dim, 128),
+            nn.ReLU(),
+            # nn.Linear(128, 128),
+            # nn.ReLU()
+        )
+
+        self.value_stream = nn.Sequential(
+            nn.Linear(128, 128),
+            nn.ReLU(),
+            nn.Linear(128, 1)
+        )
+
+        self.advantage_stream = nn.Sequential(
+            nn.Linear(128, 128),
+            nn.ReLU(),
+            nn.Linear(128, self.output_dim)
+        )
+
+    def forward(self, state):
+        features = self.feauture_layer(state)
+        values = self.value_stream(features)
+        advantages = self.advantage_stream(features)
+        qvals = values + (advantages - advantages.mean())
+
+        return qvals
+
 class GraphAttentionLayer(nn.Module):
     """
     Simple GAT layer, similar to https://arxiv.org/abs/1710.10903

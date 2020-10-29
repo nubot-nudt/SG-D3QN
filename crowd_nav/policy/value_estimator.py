@@ -1,5 +1,5 @@
 import torch.nn as nn
-from crowd_nav.policy.helpers import mlp
+from crowd_nav.policy.helpers import mlp, DQN, DuelingDQN
 
 
 class ValueEstimator(nn.Module):
@@ -24,8 +24,9 @@ class ValueEstimator2(nn.Module):
         super().__init__()
         self.graph_model = graph_model
         config.model_predictive_rl.value_network_dims[-1] = 81
-        self.value_network = mlp(config.gcn.X_dim, config.model_predictive_rl.value_network_dims)
-
+        # self.value_network = mlp(config.gcn.X_dim, config.model_predictive_rl.value_network_dims)
+        # self.value_network = DQN(config.gcn.X_dim, 25)
+        self.value_network = DuelingDQN(config.gcn.X_dim, 25)
     def forward(self, state):
         """ Embed state into a latent space. Take the first row of the feature matrix as state representation.
         """
