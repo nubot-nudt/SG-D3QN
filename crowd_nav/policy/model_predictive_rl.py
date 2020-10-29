@@ -250,7 +250,7 @@ class ModelPredictiveRL(Policy):
             next_state_batch = (next_robot_states, next_human_states)
             next_q_value, next_action_index = torch.max(self.value_estimator(next_state_batch).squeeze(1), dim=1)
             # next_q_value
-            value = rewards_tensor + next_q_value * self.gamma#self.get_normalized_gamma()
+            value = rewards_tensor + next_q_value * 0.95#self.gamma#self.get_normalized_gamma()
             best_index = value.argmax()
             best_value = value[best_index]
             max_action_index = max_action_indexes[best_index]
@@ -268,50 +268,6 @@ class ModelPredictiveRL(Policy):
             self.traj = max_traj
 
         return max_action, int(max_action_index)
-
-        #     next_robot_states = None
-        #     next_human_states = None
-        #     rewards = []
-        #     for action in action_space_clipped:
-        #         next_robot_state = self.compute_next_robot_state(state_tensor[0], action)
-        #         next_human_state = pre_next_state[1]
-        #         if next_robot_states is None and next_human_states is None:
-        #             next_robot_states = next_robot_state
-        #             next_human_states = next_human_state
-        #         else:
-        #             next_robot_states = torch.cat((next_robot_states, next_robot_state), dim=0)
-        #             next_human_states = torch.cat((next_human_states, next_human_state), dim=0)
-        #         next_state = tensor_to_joint_state((next_robot_state, next_human_state))
-        #         reward_est = self.estimate_reward_on_predictor(state, next_state)
-        #         # reward_est = self.estimate_reward(state, action)
-        #         rewards.append(reward_est)
-        #         # next_state = self.state_predictor(state_tensor, action)
-        #     rewards_tensor = torch.tensor(rewards).to(self.device)
-        #     next_state_batch = (next_robot_states, next_human_states)
-        #     next_value = self.value_estimator(next_state_batch).squeeze(1)
-        #     value = rewards_tensor + next_value * self.get_normalized_gamma()
-        #     best_index = value.argmax()
-        #     best_value = value[best_index]
-        #     if best_value > max_value:
-        #         max_action = action_space_clipped[best_index]
-        #         next_state = tensor_to_joint_state((next_robot_states[best_index], next_human_states[best_index]))
-        #         max_next_traj = [(next_state.to_tensor(), None, None)]
-        #         # max_next_return, max_next_traj = self.V_planning(next_state, self.planning_depth, self.planning_width)
-        #         # reward_est = self.estimate_reward(state, action)
-        #         # value = reward_est + self.get_normalized_gamma() * max_next_return
-        #         # if value > max_value:
-        #         #     max_value = value
-        #         #     max_action = action
-        #         max_traj = [(state_tensor, max_action, rewards[best_index])] + max_next_traj
-        #     if max_action is None:
-        #         raise ValueError('Value network is not well trained.')
-        #
-        # if self.phase == 'train':
-        #     self.last_state = self.transform(state)
-        # else:
-        #     self.traj = max_traj
-        #
-        # return max_action, max_action_index
 
     def action_clip(self, state, action_space, width, depth=1):
         values = []
@@ -450,7 +406,7 @@ class ModelPredictiveRL(Policy):
         cur_position = np.array((robot_state.px, robot_state.py))
         end_position = np.array((next_robot_state.px, next_robot_state.py))
         goal_position = np.array((robot_state.gx, robot_state.gy))
-        reward_goal = 0.05 * (norm(cur_position - goal_position) - norm(end_position - goal_position))
+        reward_goal = 0.02 * (norm(cur_position - goal_position) - norm(end_position - goal_position))
         # check if reaching the goal
         reaching_goal = norm(end_position - np.array([robot_state.gx, robot_state.gy])) < robot_state.radius
         dmin = float('inf')
@@ -474,11 +430,12 @@ class ModelPredictiveRL(Policy):
             reward = 1
         elif dmin < 0.2:
             # adjust the reward based on FPS
-            reward = (dmin - 0.2) * 0.5 * self.time_step
+            reward = (dmin - 0.2) * 0.5 * 2
+            # * self.time_step
         else:
             reward = 0
         reward = reward + reward_goal
-        reward = reward * 10
+        reward = reward * 100
         return reward
 
     def transform(self, state):

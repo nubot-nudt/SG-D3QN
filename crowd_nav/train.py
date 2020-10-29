@@ -214,7 +214,7 @@ def main(args):
         # sample k episodes into memory and optimize over the generated memory
         _, _, _, avg_reward, _ = explorer.run_k_episodes(sample_episodes, 'train', update_memory=True, episode=episode)
         eps_count = eps_count + sample_episodes
-        reward_in_100_episodes = reward_in_100_episodes + avg_reward/10
+        reward_in_100_episodes = reward_in_100_episodes + avg_reward/100
         interval = 100
         if eps_count % interval == 0:
             reward_rec.append(reward_in_100_episodes)
