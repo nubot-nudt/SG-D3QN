@@ -32,7 +32,7 @@ class BaseEnvConfig(object):
     sim.test_scenario = 'circle_crossing'
     sim.square_width = 20
     sim.circle_radius = 4
-    sim.human_num = 4
+    sim.human_num = 2
     sim.nonstop_human = False
     sim.centralized_planning = True
 
@@ -139,14 +139,14 @@ class BaseTrainConfig(object):
 
     train = Config()
     train.rl_train_epochs = 1
-    train.rl_learning_rate = 0.001
+    train.rl_learning_rate = 0.0005
     # number of batches to train at the end of training episode il_episodes
     train.train_batches = 100
     # training episodes in outer loop
     train.train_episodes = 50000
     # number of episodes sampled in one training episode
     train.sample_episodes = 1
-    train.target_update_interval = 1000
+    train.target_update_interval = 500
     train.evaluation_interval = 1000
     # the memory pool can roughly store 2K episodes, total size = episodes * 50
     train.capacity = 100000

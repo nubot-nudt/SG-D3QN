@@ -63,6 +63,7 @@ def main(args):
 
     args.config = os.path.join(args.output_dir, 'config.py')
     log_file = os.path.join(args.output_dir, 'output.log')
+    in_weight_file = os.path.join(args.output_dir, 'in_model.pth')
     il_weight_file = os.path.join(args.output_dir, 'il_model.pth')
     rl_weight_file = os.path.join(args.output_dir, 'rl_model.pth')
 
@@ -137,6 +138,7 @@ def main(args):
         trainer = VNRLTrainer(model, memory, device, policy, batch_size, optimizer, writer)
     explorer = Explorer(env, robot, device, writer, memory, policy.gamma, target_policy=policy)
 
+    policy.save_model(in_weight_file)
     # imitation learning
     if args.resume:
         if not os.path.exists(rl_weight_file):
@@ -212,7 +214,7 @@ def main(args):
         # sample k episodes into memory and optimize over the generated memory
         _, _, _, avg_reward, _ = explorer.run_k_episodes(sample_episodes, 'train', update_memory=True, episode=episode)
         eps_count = eps_count + sample_episodes
-        reward_in_100_episodes = reward_in_100_episodes + avg_reward
+        reward_in_100_episodes = reward_in_100_episodes + avg_reward/10
         interval = 100
         if eps_count % interval == 0:
             reward_rec.append(reward_in_100_episodes)

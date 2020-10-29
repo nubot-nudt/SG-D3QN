@@ -226,7 +226,7 @@ class ModelPredictiveRL(Policy):
 
             state_tensor = state.to_tensor(add_batch_size=True, device=self.device)
             q_value = torch.Tensor(self.value_estimator(state_tensor).squeeze())
-            max_action_value, max_action_indexes = torch.topk(q_value, 2)
+            max_action_value, max_action_indexes = torch.topk(q_value, 5)
             pre_next_state = self.state_predictor(state_tensor, ActionXY(0, 0))
             next_robot_states = None
             next_human_states = None
@@ -478,6 +478,7 @@ class ModelPredictiveRL(Policy):
         else:
             reward = 0
         reward = reward + reward_goal
+        reward = reward * 10
         return reward
 
     def transform(self, state):

@@ -56,6 +56,7 @@ def main(args):
 
     args.config = os.path.join(args.output_dir, 'config.py')
     log_file = os.path.join(args.output_dir, 'output.log')
+    in_weight_file = os.path.join(args.output_dir, 'in_model.pth')
     il_weight_file = os.path.join(args.output_dir, 'il_model.pth')
     rl_weight_file = os.path.join(args.output_dir, 'rl_model.pth')
 
@@ -130,6 +131,7 @@ def main(args):
         trainer = VNRLTrainer(model, memory, device, policy, batch_size, optimizer, writer)
     explorer = Explorer(env, robot, device, writer, memory, policy.gamma, target_policy=policy)
 
+    policy.save_model(in_weight_file)
     # imitation learning
     if args.resume:
         if not os.path.exists(rl_weight_file):
@@ -205,7 +207,7 @@ def main(args):
         # sample k episodes into memory and optimize over the generated memory
         _, _, _, avg_reward, _ = explorer.run_k_episodes(sample_episodes, 'train', update_memory=True, episode=episode)
         eps_count = eps_count + sample_episodes
-        reward_in_100_episodes = reward_in_100_episodes + avg_reward
+        reward_in_100_episodes = reward_in_100_episodes + avg_reward/10
         interval = 100
         if eps_count % interval == 0:
             reward_rec.append(reward_in_100_episodes)
@@ -252,7 +254,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser('Parse configuration file')
     parser.add_argument('--policy', type=str, default='model_predictive_rl')
     parser.add_argument('--config', type=str, default='configs/icra_benchmark/mp_separate.py')
-    parser.add_argument('--output_dir', type=str, default='data/output')
+    parser.add_argument('--output_dir', type=str, default='data/output1')
     parser.add_argument('--overwrite', default=False, action='store_true')
     parser.add_argument('--weights', type=str)
     parser.add_argument('--resume', default=False, action='store_true')

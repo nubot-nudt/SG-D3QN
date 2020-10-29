@@ -111,7 +111,7 @@ def main(args):
         done = False
         last_pos = np.array(robot.get_position())
         while not done:
-            action = robot.act(ob)
+            action, action_index = robot.act(ob)
             ob, _, done, info = env.step(action)
             rewards.append(_)
             current_pos = np.array(robot.get_position())
@@ -171,5 +171,4 @@ if __name__ == '__main__':
     parser.add_argument('--sparse_search', default=False, action='store_true')
 
     sys_args = parser.parse_args()
-
     main(sys_args)
