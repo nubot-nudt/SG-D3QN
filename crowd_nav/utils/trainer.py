@@ -130,7 +130,7 @@ class MPRLTrainer(object):
             gamma_bar = pow(self.gamma, self.time_step * self.v_pref)
             max_next_Q = torch.max(self.target_model((next_robot_states, next_human_states)), dim=1)[0]
             max_next_Q = max_next_Q.unsqueeze(dim=1)
-            target_values = rewards + gamma_bar * max_next_Q
+            target_values = rewards + self.gamma * max_next_Q
             # target_values = rewards + gamma_bar * self.target_model((next_robot_states, next_human_states))
 
             # values = values.to(self.device)

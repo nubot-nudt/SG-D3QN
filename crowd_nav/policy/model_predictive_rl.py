@@ -250,7 +250,7 @@ class ModelPredictiveRL(Policy):
             next_state_batch = (next_robot_states, next_human_states)
             next_q_value, next_action_index = torch.max(self.value_estimator(next_state_batch).squeeze(1), dim=1)
             # next_q_value
-            value = rewards_tensor + next_q_value * self.get_normalized_gamma()
+            value = rewards_tensor + next_q_value * self.gamma#self.get_normalized_gamma()
             best_index = value.argmax()
             best_value = value[best_index]
             max_action_index = max_action_indexes[best_index]
