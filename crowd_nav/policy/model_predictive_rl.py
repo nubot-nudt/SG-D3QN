@@ -210,6 +210,7 @@ class ModelPredictiveRL(Policy):
             # self.build_action_space(state.robot_state.v_pref)
             self.build_action_space(1.0)
         probability = np.random.random()
+        self.epsilon = -1.0
         if self.phase == 'train' and probability < self.epsilon:
             max_action_index = np.random.choice(len(self.action_space))
             max_action = self.action_space[max_action_index]
