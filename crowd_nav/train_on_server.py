@@ -207,7 +207,7 @@ def main(args):
         # sample k episodes into memory and optimize over the generated memory
         _, _, _, avg_reward, _ = explorer.run_k_episodes(sample_episodes, 'train', update_memory=True, episode=episode)
         eps_count = eps_count + sample_episodes
-        reward_in_100_episodes = reward_in_100_episodes + avg_reward/10
+        reward_in_100_episodes = reward_in_100_episodes + avg_reward/100
         interval = 100
         if eps_count % interval == 0:
             reward_rec.append(reward_in_100_episodes)
@@ -215,7 +215,7 @@ def main(args):
             reward_in_100_episodes = 0.0
             pos = np.array(range(1, len(reward_rec)+1)) * interval
             plt.plot(pos, reward_rec, color='r', marker='.', linestyle='dashed')
-            plt.axis([0, eps_count, -20, 150])
+            plt.axis([0, eps_count, -50, 150])
             savefig(args.output_dir + "/reward_record.jpg")
         explorer.log('train', episode)
 
