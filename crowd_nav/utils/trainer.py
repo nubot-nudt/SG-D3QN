@@ -43,6 +43,27 @@ class MPRLTrainer(object):
 
     def set_learning_rate(self, learning_rate):
         if self.optimizer_str == 'Adam':
+            self.v_optimizer = optim.Adam(filter(lambda p: p.requires_grad, self.value_estimator.parameters()), lr=learning_rate)
+            # self.v_optimizer = optim.Adam(self.value_estimator.parameters(), lr=learning_rate)
+            if self.state_predictor.trainable:
+                self.s_optimizer = optim.Adam(self.state_predictor.parameters(), lr=learning_rate)
+        elif self.optimizer_str == 'SGD':
+            self.v_optimizer = optim.SGD(self.value_estimator.parameters(), lr=learning_rate, momentum=0.9)
+            if self.state_predictor.trainable:
+                self.s_optimizer = optim.SGD(self.state_predictor.parameters(), lr=learning_rate)
+        else:
+            raise NotImplementedError
+
+        if self.state_predictor.trainable:
+            logging.info('Lr: {} for parameters {} with {} optimizer'.format(learning_rate, ' '.join(
+                [name for name, param in list(self.value_estimator.named_parameters()) +
+                 list(self.state_predictor.named_parameters())]), self.optimizer_str))
+        else:
+            logging.info('Lr: {} for parameters {} with {} optimizer'.format(learning_rate, ' '.join(
+                [name for name, param in list(self.value_estimator.named_parameters())]), self.optimizer_str))
+
+    def set_rl_learning_rate(self, learning_rate):
+        if self.optimizer_str == 'Adam':
             self.v_optimizer = optim.Adam(self.value_estimator.parameters(), lr=learning_rate)
             if self.state_predictor.trainable:
                 self.s_optimizer = optim.Adam(self.state_predictor.parameters(), lr=learning_rate)
@@ -128,9 +149,12 @@ class MPRLTrainer(object):
             # outputs = self.value_estimator((robot_states, human_states))
             outputs = self.value_estimator((robot_states, human_states)).gather(1, actions.unsqueeze(1))
             gamma_bar = pow(self.gamma, self.time_step * self.v_pref)
-            max_next_Q = torch.max(self.target_model((next_robot_states, next_human_states)), dim=1)[0]
-            max_next_Q = max_next_Q.unsqueeze(dim=1)
-            target_values = rewards + max_next_Q * 0.95 #self.gamma *
+            max_next_Q_index = torch.max(self.value_estimator((next_robot_states, next_human_states)), dim=1)[1]
+            next_Q_value = self.target_model((next_robot_states, next_human_states)).gather(1, max_next_Q_index.unsqueeze(1))
+            # for dqn
+            # max_next_Q = torch.max(self.target_model((next_robot_states, next_human_states)), dim=1)[0]
+            # next_Q_value= max_next_Q.unsqueeze(dim=1)
+            target_values = rewards + next_Q_value * 0.95 #self.gamma *
             # target_values = rewards + gamma_bar * self.target_model((next_robot_states, next_human_states))
 
             # values = values.to(self.device)
@@ -200,7 +224,7 @@ class VNRLTrainer(object):
 
     def set_learning_rate(self, learning_rate):
         if self.optimizer_str == 'Adam':
-            self.optimizer = optim.Adam(self.model.parameters(), lr=learning_rate)
+            self.optimizer = optim.Adam(filter(lambda p: p.requires_grad, self.model.parameters()), lr=learning_rate)
         elif self.optimizer_str == 'SGD':
             self.optimizer = optim.SGD(self.model.parameters(), lr=learning_rate, momentum=0.9)
         else:

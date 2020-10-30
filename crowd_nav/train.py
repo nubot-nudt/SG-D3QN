@@ -137,7 +137,6 @@ def main(args):
     else:
         trainer = VNRLTrainer(model, memory, device, policy, batch_size, optimizer, writer)
     explorer = Explorer(env, robot, device, writer, memory, policy.gamma, target_policy=policy)
-
     policy.save_model(in_weight_file)
     # imitation learning
     if args.resume:
@@ -171,13 +170,14 @@ def main(args):
         logging.info('Finish imitation learning. Weights saved.')
         logging.info('Experience set size: %d/%d', len(memory), memory.capacity)
 
+
     trainer.update_target_model(model)
 
     # reinforcement learning
     policy.set_env(env)
     robot.set_policy(policy)
     robot.print_info()
-    trainer.set_learning_rate(rl_learning_rate)
+    trainer.set_rl_learning_rate(rl_learning_rate)
     # fill the memory pool with some RL experience
     if args.resume:
         robot.policy.set_epsilon(epsilon_end)

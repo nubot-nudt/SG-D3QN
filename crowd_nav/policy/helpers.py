@@ -63,6 +63,8 @@ class DuelingDQN(nn.Module):
             # nn.ReLU(),
             nn.Linear(128, self.output_dim)
         )
+        # for p in self.advantage_stream.parameters():
+        #     p.requires_grad = False
 
     def forward(self, state):
         features = self.feauture_layer(state)
