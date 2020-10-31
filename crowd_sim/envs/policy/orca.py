@@ -65,9 +65,20 @@ class ORCA(Policy):
         self.radius = 0.3
         self.max_speed = 1
         self.sim = None
+        self.speed_samples = 5
+        self.rotation_samples = 16
+        self.sampling = None
+        self.rotation_constraint = None
 
     def configure(self, config):
         return
+
+    def set_common_parameters(self, config):
+        self.kinematics = config.action_space.kinematics
+        self.sampling = config.action_space.sampling
+        self.speed_samples = config.action_space.speed_samples
+        self.rotation_samples = config.action_space.rotation_samples
+        self.rotation_constraint = config.action_space.rotation_constraint
 
     def set_phase(self, phase):
         return
@@ -119,8 +130,8 @@ class ORCA(Policy):
             self.sim.setAgentPrefVelocity(i + 1, (0, 0))
 
         self.sim.doStep()
-        speed_samples = 3
-        rotation_samples = 8
+        speed_samples = self.speed_samples
+        rotation_samples = self.rotation_samples
         d_vel = 1.0 / speed_samples / 2
         action = ActionXY(*self.sim.getAgentVelocity(0))
         vel_index = (np.sqrt(action.vx * action.vx + action.vy * action.vy) // d_vel + 1) // 2
