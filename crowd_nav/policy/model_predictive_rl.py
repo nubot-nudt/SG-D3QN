@@ -234,10 +234,13 @@ class ModelPredictiveRL(Policy):
             next_state = (next_robot_state, next_human_state)
             reward_est = self.estimate_reward_on_predictor(tensor_to_joint_state(state),
                                                            tensor_to_joint_state(next_state))
-            if depth - 1 > 1:
+            if self.planning_depth - depth >= 2 and self.planning_depth > 2:
                 width = 1
             next_v_value, next_max_action_index, next_traj = self.V_planning(next_state, depth-1, width)
-            return_value = (cur_q_value + depth*(self.get_normalized_gamma()*next_v_value + reward_est))/(depth + 1)
+            if depth == 1:
+                return_value = self.get_normalized_gamma()*next_v_value + reward_est
+            else:
+                return_value = (cur_q_value+(depth-1)*(self.get_normalized_gamma()*next_v_value+reward_est))/depth
             returns.append(return_value)
             trajs.append([(state, action, reward_est)] + next_traj)
 
@@ -264,6 +267,7 @@ class ModelPredictiveRL(Policy):
         robot_vel_length = np.sqrt(robot_state.vx*robot_state.vx + robot_state.vy*robot_state.vy)
         vel_dot = next_robot_state.vx*robot_state.vx + next_robot_state.vy*robot_state.vy
         delta_w = vel_dot/action_vel_length/robot_vel_length
+        delta_w = 0.0
         if delta_w < 0.5:
             reward_omega = -0.01 * (0.5 - delta_w) * (0.5 - delta_w)
         else:

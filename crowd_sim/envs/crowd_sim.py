@@ -308,7 +308,8 @@ class CrowdSim(gym.Env):
         reaching_goal = norm(end_position - goal_position) < self.robot.radius
         action_vel_length = np.sqrt(action.vx*action.vx + action.vy*action.vy)
         robot_vel_length = np.sqrt(self.robot.vx*self.robot.vx + self.robot.vy*self.robot.vy)
-        delta_w = (self.robot.vx*action.vx + self.robot.vy*action.vy)/action_vel_length/robot_vel_length
+        # delta_w = (self.robot.vx*action.vx + self.robot.vy*action.vy)/action_vel_length/robot_vel_length
+        delta_w = 0.0
         if delta_w < 0.5:
             reward_omega = -0.01 * (0.5 - delta_w) * (0.5 - delta_w)
         else:
