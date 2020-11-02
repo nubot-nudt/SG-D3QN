@@ -105,6 +105,7 @@ class ModelPredictiveRL(Policy):
         self.state_predictor.time_step = time_step
 
     def get_normalized_gamma(self):
+        return 0.95
         return pow(self.gamma, self.time_step * self.v_pref)
 
     def get_model(self):
