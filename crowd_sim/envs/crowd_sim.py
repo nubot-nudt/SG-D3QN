@@ -304,9 +304,15 @@ class CrowdSim(gym.Env):
         end_position = np.array(self.robot.compute_position(action, self.time_step))
         cur_position = np.array((self.robot.px, self.robot.py))
         goal_position = np.array(self.robot.get_goal_position())
-        reward_goal = 0.02 * (norm(cur_position - goal_position) - norm(end_position - goal_position))
+        reward_goal = 0.05 * (norm(cur_position - goal_position) - norm(end_position - goal_position))
         reaching_goal = norm(end_position - goal_position) < self.robot.radius
-
+        action_vel_length = np.sqrt(action.vx*action.vx + action.vy*action.vy)
+        robot_vel_length = np.sqrt(self.robot.vx*self.robot.vx + self.robot.vy*self.robot.vy)
+        delta_w = (self.robot.vx*action.vx + self.robot.vy*action.vy)/action_vel_length/robot_vel_length
+        if delta_w < 0.5:
+            reward_omega = -0.01 * (0.5 - delta_w) * (0.5 - delta_w)
+        else:
+            reward_omega = 0.0
         if self.global_time >= self.time_limit - 1:
             reward = 0
             done = True
@@ -321,14 +327,14 @@ class CrowdSim(gym.Env):
             info = ReachGoal()
         elif dmin < self.discomfort_dist:
             # adjust the reward based on FPS
-            reward = (dmin - self.discomfort_dist) * self.discomfort_penalty_factor * 2 #* self.time_step
+            reward = (dmin - self.discomfort_dist) * self.discomfort_penalty_factor * 2 * self.time_step
             done = False
             info = Discomfort(dmin)
         else:
             reward = 0
             done = False
             info = Nothing()
-        reward = reward+reward_goal
+        reward = reward+reward_goal+reward_omega
         reward = reward * 100
 
         if update:
