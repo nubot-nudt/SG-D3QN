@@ -197,187 +197,54 @@ class ModelPredictiveRL(Policy):
         if self.action_space is None:
             # self.build_action_space(state.robot_state.v_pref)
             self.build_action_space(1.0)
-        probability = np.random.random()
-        self.epsilon = -1.0
-        if self.phase == 'train' and probability < self.epsilon:
-            max_action_index = np.random.choice(len(self.action_space))
+        max_action = None
+        origin_max_value = float('-inf')
+        state_tensor = state.to_tensor(add_batch_size=True, device=self.device)
+        max_value, max_action_index, max_traj = self.V_planning(state_tensor, self.planning_depth, self.planning_width)
+        if max_value > origin_max_value:
             max_action = self.action_space[max_action_index]
-        else:
-            max_action = None
-            max_value = float('-inf')
-            max_traj = None
-
-            if self.do_action_clip:
-                state_tensor = state.to_tensor(add_batch_size=True, device=self.device)
-                action_space_clipped = self.action_clip(state_tensor, self.action_space, self.planning_width)
-            else:
-                action_space_clipped = self.action_space
-
-            state_tensor = state.to_tensor(add_batch_size=True, device=self.device)
-            q_value = torch.Tensor(self.value_estimator(state_tensor).squeeze())
-            max_action_value, max_action_indexes = torch.topk(q_value, 5)
-            pre_next_state = self.state_predictor(state_tensor, ActionXY(0, 0))
-            next_robot_states = None
-            next_human_states = None
-            rewards = []
-            for action_index in max_action_indexes:
-                action = self.action_space[action_index]
-                next_robot_state = self.compute_next_robot_state(state_tensor[0], action)
-                next_human_state = pre_next_state[1]
-                if next_robot_states is None and next_human_states is None:
-                    next_robot_states = next_robot_state
-                    next_human_states = next_human_state
-                else:
-                    next_robot_states = torch.cat((next_robot_states, next_robot_state), dim=0)
-                    next_human_states = torch.cat((next_human_states, next_human_state), dim=0)
-                next_state = tensor_to_joint_state((next_robot_state, next_human_state))
-                reward_est = self.estimate_reward_on_predictor(state, next_state)
-                # reward_est = self.estimate_reward(state, action)
-                rewards.append(reward_est)
-                # next_state = self.state_predictor(state_tensor, action)
-            rewards_tensor = torch.tensor(rewards).to(self.device)
-            next_state_batch = (next_robot_states, next_human_states)
-            next_q_value, next_action_index = torch.max(self.value_estimator(next_state_batch).squeeze(1), dim=1)
-            # next_q_value
-            value = rewards_tensor + next_q_value * 0.95#self.gamma#self.get_normalized_gamma()
-            best_index = value.argmax()
-            best_value = value[best_index]
-            max_action_index = max_action_indexes[best_index]
-            if best_value > max_value:
-                max_action = action_space_clipped[max_action_indexes[best_index]]
-                next_state = tensor_to_joint_state((next_robot_states[best_index], next_human_states[best_index]))
-                max_next_traj = [(next_state.to_tensor(), None, None)]
-                max_traj = [(state_tensor, max_action, rewards[best_index])] + max_next_traj
-            if max_action is None:
-                raise ValueError('Value network is not well trained.')
-
+        if max_action is None:
+            raise ValueError('Value network is not well trained.')
         if self.phase == 'train':
             self.last_state = self.transform(state)
         else:
+            self.last_state = self.transform(state)
             self.traj = max_traj
-
         return max_action, int(max_action_index)
 
-    def action_clip(self, state, action_space, width, depth=1):
-        values = []
-
-        for action in action_space:
-            next_state_est = self.state_predictor(state, action)
-            next_return, _ = self.V_planning(next_state_est, depth, width)
-            reward_est = self.estimate_reward(state, action)
-            value = reward_est + self.get_normalized_gamma() * next_return
-            values.append(value)
-
-        if self.sparse_search:
-            # self.sparse_speed_samples = 2
-            # search in a sparse grained action space
-            added_groups = set()
-            max_indices = np.argsort(np.array(values))[::-1]
-            clipped_action_space = []
-            for index in max_indices:
-                if self.action_group_index[index] not in added_groups:
-                    clipped_action_space.append(action_space[index])
-                    added_groups.add(self.action_group_index[index])
-                    if len(clipped_action_space) == width:
-                        break
-        else:
-            max_indexes = np.argpartition(np.array(values), -width)[-width:]
-            clipped_action_space = [action_space[i] for i in max_indexes]
-
-        # print(clipped_action_space)
-        return clipped_action_space
-
     def V_planning(self, state, depth, width):
-        """ Plans n steps into future. Computes the value for the current state as well as the trajectories
+        """ Plans n steps into future based on state action value function. Computes the value for the current state as well as the trajectories
         defined as a list of (state, action, reward) triples
-
         """
-
-        current_state_value = self.value_estimator(state)
-        if depth == 1:
-            return current_state_value, [(state, None, None)]
-
-        if self.do_action_clip:
-            action_space_clipped = self.action_clip(state, self.action_space, width)
-        else:
-            action_space_clipped = self.action_space
+        q_value = torch.Tensor(self.value_estimator(state).squeeze())
+        max_action_value, max_action_indexes = torch.topk(q_value, width)
+        # current_state_value = self.value_estimator(state)
+        if depth == 0:
+            return max_action_value[0], max_action_indexes[0], [(state, None, None)]
 
         returns = []
         trajs = []
-
-        for action in action_space_clipped:
-            next_state_est = self.state_predictor(state, action)
-            reward_est = self.estimate_reward(state, action)
-            next_value, next_traj = self.V_planning(next_state_est, depth - 1, self.planning_width)
-            return_value = current_state_value / depth + (depth - 1) / depth * (self.get_normalized_gamma() * next_value + reward_est)
-
+        pre_next_state = self.state_predictor(state, ActionXY(0, 0))
+        for action_index in max_action_indexes:
+            cur_q_value = q_value[action_index]
+            action = self.action_space[action_index]
+            next_robot_state = self.compute_next_robot_state(state[0], action)
+            next_human_state = pre_next_state[1]
+            next_state = (next_robot_state, next_human_state)
+            reward_est = self.estimate_reward_on_predictor(tensor_to_joint_state(state),
+                                                           tensor_to_joint_state(next_state))
+            if depth - 1 > 1:
+                width = 1
+            next_v_value, next_max_action_index, next_traj = self.V_planning(next_state, depth-1, width)
+            return_value = (cur_q_value + depth*(self.get_normalized_gamma()*next_v_value + reward_est))/(depth + 1)
             returns.append(return_value)
             trajs.append([(state, action, reward_est)] + next_traj)
 
         max_index = np.argmax(returns)
+        max_action_index = max_action_indexes[max_index]
         max_return = returns[max_index]
         max_traj = trajs[max_index]
-
-        return max_return, max_traj
-
-    def estimate_reward(self, state, action):
-        """ If the time step is small enough, it's okay to model agent as linear movement during this period
-
-        """
-        # collision detection
-        if isinstance(state, list) or isinstance(state, tuple):
-            state = tensor_to_joint_state(state)
-        human_states = state.human_states
-        robot_state = state.robot_state
-
-        cur_position = np.array((robot_state.px, robot_state.py))
-        end_position = cur_position + np.array((action.vx, action.vy)) * self.time_step
-        goal_position = np.array((robot_state.gx, robot_state.gy))
-        reward_goal = 0.02 * (norm(cur_position - goal_position) - norm(end_position - goal_position))
-        dmin = float('inf')
-        collision = False
-        for i, human in enumerate(human_states):
-            px = human.px - robot_state.px
-            py = human.py - robot_state.py
-            if self.kinematics == 'holonomic':
-                vx = human.vx - action.vx
-                vy = human.vy - action.vy
-            else:
-                vx = human.vx - action.v * np.cos(action.r + robot_state.theta)
-                vy = human.vy - action.v * np.sin(action.r + robot_state.theta)
-            ex = px + vx * self.time_step
-            ey = py + vy * self.time_step
-            # closest distance between boundaries of two agents
-            closest_dist = point_to_segment_dist(px, py, ex, ey, 0, 0) - human.radius - robot_state.radius
-            if closest_dist < 0:
-                collision = True
-                break
-            elif closest_dist < dmin:
-                dmin = closest_dist
-
-        # check if reaching the goal
-        if self.kinematics == 'holonomic':
-            px = robot_state.px + action.vx * self.time_step
-            py = robot_state.py + action.vy * self.time_step
-        else:
-            theta = robot_state.theta + action.r
-            px = robot_state.px + np.cos(theta) * action.v * self.time_step
-            py = robot_state.py + np.sin(theta) * action.v * self.time_step
-
-        end_position = np.array((px, py))
-        reaching_goal = norm(end_position - np.array([robot_state.gx, robot_state.gy])) < robot_state.radius
-
-        if collision:
-            reward = -0.25
-        elif reaching_goal:
-            reward = 1
-        elif dmin < 0.2:
-            # adjust the reward based on FPS
-            reward = (dmin - 0.2) * 1 #* self.time_step
-        else:
-            reward = 0
-        reward = reward + reward_goal
-        return reward
+        return max_return, max_action_index, max_traj
 
     def estimate_reward_on_predictor(self, state, next_state):
         """ If the time step is small enough, it's okay to model agent as linear movement during this period
