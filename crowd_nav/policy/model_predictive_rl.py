@@ -298,7 +298,7 @@ class ModelPredictiveRL(Policy):
             reward = (dmin - 0.2) * 0.5 * 2 * self.time_step
         else:
             reward = 0
-        reward = reward + reward_goal + reward_omega
+        reward = reward + reward_goal
         reward = reward * 100
         return reward
 
