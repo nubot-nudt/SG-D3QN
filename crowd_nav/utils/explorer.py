@@ -32,7 +32,7 @@ class Explorer(object):
         average_returns = []
         collision_cases = []
         timeout_cases = []
-        if k != 1:
+        if phase in ['test', 'val'] or imitation_learning:
             pbar = tqdm(total=k)
         else:
             pbar = None
@@ -103,9 +103,6 @@ class Explorer(object):
             total_time = sum(success_times + collision_times + timeout_times)
             logging.info('Frequency of being in danger: %.2f and average min separate distance in danger: %.2f',
                          discomfort / total_time, average(min_dist))
-
-
-
 
         if print_failure:
             logging.info('Collision cases: ' + ' '.join([str(x) for x in collision_cases]))

@@ -139,13 +139,13 @@ class BaseTrainConfig(object):
 
     train = Config()
     train.rl_train_epochs = 1
-    train.rl_learning_rate = 0.0005
+    train.rl_learning_rate = 0.001
     # number of batches to train at the end of training episode il_episodes
     train.train_batches = 50
     # training episodes in outer loop
     train.train_episodes = 50000
     # number of episodes sampled in one training episode
-    train.sample_episodes = 1
+    train.sample_episodes = 10
     train.target_update_interval = 1000
     train.evaluation_interval = 1000
     # the memory pool can roughly store 2K episodes, total size = episodes * 50

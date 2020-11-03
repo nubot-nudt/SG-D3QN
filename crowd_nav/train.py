@@ -200,7 +200,7 @@ def main(args):
 
     episode = 0
     reward_rec = []
-    reward_in_100_episodes = 0
+    reward_in_last_interval = 0
     eps_count = 0
     while episode < train_episodes:
         if args.resume:
@@ -213,22 +213,25 @@ def main(args):
         robot.policy.set_epsilon(epsilon)
 
         # sample k episodes into memory and optimize over the generated memory
-        _, _, _, avg_reward, _ = explorer.run_k_episodes(sample_episodes, 'train', update_memory=True, episode=episode)
-        eps_count = eps_count + sample_episodes
-        reward_in_100_episodes = reward_in_100_episodes + avg_reward/100
-        interval = 100
+        _, _, _, sum_reward, _ = explorer.run_k_episodes(sample_episodes, 'train', update_memory=True, episode=episode)
+        eps_count = eps_count + 1
+        reward_in_last_interval = reward_in_last_interval + sum_reward
+        interval = 20
         if eps_count % interval == 0:
-            reward_rec.append(reward_in_100_episodes)
+            reward_rec.append(reward_in_last_interval)
+
             logging.info('Train in episode %d reward in last 100 episodes %f', eps_count, reward_rec[-1])
-            reward_in_100_episodes = 0.0
+            reward_in_last_interval = 0.0
+            min_reward = int((np.argmin(reward_rec) // 10)*10)
+            max_reward = int((np.argmax(reward_rec) // 10 + 1)*10)
             pos = np.array(range(1, len(reward_rec)+1)) * interval
             plt.plot(pos, reward_rec, color='r', marker='.', linestyle='dashed')
-            plt.axis([0, eps_count, -50, 150])
+            plt.axis([0, eps_count, min_reward, max_reward])
             savefig(args.output_dir + "/reward_record.jpg")
         explorer.log('train', episode)
 
         trainer.optimize_batch(train_batches, episode)
-        episode += 1
+        episode += sample_episodes
 
         if episode % target_update_interval == 0:
             trainer.update_target_model(model)
