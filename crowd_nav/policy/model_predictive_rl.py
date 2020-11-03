@@ -237,10 +237,11 @@ class ModelPredictiveRL(Policy):
             if self.planning_depth - depth >= 2 and self.planning_depth > 2:
                 width = 1
             next_v_value, next_max_action_index, next_traj = self.V_planning(next_state, depth-1, width)
-            if depth == 1:
-                return_value = self.get_normalized_gamma()*next_v_value + reward_est
-            else:
-                return_value = (cur_q_value+(depth-1)*(self.get_normalized_gamma()*next_v_value+reward_est))/depth
+            return_value = self.get_normalized_gamma() * next_v_value + reward_est
+            # if depth == 1:
+            #     return_value = self.get_normalized_gamma()*next_v_value + reward_est
+            # else:
+            #     return_value = (cur_q_value+(depth-1)*(self.get_normalized_gamma()*next_v_value+reward_est))/depth
             returns.append(return_value)
             trajs.append([(state, action, reward_est)] + next_traj)
 
@@ -263,15 +264,15 @@ class ModelPredictiveRL(Policy):
         next_robot_state = next_state.robot_state
         next_human_states = next_state.human_states
 
-        action_vel_length = np.sqrt(next_robot_state.vx*next_robot_state.vx + next_robot_state.vy*next_robot_state.vy)
-        robot_vel_length = np.sqrt(robot_state.vx*robot_state.vx + robot_state.vy*robot_state.vy)
-        vel_dot = next_robot_state.vx*robot_state.vx + next_robot_state.vy*robot_state.vy
-        delta_w = vel_dot/action_vel_length/robot_vel_length
-        delta_w = 0.0
-        if delta_w < 0.5:
-            reward_omega = -0.01 * (0.5 - delta_w) * (0.5 - delta_w)
-        else:
-            reward_omega = 0.0
+        # action_vel_length = np.sqrt(next_robot_state.vx*next_robot_state.vx + next_robot_state.vy*next_robot_state.vy)
+        # robot_vel_length = np.sqrt(robot_state.vx*robot_state.vx + robot_state.vy*robot_state.vy)
+        # vel_dot = next_robot_state.vx*robot_state.vx + next_robot_state.vy*robot_state.vy
+        # delta_w = vel_dot/action_vel_length/robot_vel_length
+        # delta_w = 0.0
+        # if delta_w < 0.5:
+        #     reward_omega = -0.01 * (0.5 - delta_w) * (0.5 - delta_w)
+        # else:
+        #     reward_omega = 0.0
         cur_position = np.array((robot_state.px, robot_state.py))
         end_position = np.array((next_robot_state.px, next_robot_state.py))
         goal_position = np.array((robot_state.gx, robot_state.gy))
@@ -299,7 +300,7 @@ class ModelPredictiveRL(Policy):
             reward = 1
         elif dmin < 0.2:
             # adjust the reward based on FPS
-            reward = (dmin - 0.2) * 0.5 * 2 * self.time_step
+            reward = (dmin - 0.2) * 2 * self.time_step# * 0.5
         else:
             reward = 0
         reward = reward + reward_goal

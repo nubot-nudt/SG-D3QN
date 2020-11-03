@@ -67,8 +67,8 @@ class BasePolicyConfig(object):
 
     action_space = Config()
     action_space.kinematics = 'holonomic'
-    action_space.speed_samples = 5
-    action_space.rotation_samples = 16
+    action_space.speed_samples = 3
+    action_space.rotation_samples = 8
     action_space.sampling = 'exponential'
     action_space.query_env = False
     action_space.rotation_constraint = np.pi / 3
@@ -145,7 +145,7 @@ class BaseTrainConfig(object):
     # training episodes in outer loop
     train.train_episodes = 30000
     # number of episodes sampled in one training episode
-    train.sample_episodes = 10
+    train.sample_episodes = 1
     train.target_update_interval = 1000
     train.evaluation_interval = 1000
     # the memory pool can roughly store 2K episodes, total size = episodes * 50

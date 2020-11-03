@@ -216,9 +216,9 @@ def main(args):
         _, _, _, sum_reward, _ = explorer.run_k_episodes(sample_episodes, 'train', update_memory=True, episode=episode)
         eps_count = eps_count + 1
         reward_in_last_interval = reward_in_last_interval + sum_reward
-        interval = 20
+        interval = 100
         if eps_count % interval == 0:
-            reward_rec.append(reward_in_last_interval)
+            reward_rec.append(reward_in_last_interval/100)
 
             logging.info('Train in episode %d reward in last 100 episodes %f', eps_count, reward_rec[-1])
             reward_in_last_interval = 0.0
