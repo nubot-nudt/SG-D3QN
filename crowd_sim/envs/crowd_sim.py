@@ -304,7 +304,7 @@ class CrowdSim(gym.Env):
         end_position = np.array(self.robot.compute_position(action, self.time_step))
         cur_position = np.array((self.robot.px, self.robot.py))
         goal_position = np.array(self.robot.get_goal_position())
-        reward_goal = 0.05 * (norm(cur_position - goal_position) - norm(end_position - goal_position))
+        reward_goal = 0.02 * (norm(cur_position - goal_position) - norm(end_position - goal_position))
         reaching_goal = norm(end_position - goal_position) < self.robot.radius
         action_vel_length = np.sqrt(action.vx*action.vx + action.vy*action.vy)
         robot_vel_length = np.sqrt(self.robot.vx*self.robot.vx + self.robot.vy*self.robot.vy)
