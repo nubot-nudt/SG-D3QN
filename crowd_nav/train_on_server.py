@@ -130,7 +130,6 @@ def main(args):
     else:
         trainer = VNRLTrainer(model, memory, device, policy, batch_size, optimizer, writer)
     explorer = Explorer(env, robot, device, writer, memory, policy.gamma, target_policy=policy)
-
     policy.save_model(in_weight_file)
     # imitation learning
     if args.resume:
@@ -155,6 +154,7 @@ def main(args):
         else:
             safety_space = train_config.imitation_learning.safety_space
         il_policy = policy_factory[il_policy]()
+        il_policy.set_common_parameters(policy_config)
         il_policy.multiagent_training = policy.multiagent_training
         il_policy.safety_space = safety_space
         robot.set_policy(il_policy)
@@ -164,13 +164,14 @@ def main(args):
         logging.info('Finish imitation learning. Weights saved.')
         logging.info('Experience set size: %d/%d', len(memory), memory.capacity)
 
+
     trainer.update_target_model(model)
 
     # reinforcement learning
     policy.set_env(env)
     robot.set_policy(policy)
     robot.print_info()
-    trainer.set_learning_rate(rl_learning_rate)
+    trainer.set_rl_learning_rate(rl_learning_rate)
     # fill the memory pool with some RL experience
     if args.resume:
         robot.policy.set_epsilon(epsilon_end)
@@ -192,7 +193,7 @@ def main(args):
 
     episode = 0
     reward_rec = []
-    reward_in_100_episodes = 0
+    reward_in_last_interval = 0
     eps_count = 0
     while episode < train_episodes:
         if args.resume:
@@ -205,17 +206,20 @@ def main(args):
         robot.policy.set_epsilon(epsilon)
 
         # sample k episodes into memory and optimize over the generated memory
-        _, _, _, avg_reward, _ = explorer.run_k_episodes(sample_episodes, 'train', update_memory=True, episode=episode)
-        eps_count = eps_count + sample_episodes
-        reward_in_100_episodes = reward_in_100_episodes + avg_reward/100
+        _, _, _, sum_reward, _ = explorer.run_k_episodes(sample_episodes, 'train', update_memory=True, episode=episode)
+        eps_count = eps_count + 1
+        reward_in_last_interval = reward_in_last_interval + sum_reward
         interval = 100
         if eps_count % interval == 0:
-            reward_rec.append(reward_in_100_episodes)
+            reward_rec.append(reward_in_last_interval/100)
+
             logging.info('Train in episode %d reward in last 100 episodes %f', eps_count, reward_rec[-1])
-            reward_in_100_episodes = 0.0
+            reward_in_last_interval = 0.0
+            min_reward = int((np.min(reward_rec) // 10)*10)
+            max_reward = int((np.max(reward_rec) // 10 + 1)*10)
             pos = np.array(range(1, len(reward_rec)+1)) * interval
             plt.plot(pos, reward_rec, color='r', marker='.', linestyle='dashed')
-            plt.axis([0, eps_count, -50, 150])
+            plt.axis([0, eps_count, min_reward, max_reward])
             savefig(args.output_dir + "/reward_record.jpg")
         explorer.log('train', episode)
 
@@ -253,7 +257,7 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('Parse configuration file')
     parser.add_argument('--policy', type=str, default='model_predictive_rl')
-    parser.add_argument('--config', type=str, default='configs/icra_benchmark/mp_separate_dp.py')
+    parser.add_argument('--config', type=str, default='configs/icra_benchmark/mp_separate.py')
     parser.add_argument('--output_dir', type=str, default='data/output1')
     parser.add_argument('--overwrite', default=False, action='store_true')
     parser.add_argument('--weights', type=str)
