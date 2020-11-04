@@ -222,8 +222,8 @@ def main(args):
 
             logging.info('Train in episode %d reward in last 100 episodes %f', eps_count, reward_rec[-1])
             reward_in_last_interval = 0.0
-            min_reward = int((np.argmin(reward_rec) // 10)*10)
-            max_reward = int((np.argmax(reward_rec) // 10 + 1)*10)
+            min_reward = int((np.min(reward_rec) // 10)*10)
+            max_reward = int((np.max(reward_rec) // 10 + 1)*10)
             pos = np.array(range(1, len(reward_rec)+1)) * interval
             plt.plot(pos, reward_rec, color='r', marker='.', linestyle='dashed')
             plt.axis([0, eps_count, min_reward, max_reward])
@@ -231,7 +231,7 @@ def main(args):
         explorer.log('train', episode)
 
         trainer.optimize_batch(train_batches, episode)
-        episode += sample_episodes
+        episode += 1
 
         if episode % target_update_interval == 0:
             trainer.update_target_model(model)
