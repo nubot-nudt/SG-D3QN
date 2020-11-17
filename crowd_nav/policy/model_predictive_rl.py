@@ -199,7 +199,7 @@ class ModelPredictiveRL(Policy):
         max_action = None
         origin_max_value = float('-inf')
         state_tensor = state.to_tensor(add_batch_size=True, device=self.device)
-        max_value, max_action_index, max_traj = self.V_planning(state_tensor, 1, 5)
+        max_value, max_action_index, max_traj = self.V_planning(state_tensor, 0, 5)
         if max_value > origin_max_value:
             max_action = self.action_space[max_action_index]
         if max_action is None:
@@ -286,7 +286,7 @@ class ModelPredictiveRL(Policy):
             reward = 1
         elif dmin < 0.2:
             # adjust the reward based on FPS
-            reward = (dmin - 0.2) * 0.5 * 2
+            reward = (dmin - 0.2) * 2 * self.time_step #* 0.5
             # * self.time_step
         else:
             reward = 0
