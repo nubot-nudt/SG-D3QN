@@ -72,7 +72,7 @@ class Explorer(object):
                 # if isinstance(info, ReachGoal) or isinstance(info, Collision):
                     # only add positive(success) or negative(collision) experience in experience set
                 self.update_memory(states, actions, rewards, imitation_learning)
-            #
+
             # cumulative_rewards.append(sum([pow(self.gamma, t * self.robot.time_step * self.robot.v_pref)
             #                                * reward for t, reward in enumerate(rewards)]))
             cumulative_rewards.append(sum(rewards))
