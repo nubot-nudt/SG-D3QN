@@ -195,12 +195,11 @@ class ModelPredictiveRL(Policy):
         if self.reach_destination(state):
             return ActionXY(0, 0) if self.kinematics == 'holonomic' else ActionRot(0, 0)
         if self.action_space is None:
-            # self.build_action_space(state.robot_state.v_pref)
             self.build_action_space(1.0)
         max_action = None
         origin_max_value = float('-inf')
         state_tensor = state.to_tensor(add_batch_size=True, device=self.device)
-        max_value, max_action_index, max_traj = self.V_planning(state_tensor, self.planning_depth, self.planning_width)
+        max_value, max_action_index, max_traj = self.V_planning(state_tensor, 1, 5)
         if max_value > origin_max_value:
             max_action = self.action_space[max_action_index]
         if max_action is None:
@@ -236,7 +235,8 @@ class ModelPredictiveRL(Policy):
             if depth - 1 > 1:
                 width = 1
             next_v_value, next_max_action_index, next_traj = self.V_planning(next_state, depth-1, width)
-            return_value = (cur_q_value + depth*(self.get_normalized_gamma()*next_v_value + reward_est))/(depth + 1)
+            return_value = reward_est + 0.95 * next_v_value
+            # (cur_q_value + depth*(self.get_normalized_gamma()*next_v_value + reward_est))/(depth + 1)
             returns.append(return_value)
             trajs.append([(state, action, reward_est)] + next_traj)
 
