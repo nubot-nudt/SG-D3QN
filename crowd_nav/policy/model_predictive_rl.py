@@ -200,7 +200,7 @@ class ModelPredictiveRL(Policy):
         max_action = None
         origin_max_value = float('-inf')
         state_tensor = state.to_tensor(add_batch_size=True, device=self.device)
-        max_value, max_action_index, max_traj = self.V_planning(state_tensor, 0, 5)
+        max_value, max_action_index, max_traj = self.V_planning(state_tensor, 1, 5)
         if max_value > origin_max_value:
             max_action = self.action_space[max_action_index]
         if max_action is None:
@@ -236,11 +236,11 @@ class ModelPredictiveRL(Policy):
             if self.planning_depth - depth >= 2 and self.planning_depth > 2:
                 width = 1
             next_v_value, next_max_action_index, next_traj = self.V_planning(next_state, depth-1, width)
-            return_value = self.get_normalized_gamma() * next_v_value + reward_est
-            # if depth == 1:
-            #     return_value = self.get_normalized_gamma()*next_v_value + reward_est
-            # else:
-            #     return_value = (cur_q_value+(depth-1)*(self.get_normalized_gamma()*next_v_value+reward_est))/depth
+            # return_value = self.get_normalized_gamma() * next_v_value + reward_est
+            if depth == 1:
+                return_value = self.get_normalized_gamma()*next_v_value + reward_est
+            else:
+                return_value = (cur_q_value+(depth-1)*(self.get_normalized_gamma()*next_v_value+reward_est))/depth
             returns.append(return_value)
             trajs.append([(state, action, reward_est)] + next_traj)
 
@@ -299,8 +299,8 @@ class ModelPredictiveRL(Policy):
             reward = 1
         elif dmin < 0.2:
             # adjust the reward based on FPS
-            reward = (dmin - 0.2) * 2 * self.time_step #* 0.5
-            # * self.time_step
+            reward = (dmin - 0.2) * 2 * 0.5
+            # self.time_step * 0.5
         else:
             reward = 0
         reward = reward + reward_goal
