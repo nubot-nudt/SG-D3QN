@@ -201,54 +201,106 @@ class ModelPredictiveRL(Policy):
         origin_max_value = float('-inf')
         state_tensor = state.to_tensor(add_batch_size=True, device=self.device)
         max_value, max_action_index, max_traj = self.V_planning(state_tensor, 1, 5)
-        if max_value > origin_max_value:
-            max_action = self.action_space[max_action_index]
+        if max_value[0] > origin_max_value:
+            max_action = self.action_space[max_action_index[0]]
         if max_action is None:
             raise ValueError('Value network is not well trained.')
+
         if self.phase == 'train':
             self.last_state = self.transform(state)
         else:
             self.last_state = self.transform(state)
-            self.traj = max_traj
-        return max_action, int(max_action_index)
+            self.traj = max_traj[0]
+        return max_action, int(max_action_index[0])
 
     def V_planning(self, state, depth, width):
         """ Plans n steps into future based on state action value function. Computes the value for the current state as well as the trajectories
         defined as a list of (state, action, reward) triples
         """
-        q_value = torch.Tensor(self.value_estimator(state).squeeze())
-        max_action_value, max_action_indexes = torch.topk(q_value, width)
         # current_state_value = self.value_estimator(state)
+        robot_state_batch = state[0]
+        human_state_batch = state[1]
         if depth == 0:
-            return max_action_value[0], max_action_indexes[0], [(state, None, None)]
+            q_value = torch.Tensor(self.value_estimator(state).squeeze())
+            max_action_value, max_action_indexes = torch.max(q_value, dim=1)
+            trajs = []
+            for i in range(robot_state_batch.shape[0]):
+                cur_state = (robot_state_batch[i, :, :].unsqueeze(0), human_state_batch[i, :, :].unsqueeze(0))
+                trajs.append([(cur_state, None, None)])
+            return max_action_value, max_action_indexes, trajs
+        else:
+            q_value = torch.Tensor(self.value_estimator(state).squeeze()).unsqueeze(0)
+            max_action_value, max_action_indexes = torch.topk(q_value, width, dim=1)
+        _, pre_next_state = self.state_predictor(state, ActionXY(0, 0))
+        next_robot_state_batch = None
+        next_human_state_batch = None
+        reward_est = torch.zeros(state[0].shape[0], width) * float('inf')
 
-        returns = []
+        for i in range(robot_state_batch.shape[0]):
+            cur_state = (robot_state_batch[i, :, :].unsqueeze(0), human_state_batch[i, :, :].unsqueeze(0))
+            next_human_state = pre_next_state[i, :, :].unsqueeze(0)
+            for j in range(width):
+                cur_action = self.action_space[max_action_indexes[i][j]]
+                next_robot_state = self.compute_next_robot_state(cur_state[0], cur_action)
+                if next_robot_state_batch is None:
+                    next_robot_state_batch = next_robot_state
+                    next_human_state_batch = next_human_state
+                else:
+                    next_robot_state_batch = torch.cat((next_robot_state_batch, next_robot_state), dim=0)
+                    next_human_state_batch = torch.cat((next_human_state_batch, next_human_state), dim=0)
+                reward_est[i][j] = self.estimate_reward_on_predictor(
+                    tensor_to_joint_state(cur_state), tensor_to_joint_state((next_robot_state, next_human_state)))
+        next_state_batch = (next_robot_state_batch, next_human_state_batch)
+        if self.planning_depth - depth >= 2 and self.planning_depth > 2:
+            width = 1
+        next_values, next_action_indexes, next_trajs = self.V_planning(next_state_batch, depth-1, width)
+        next_values = next_values.view(state[0].shape[0], width)
+        returns = reward_est + self.get_normalized_gamma()*next_values
+        max_action_return, max_action_index = torch.max(returns, dim=1)
         trajs = []
-        pre_next_state = self.state_predictor(state, ActionXY(0, 0))
-        for action_index in max_action_indexes:
-            cur_q_value = q_value[action_index]
-            action = self.action_space[action_index]
-            next_robot_state = self.compute_next_robot_state(state[0], action)
-            next_human_state = pre_next_state[1]
-            next_state = (next_robot_state, next_human_state)
-            reward_est = self.estimate_reward_on_predictor(tensor_to_joint_state(state),
-                                                           tensor_to_joint_state(next_state))
-            if self.planning_depth - depth >= 2 and self.planning_depth > 2:
-                width = 1
-            next_v_value, next_max_action_index, next_traj = self.V_planning(next_state, depth-1, width)
-            # return_value = self.get_normalized_gamma() * next_v_value + reward_est
-            if depth == 1:
-                return_value = self.get_normalized_gamma()*next_v_value + reward_est
-            else:
-                return_value = (cur_q_value+(depth-1)*(self.get_normalized_gamma()*next_v_value+reward_est))/depth
-            returns.append(return_value)
-            trajs.append([(state, action, reward_est)] + next_traj)
+        max_returns = []
+        max_actions = []
+        for i in range(robot_state_batch.shape[0]):
+            cur_state = (robot_state_batch[i, :, :].unsqueeze(0), human_state_batch[i, :, :].unsqueeze(0))
+            action_id = max_action_index[i]
+            trajs_id = i * width + action_id
+            action = max_action_indexes[i][action_id]
+            next_traj = next_trajs[trajs_id]
+            trajs.append([(cur_state, action, reward_est)] + next_traj)
+            max_returns.append(max_action_return[i].data)
+            max_actions.append(action)
+        return max_returns, max_actions, trajs
 
-        max_index = np.argmax(returns)
-        max_action_index = max_action_indexes[max_index]
-        max_return = returns[max_index]
-        max_traj = trajs[max_index]
-        return max_return, max_action_index, max_traj
+        # # return
+        #
+        #
+        #
+        #
+        # pre_next_state = self.state_predictor(state, ActionXY(0, 0))
+        # for action_index in max_action_indexes:
+        #     cur_q_value = q_value[action_index]
+        #     action = self.action_space[action_index]
+        #     next_robot_state = self.compute_next_robot_state(state[0], action)
+        #     next_human_state = pre_next_state[1]
+        #     next_state = (next_robot_state, next_human_state)
+        #     reward_est = self.estimate_reward_on_predictor(tensor_to_joint_state(state),
+        #                                                    tensor_to_joint_state(next_state))
+        #     if self.planning_depth - depth >= 2 and self.planning_depth > 2:
+        #         width = 1
+        #     next_v_value, next_max_action_index, next_traj = self.V_planning(next_state, depth-1, width)
+        #     # return_value = self.get_normalized_gamma() * next_v_value + reward_est
+        #     if depth == 1:
+        #         return_value = self.get_normalized_gamma()*next_v_value + reward_est
+        #     else:
+        #         return_value = (cur_q_value+(depth-1)*(self.get_normalized_gamma()*next_v_value+reward_est))/depth
+        #     returns.append(return_value)
+        #     trajs.append([(state, action, reward_est)] + next_traj)
+        #
+        # max_index = np.argmax(returns)
+        # max_action_index = max_action_indexes[max_index]
+        # max_return = returns[max_index]
+        # max_traj = trajs[max_index]
+        # return max_return, max_action_index, max_traj
 
     def estimate_reward_on_predictor(self, state, next_state):
         """ If the time step is small enough, it's okay to model agent as linear movement during this period
