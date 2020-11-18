@@ -43,8 +43,7 @@ class RGL(nn.Module):
 
         if self.similarity_function == 'embedded_gaussian':
             self.w_a = Parameter(torch.randn(self.X_dim, self.X_dim))
-            nn.init.kaiming_normal(self.w_a.data)
-            # nn.init.orthogonal(self.w_a.data)
+            nn.init.orthogonal(self.w_a.data)
         elif self.similarity_function == 'concatenation':
             self.w_a = mlp(2 * X_dim, [2 * X_dim, 1], last_relu=True)
 

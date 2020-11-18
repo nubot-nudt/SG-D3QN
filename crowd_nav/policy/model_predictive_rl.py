@@ -196,12 +196,11 @@ class ModelPredictiveRL(Policy):
         if self.reach_destination(state):
             return ActionXY(0, 0) if self.kinematics == 'holonomic' else ActionRot(0, 0)
         if self.action_space is None:
-            # self.build_action_space(state.robot_state.v_pref)
             self.build_action_space(1.0)
         max_action = None
         origin_max_value = float('-inf')
         state_tensor = state.to_tensor(add_batch_size=True, device=self.device)
-        max_value, max_action_index, max_traj = self.V_planning(state_tensor, self.planning_depth, self.planning_width)
+        max_value, max_action_index, max_traj = self.V_planning(state_tensor, 0, 5)
         if max_value > origin_max_value:
             max_action = self.action_space[max_action_index]
         if max_action is None:
@@ -300,7 +299,8 @@ class ModelPredictiveRL(Policy):
             reward = 1
         elif dmin < 0.2:
             # adjust the reward based on FPS
-            reward = (dmin - 0.2) * 2 * self.time_step# * 0.5
+            reward = (dmin - 0.2) * 2 * self.time_step #* 0.5
+            # * self.time_step
         else:
             reward = 0
         reward = reward + reward_goal
