@@ -32,7 +32,10 @@ class StatePredictor(nn.Module):
             # for training purpose
             next_robot_state = None
         else:
-            next_robot_state = self.compute_next_state(state[0], action)
+            # if state[0].shape[0] == 1:
+            #     next_robot_state = self.compute_next_state(state[0], action)
+            # else:
+            next_robot_state = self.compute_next_states(state[0], action)
         next_human_states = self.human_motion_predictor(state_embedding)[:, 1:, :]
 
         next_observation = [next_robot_state, next_human_states]
@@ -57,6 +60,26 @@ class StatePredictor(nn.Module):
             next_state[2] = np.cos(next_state[7]) * action.v
             next_state[3] = np.sin(next_state[7]) * action.v
 
+        return next_state.unsqueeze(0).unsqueeze(0)
+
+    def compute_next_states(self, robot_states, actions):
+        # currently it can not perform parallel computation
+        if robot_states.shape[0] != len(actions):
+            raise NotImplementedError
+        next_state = robot_states.clone()
+        for i in range(robot_states.shape[0]):
+            cur_action = actions[i]
+            if self.kinematics == 'holonomic':
+                next_state[i, :, 0] = next_state[i, :, 0] + cur_action.vx * self.time_step
+                next_state[i, :, 1] = next_state[i, :, 1] + cur_action.vy * self.time_step
+                next_state[i, :, 2] = cur_action.vx
+                next_state[i, :, 3] = cur_action.vy
+            else:
+                next_state[i, :, 7] = next_state[i, :, 7] + cur_action.r
+                next_state[i, :, 0] = next_state[i, :, 0] + np.cos(next_state[i, :, 7]) * cur_action.v * self.time_step
+                next_state[i, :, 1] = next_state[i, :, 1] + np.sin(next_state[i, :, 7]) * cur_action.v * self.time_step
+                next_state[i, :, 2] = np.cos(next_state[i, :, 7]) * cur_action.v
+                next_state[i, :, 3] = np.sin(next_state[i, :, 7]) * cur_action.v
         return next_state.unsqueeze(0).unsqueeze(0)
 
 
