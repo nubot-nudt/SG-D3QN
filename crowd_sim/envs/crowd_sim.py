@@ -183,7 +183,7 @@ class CrowdSim(gym.Env):
         self.global_time = 0
 
         base_seed = {'train': self.case_capacity['val'] + self.case_capacity['test'],
-                     'val': 0, 'test': self.case_capacity['val']}
+                     'val': 0, 'test': self.case_capacity['val']+1000}
 
         self.robot.set(0, -self.circle_radius, 0, self.circle_radius, 0, 0, np.pi / 2)
         if self.case_counter[phase] >= 0:
@@ -336,7 +336,8 @@ class CrowdSim(gym.Env):
             reward = 0
             done = False
             info = Nothing()
-        reward = reward+reward_goal
+        reward = reward
+        # +reward_goal
         reward = reward * 100
 
         if update:

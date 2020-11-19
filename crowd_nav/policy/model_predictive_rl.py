@@ -778,10 +778,11 @@ class ModelPredictiveRL2(Policy):
             reward = 1
         elif dmin < 0.2:
             # adjust the reward based on FPS
-            reward = (dmin - 0.2) * 0.5 * self.time_step
+            reward = (dmin - 0.2) * 2 * self.time_step
         else:
             reward = 0
-        reward = reward + reward_goal
+        reward = reward
+        # + reward_goal
         return reward
 
     def transform(self, state):
