@@ -324,7 +324,7 @@ class ModelPredictiveRL(Policy):
             reward = 1
         elif dmin < 0.2:
             # adjust the reward based on FPS
-            reward = (dmin - 0.2) * 2 * 0.5
+            reward = (dmin - 0.2) * 2 * self.time_step
             # self.time_step * 0.5
         else:
             reward = 0

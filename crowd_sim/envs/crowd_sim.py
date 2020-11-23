@@ -336,8 +336,7 @@ class CrowdSim(gym.Env):
             reward = 0
             done = False
             info = Nothing()
-        reward = reward
-        # +reward_goal
+        reward = reward + reward_goal
         reward = reward * 100
 
         if update:
