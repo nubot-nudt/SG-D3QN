@@ -300,7 +300,7 @@ class ModelPredictiveRL(Policy):
         cur_position = np.array((robot_state.px, robot_state.py))
         end_position = np.array((next_robot_state.px, next_robot_state.py))
         goal_position = np.array((robot_state.gx, robot_state.gy))
-        reward_goal = 0.02 * (norm(cur_position - goal_position) - norm(end_position - goal_position))
+        reward_goal = 0.002 * (norm(cur_position - goal_position) - norm(end_position - goal_position))
         # check if reaching the goal
         reaching_goal = norm(end_position - np.array([robot_state.gx, robot_state.gy])) < robot_state.radius
         dmin = float('inf')
