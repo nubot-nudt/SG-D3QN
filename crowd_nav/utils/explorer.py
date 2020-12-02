@@ -99,7 +99,7 @@ class Explorer(object):
                      ' average return: {:.4f}'. format(phase.upper(), extra_info, success_rate, collision_rate,
                                                        avg_nav_time, sum(cumulative_rewards),
                                                        average(average_returns)))
-        if phase in ['val', 'test']:
+        if phase in ['val', 'test'] or imitation_learning:
             total_time = sum(success_times + collision_times + timeout_times)
             logging.info('Frequency of being in danger: %.2f and average min separate distance in danger: %.2f',
                          discomfort / total_time, average(min_dist))
