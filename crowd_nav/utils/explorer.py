@@ -100,7 +100,7 @@ class Explorer(object):
                                                        avg_nav_time, sum(cumulative_rewards),
                                                        average(average_returns)))
         if phase in ['val', 'test'] or imitation_learning:
-            total_time = sum(success_times + collision_times + timeout_times)
+            total_time = sum(success_times + collision_times + timeout_times) * self.robot.time_step
             logging.info('Frequency of being in danger: %.2f and average min separate distance in danger: %.2f',
                          discomfort / total_time, average(min_dist))
 
