@@ -200,7 +200,7 @@ class ModelPredictiveRL(Policy):
         max_action = None
         origin_max_value = float('-inf')
         state_tensor = state.to_tensor(add_batch_size=True, device=self.device)
-        max_value, max_action_index, max_traj = self.V_planning(state_tensor, 2, 5)
+        max_value, max_action_index, max_traj = self.V_planning(state_tensor, self.planning_depth, self.planning_width)
         if max_value[0] > origin_max_value:
             max_action = self.action_space[max_action_index[0]]
         if max_action is None:
@@ -221,7 +221,7 @@ class ModelPredictiveRL(Policy):
         robot_state_batch = state[0]
         human_state_batch = state[1]
         if depth == 0:
-            q_value = torch.Tensor(self.value_estimator(state).squeeze())
+            q_value = torch.Tensor(self.value_estimator(state))
             max_action_value, max_action_indexes = torch.max(q_value, dim=1)
             trajs = []
             for i in range(robot_state_batch.shape[0]):
