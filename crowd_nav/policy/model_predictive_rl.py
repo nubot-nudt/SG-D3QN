@@ -258,7 +258,8 @@ class ModelPredictiveRL(Policy):
             width = 1
         next_values, next_action_indexes, next_trajs = self.V_planning(next_state_batch, depth-1, width)
         next_values = next_values.view(state[0].shape[0], width)
-        returns = reward_est + self.get_normalized_gamma()*next_values
+        returns = (reward_est + self.get_normalized_gamma()*next_values + max_action_value) / (depth + 1)
+
         max_action_return, max_action_index = torch.max(returns, dim=1)
         trajs = []
         max_returns = []
