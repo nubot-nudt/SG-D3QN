@@ -181,9 +181,11 @@ class CrowdSim(gym.Env):
         if test_case is not None:
             self.case_counter[phase] = test_case
         self.global_time = 0
-
-        base_seed = {'train': self.case_capacity['val'] + self.case_capacity['test'],
-                     'val': 0, 'test': self.case_capacity['val']+1000}
+        train_seed_begin = [0, 10, 100, 1000, 10000]
+        val_seed_begin = [0, 10, 100, 1000, 10000]
+        test_seed_begin = [0, 10, 100, 1000, 10000]
+        base_seed = {'train': self.case_capacity['val'] + self.case_capacity['test'] + train_seed_begin[0],
+                     'val': 0 + val_seed_begin[0], 'test': self.case_capacity['val']+test_seed_begin[0]}
 
         self.robot.set(0, -self.circle_radius, 0, self.circle_radius, 0, 0, np.pi / 2)
         if self.case_counter[phase] >= 0:
