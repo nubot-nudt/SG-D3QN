@@ -67,6 +67,7 @@ class CrowdSim(gym.Env):
         self.panel_width = 10
         self.panel_height = 10
         self.panel_scale = 1
+        self.random_seed = 0
         self.test_scene_seeds = []
         self.dynamic_human_num = []
         self.human_starts = []
@@ -119,7 +120,6 @@ class CrowdSim(gym.Env):
             human = Human(self.config, 'humans')
         if self.randomize_attributes:
             human.sample_random_attributes()
-
         if self.current_scenario == 'circle_crossing':
             while True:
                 angle = np.random.random() * np.pi * 2
@@ -184,17 +184,21 @@ class CrowdSim(gym.Env):
         train_seed_begin = [0, 10, 100, 1000, 10000]
         val_seed_begin = [0, 10, 100, 1000, 10000]
         test_seed_begin = [0, 10, 100, 1000, 10000]
-        base_seed = {'train': self.case_capacity['val'] + self.case_capacity['test'] + train_seed_begin[0],
-                     'val': 0 + val_seed_begin[0], 'test': self.case_capacity['val']+test_seed_begin[0]}
+        base_seed = {'train': self.case_capacity['val'] + self.case_capacity['test'] + train_seed_begin[1],
+                     'val': 0 + val_seed_begin[1], 'test': self.case_capacity['val']+test_seed_begin[2]+1000}
 
         self.robot.set(0, -self.circle_radius, 0, self.circle_radius, 0, 0, np.pi / 2)
+        self.random_seed = base_seed[phase] + self.case_counter[phase]
+        np.random.seed(self.random_seed)
         if self.case_counter[phase] >= 0:
-            np.random.seed(base_seed[phase] + self.case_counter[phase])
-            random.seed(base_seed[phase] + self.case_counter[phase])
+            # np.random.seed(base_seed[phase] + self.case_counter[phase])
+            # random.seed(base_seed[phase] + self.case_counter[phase])
+            # random.seed(2100)
+
             if phase == 'test':
                 logging.debug('current test seed is:{}'.format(base_seed[phase] + self.case_counter[phase]))
+                # print('current test seed is:{}'.format(base_seed[phase] + self.case_counter[phase]))
             if not self.robot.policy.multiagent_training and phase in ['train', 'val']:
-                # only CADRL trains in circle crossing simulation
                 human_num = 1
                 self.current_scenario = 'circle_crossing'
             else:

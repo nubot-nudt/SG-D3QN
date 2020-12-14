@@ -16,7 +16,7 @@ class BaseEnvConfig(object):
     env.time_limit = 30
     env.time_step = 0.25
     env.val_size = 100
-    env.test_size = 500
+    env.test_size = 200
     env.train_size = np.iinfo(np.uint32).max - 2000
     env.randomize_attributes = False
     env.robot_sensor_range = 5
@@ -32,7 +32,7 @@ class BaseEnvConfig(object):
     sim.test_scenario = 'circle_crossing'
     sim.square_width = 20
     sim.circle_radius = 4
-    sim.human_num = 5
+    sim.human_num = 10
     sim.nonstop_human = False
     sim.centralized_planning = True
 
@@ -44,7 +44,7 @@ class BaseEnvConfig(object):
     humans.sensor = 'coordinates'
 
     robot = Config()
-    robot.visible = False
+    robot.visible = True
     robot.policy = 'none'
     robot.radius = 0.3
     robot.v_pref = 1

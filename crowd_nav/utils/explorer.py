@@ -61,6 +61,8 @@ class Explorer(object):
                 collision += 1
                 collision_cases.append(i)
                 collision_times.append(self.env.global_time)
+                if phase in ['test']:
+                    print('collision happen %f', self.env.global_time)
             elif isinstance(info, Timeout):
                 timeout += 1
                 timeout_cases.append(i)
