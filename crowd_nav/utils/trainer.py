@@ -140,7 +140,9 @@ class MPRLTrainer(object):
         v_losses = 0
         s_losses = 0
         batch_count = 0
+
         for data in self.data_loader:
+            batch_num = int(self.data_loader.sampler.num_samples // self.batch_size)
             robot_states, human_states, actions, _, rewards, next_robot_states, next_human_states = data
 
             # optimize value estimator
@@ -185,7 +187,7 @@ class MPRLTrainer(object):
                 loss = self.criterion(next_human_states_est, next_human_states)
                 s_losses += loss.data.item()
             batch_count += 1
-            if batch_count > num_batches:
+            if batch_count > num_batches or batch_count == batch_num:
                 break
 
         average_v_loss = v_losses / num_batches
