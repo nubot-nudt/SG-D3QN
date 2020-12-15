@@ -330,6 +330,8 @@ class ModelPredictiveRL(Policy):
         else:
             reward = 0
         reward = reward + reward_goal
+        if collision:
+            reward = reward - 100
         reward = reward * 100
         return reward
 
