@@ -36,6 +36,10 @@ class Explorer(object):
             pbar = tqdm(total=k)
         else:
             pbar = None
+        if phase in ['test', 'val']:
+            self.robot.policy.model[2].eval()
+        else:
+            self.robot.policy.model[2].train()
 
         for i in range(k):
             ob = self.env.reset(phase)

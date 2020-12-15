@@ -99,7 +99,8 @@ class FactorizedNoisyLinear(nn.Module):
     def forward(self, x):
         self.reset_noise()
 
-        if self.is_training:
+        if self.training:
+
             epsilon_weight = self.epsilon_j.ger(self.epsilon_i)
             epsilon_bias = self.epsilon_j
             weight = self.mu_weight + self.sigma_weight.mul(autograd.Variable(epsilon_weight))
@@ -136,26 +137,19 @@ class NoisyDuelingDQN(nn.Module):
         self.feauture_layer = nn.Sequential(
             FactorizedNoisyLinear(self.input_dim, 128),
             nn.LeakyReLU(negative_slope=-0.2)
-            # nn.ReLU(),
-            # nn.Linear(128, 128),
-            # nn.ReLU()
         )
 
         self.value_stream = nn.Sequential(
             FactorizedNoisyLinear(128, 128),
             nn.LeakyReLU(negative_slope=-0.2),
-            # nn.ReLU(),
             FactorizedNoisyLinear(128, 1)
         )
 
         self.advantage_stream = nn.Sequential(
             FactorizedNoisyLinear(128, 128),
             nn.LeakyReLU(negative_slope=-0.2),
-            # nn.ReLU(),
             FactorizedNoisyLinear(128, self.output_dim)
         )
-        # for p in self.advantage_stream.parameters():
-        #     p.requires_grad = False
 
     def forward(self, state):
         features = self.feauture_layer(state)
