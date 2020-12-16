@@ -343,7 +343,7 @@ class CrowdSim(gym.Env):
             done = False
             info = Nothing()
         reward = reward + reward_goal
-        reward = reward * 100
+        reward = reward * 10
 
         if update:
             # store state, action value and attention weights

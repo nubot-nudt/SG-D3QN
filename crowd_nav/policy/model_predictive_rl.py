@@ -332,7 +332,7 @@ class ModelPredictiveRL(Policy):
         reward = reward + reward_goal
         if collision:
             reward = reward - 100
-        reward = reward * 100
+        reward = reward * 10
         return reward
 
     def transform(self, state):
