@@ -106,6 +106,7 @@ def main(args):
     robot.print_info()
 
     if args.visualize:
+        policy.model[2].eval()
         rewards = []
         ob = env.reset(args.phase, args.test_case)
         done = False
