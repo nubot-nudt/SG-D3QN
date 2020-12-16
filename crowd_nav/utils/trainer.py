@@ -140,7 +140,8 @@ class MPRLTrainer(object):
         v_losses = 0
         s_losses = 0
         batch_count = 0
-
+        self.target_model.value_network.eval()
+        self.value_estimator.value_network.eval()
         for data in self.data_loader:
             batch_num = int(self.data_loader.sampler.num_samples // self.batch_size)
             robot_states, human_states, actions, _, rewards, next_robot_states, next_human_states = data
@@ -195,7 +196,7 @@ class MPRLTrainer(object):
         logging.info('Average loss : %.2E, %.2E', average_v_loss, average_s_loss)
         self.writer.add_scalar('RL/average_v_loss', average_v_loss, episode)
         self.writer.add_scalar('RL/average_s_loss', average_s_loss, episode)
-
+        self.value_estimator.value_network.train()
         return average_v_loss, average_s_loss
 
 
