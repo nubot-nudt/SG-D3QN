@@ -202,7 +202,10 @@ class ModelPredictiveRL(Policy):
         state_tensor = state.to_tensor(add_batch_size=True, device=self.device)
         probability = np.random.random()
         if self.phase == 'train' and probability < self.epsilon:
-            max_action = self.action_space[np.random.choice(len(self.action_space))]
+            max_action_index = np.random.choice(len(self.action_space))
+            max_action = self.action_space[max_action_index]
+            self.last_state = self.transform(state)
+            return max_action, max_action_index
         else:
             max_value, max_action_index, max_traj = self.V_planning(state_tensor, self.planning_depth, self.planning_width)
             if max_value[0] > origin_max_value:
