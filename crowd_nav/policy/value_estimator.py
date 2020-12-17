@@ -75,8 +75,8 @@ class ValueEstimator2(nn.Module):
         self.graph_model = graph_model
         # self.value_network = mlp(config.gcn.X_dim, config.model_predictive_rl.value_network_dims)
         # self.value_network = DQN(config.gcn.X_dim, 25)
-        # self.value_network = DuelingDQN(config.gcn.X_dim, 25)
-        self.value_network = NoisyDuelingDQN(config.gcn.X_dim, self.action_num)
+        self.value_network = DuelingDQN(config.gcn.X_dim, self.action_num)
+        # self.value_network = NoisyDuelingDQN(config.gcn.X_dim, self.action_num)
     def forward(self, state):
         """ Embed state into a latent space. Take the first row of the feature matrix as state representation.
         """
