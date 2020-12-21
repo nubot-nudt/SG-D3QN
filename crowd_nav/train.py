@@ -139,13 +139,13 @@ def main(args):
     explorer = Explorer(env, robot, device, writer, memory, policy.gamma, target_policy=policy)
     policy.save_model(in_weight_file)
     # imitation learning
-    # if args.resume:
-    #     if not os.path.exists(rl_weight_file):
-    #         logging.error('RL weights does not exist')
-    #     policy.load_state_dict(torch.load(rl_weight_file))
-    #     model = policy.get_model()
-    #     rl_weight_file = os.path.join(args.output_dir, 'resumed_rl_model.pth')
-    #     logging.info('Load reinforcement learning trained weights. Resume training')
+    if args.resume:
+        if not os.path.exists(rl_weight_file):
+            logging.error('RL weights does not exist')
+        policy.load_state_dict(torch.load(rl_weight_file))
+        model = policy.get_model()
+        rl_weight_file = os.path.join(args.output_dir, 'resumed_rl_model.pth')
+        logging.info('Load reinforcement learning trained weights. Resume training')
     # elif os.path.exists(il_weight_file):
     #     policy.load_state_dict(torch.load(rl_weight_file))
     #     model = policy.get_model()
