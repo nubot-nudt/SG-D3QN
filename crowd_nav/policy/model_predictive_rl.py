@@ -44,6 +44,7 @@ class ModelPredictiveRL(Policy):
         self.sparse_rotation_samples = 8
         self.action_group_index = []
         self.traj = None
+        self.count=0
 
     def configure(self, config, device):
         self.set_common_parameters(config)
@@ -188,6 +189,7 @@ class ModelPredictiveRL(Policy):
         The input to the value network is always of shape (batch_size, # humans, rotated joint state length)
 
         """
+        self.count=self.count+1
         if self.phase is None or self.device is None:
             raise AttributeError('Phase, device attributes have to be set!')
         if self.phase == 'train' and self.epsilon is None:
@@ -262,8 +264,10 @@ class ModelPredictiveRL(Policy):
                     tensor_to_joint_state(cur_state), tensor_to_joint_state((next_robot_state, next_human_state)))
         next_state_batch = (next_robot_state_batch, next_human_state_batch)
         if self.planning_depth - depth >= 2 and self.planning_depth > 2:
-            width = 1
-        next_values, next_action_indexes, next_trajs = self.V_planning(next_state_batch, depth-1, width)
+            cur_width = 1
+        else:
+            cur_width = int(self.planning_width/2)
+        next_values, next_action_indexes, next_trajs = self.V_planning(next_state_batch, depth-1, cur_width)
         next_values = next_values.view(state[0].shape[0], width)
         returns = (reward_est + self.get_normalized_gamma()*next_values + max_action_value) / (depth + 1)
 
@@ -308,7 +312,7 @@ class ModelPredictiveRL(Policy):
         cur_position = np.array((robot_state.px, robot_state.py))
         end_position = np.array((next_robot_state.px, next_robot_state.py))
         goal_position = np.array((robot_state.gx, robot_state.gy))
-        reward_goal = 0.02 * (norm(cur_position - goal_position) - norm(end_position - goal_position))
+        reward_goal = 0.01 * (norm(cur_position - goal_position) - norm(end_position - goal_position))
         # check if reaching the goal
         reaching_goal = norm(end_position - np.array([robot_state.gx, robot_state.gy])) < robot_state.radius
         dmin = float('inf')
@@ -332,11 +336,11 @@ class ModelPredictiveRL(Policy):
             reward = 1
         elif dmin < 0.2:
             # adjust the reward based on FPS
-            reward = (dmin - 0.2) * 0.5 * self.time_step
+            reward = (dmin - 0.2) * 0.25
             # self.time_step * 0.5
         else:
             reward = 0
-        reward = reward + reward_goal
+        reward = reward + reward_goal - 0.005
         if collision:
             reward = reward - 100
         reward = reward * 10
