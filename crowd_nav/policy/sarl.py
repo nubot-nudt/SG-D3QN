@@ -8,7 +8,7 @@ from crowd_nav.policy.multi_human_rl import MultiHumanRL
 
 class ValueNetwork(nn.Module):
     def __init__(self, input_dim, self_state_dim, mlp1_dims, mlp2_dims, mlp3_dims, attention_dims, with_global_state,
-                 cell_size, cell_num):
+                 cell_size, cell_num, device):
         super().__init__()
         self.self_state_dim = self_state_dim
         self.global_state_dim = mlp1_dims[-1]
@@ -24,6 +24,7 @@ class ValueNetwork(nn.Module):
         mlp3_input_dim = mlp2_dims[-1] + self.self_state_dim
         self.mlp3 = mlp(mlp3_input_dim, mlp3_dims)
         self.attention_weights = None
+        self.device = device
 
     def forward(self, state_input):
         """
@@ -79,10 +80,11 @@ class SARL(MultiHumanRL):
         self.name = 'SARL'
         self.attention_weights = None
 
-    def configure(self, config):
+    def configure(self, config, device):
         self.set_common_parameters(config)
         self.with_om = config.sarl.with_om
         self.multiagent_training = config.sarl.multiagent_training
+        self.device = device
 
         mlp1_dims = config.sarl.mlp1_dims
         mlp2_dims = config.sarl.mlp2_dims
@@ -90,7 +92,7 @@ class SARL(MultiHumanRL):
         attention_dims = config.sarl.attention_dims
         with_global_state = config.sarl.with_global_state
         self.model = ValueNetwork(self.input_dim(), self.self_state_dim, mlp1_dims, mlp2_dims, mlp3_dims,
-                                  attention_dims, with_global_state, self.cell_size, self.cell_num)
+                                  attention_dims, with_global_state, self.cell_size, self.cell_num, self.device)
         if self.with_om:
             self.name = 'OM-SARL'
         logging.info('Policy: {} {} global state'.format(self.name, 'w/' if with_global_state else 'w/o'))

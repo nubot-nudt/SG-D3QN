@@ -60,6 +60,7 @@ class CADRL(Policy):
         self.self_state_dim = 6
         self.human_state_dim = 7
         self.joint_state_dim = self.self_state_dim + self.human_state_dim
+        self.action_group_index = []
 
     def configure(self, config):
         self.set_common_parameters(config)
@@ -93,19 +94,23 @@ class CADRL(Policy):
         Action space consists of 25 uniformly sampled actions in permitted range and 25 randomly sampled actions.
         """
         holonomic = True if self.kinematics == 'holonomic' else False
-        speeds = [(np.exp((i + 1) / self.speed_samples) - 1) / (np.e - 1) * v_pref for i in range(self.speed_samples)]
+        # speeds = [(np.exp((i + 1) / self.speed_samples) - 1) / (np.e - 1) * v_pref for i in range(self.speed_samples)]
+        speeds = [(i + 1) / self.speed_samples * v_pref for i in range(self.speed_samples)]
         if holonomic:
             rotations = np.linspace(0, 2 * np.pi, self.rotation_samples, endpoint=False)
         else:
             rotations = np.linspace(-self.rotation_constraint, self.rotation_constraint, self.rotation_samples)
 
         action_space = [ActionXY(0, 0) if holonomic else ActionRot(0, 0)]
-        for rotation, speed in itertools.product(rotations, speeds):
-            if holonomic:
-                action_space.append(ActionXY(speed * np.cos(rotation), speed * np.sin(rotation)))
-            else:
-                action_space.append(ActionRot(speed, rotation))
-
+        self.action_group_index.append(0)
+        for j, speed in enumerate(speeds):
+            for i, rotation in enumerate(rotations):
+                action_index = j * self.rotation_samples + i + 1
+                self.action_group_index.append(action_index)
+                if holonomic:
+                    action_space.append(ActionXY(speed * np.cos(rotation), speed * np.sin(rotation)))
+                else:
+                    action_space.append(ActionRot(speed, rotation))
         self.speeds = speeds
         self.rotations = rotations
         self.action_space = action_space

@@ -409,7 +409,7 @@ class VNRLTrainer(object):
     def update_target_model(self, target_model):
         self.target_model = copy.deepcopy(target_model)
 
-    def set_learning_rate(self, learning_rate):
+    def set_rl_learning_rate(self, learning_rate):
         if self.optimizer_str == 'Adam':
             self.optimizer = optim.Adam(filter(lambda p: p.requires_grad, self.model.parameters()), lr=learning_rate)
         elif self.optimizer_str == 'SGD':
