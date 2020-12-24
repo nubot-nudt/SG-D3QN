@@ -11,85 +11,6 @@ class MultiHumanRL(CADRL):
     def __init__(self):
         super().__init__()
 
-    # def predict(self, state):
-    #     """
-    #     A base class for all methods that takes pairwise joint state as input to value network.
-    #     The input to the value network is always of shape (batch_size, # humans, rotated joint state length)
-    #
-    #     """
-    #     if self.phase is None or self.device is None:
-    #         raise AttributeError('Phase, device attributes have to be set!')
-    #     if self.phase == 'train' and self.epsilon is None:
-    #         raise AttributeError('Epsilon attribute has to be set in training phase')
-    #
-    #     if self.reach_destination(state):
-    #         return ActionXY(0, 0) if self.kinematics == 'holonomic' else ActionRot(0, 0)
-    #     if self.action_space is None:
-    #         self.build_action_space(state.robot_state.v_pref)
-    #
-    #     probability = np.random.random()
-    #     if self.phase == 'train' and probability < self.epsilon:
-    #         max_action_index = np.random.choice(len(self.action_space))
-    #         max_action = self.action_space[max_action_index]
-    #     else:
-    #         max_action = None
-    #         max_value = float('-inf')
-    #         max_traj = None
-    #
-    #         if self.do_action_clip:
-    #             state_tensor = state.to_tensor(add_batch_size=True, device=self.device)
-    #             action_space_clipped = self.action_clip(state_tensor, self.action_space, self.planning_width)
-    #         else:
-    #             action_space_clipped = self.action_space
-    #         state_tensor = state.to_tensor(add_batch_size=True, device=self.device)
-    #         actions = []
-    #         actions.append(ActionXY(0, 0))
-    #         pre_next_state = self.state_predictor(state_tensor, actions)
-    #         next_robot_states = None
-    #         next_human_states = None
-    #         rewards = []
-    #         for action in action_space_clipped:
-    #             next_robot_state = self.compute_next_robot_state(state_tensor[0], action)
-    #             next_human_state = pre_next_state[1]
-    #             if next_robot_states is None and next_human_states is None:
-    #                 next_robot_states = next_robot_state
-    #                 next_human_states = next_human_state
-    #             else:
-    #                 next_robot_states = torch.cat((next_robot_states, next_robot_state), dim=0)
-    #                 next_human_states = torch.cat((next_human_states, next_human_state), dim=0)
-    #             next_state = tensor_to_joint_state((next_robot_state, next_human_state))
-    #             reward_est = estimate_reward_on_predictor(state, next_state)
-    #             # reward_est = self.estimate_reward(state, action)
-    #             rewards.append(reward_est)
-    #             # next_state = self.state_predictor(state_tensor, action)
-    #         rewards_tensor = torch.tensor(rewards).to(self.device)
-    #         next_state_batch = (next_robot_states, next_human_states)
-    #         next_value = self.value_estimator(next_state_batch).squeeze(1)
-    #         value = rewards_tensor + next_value * self.get_normalized_gamma()
-    #         max_action_index = value.argmax()
-    #         best_value = value[max_action_index]
-    #         if best_value > max_value:
-    #             max_action = action_space_clipped[max_action_index]
-    #
-    #             next_state = tensor_to_joint_state((next_robot_states[max_action_index], next_human_states[max_action_index]))
-    #             max_next_traj = [(next_state.to_tensor(), None, None)]
-    #             # max_next_return, max_next_traj = self.V_planning(next_state, self.planning_depth, self.planning_width)
-    #             # reward_est = self.estimate_reward(state, action)
-    #             # value = reward_est + self.get_normalized_gamma() * max_next_return
-    #             # if value > max_value:
-    #             #     max_value = value
-    #             #     max_action = action
-    #             max_traj = [(state_tensor, max_action, rewards[max_action_index])] + max_next_traj
-    #         if max_action is None:
-    #             raise ValueError('Value network is not well trained.')
-    #
-    #     if self.phase == 'train':
-    #         self.last_state = self.transform(state)
-    #     else:
-    #         self.traj = max_traj
-    #
-    #     return max_action, int(max_action_index)
-
     def predict(self, state):
         """
         A base class for all methods that takes pairwise joint state as input to value network.
@@ -120,7 +41,9 @@ class MultiHumanRL(CADRL):
             self.action_values = list()
             max_value = float('-inf')
             max_action = None
+            rewards = []
             action_index = 0
+            batch_input_tensor = None
             for action in self.action_space:
                 next_robot_state = self.propagate(state.robot_state, action)
                 if self.query_env:
@@ -130,6 +53,7 @@ class MultiHumanRL(CADRL):
                                          for human_state in state.human_states]
                     next_state = JointState(next_robot_state, next_human_states)
                     reward = estimate_reward_on_predictor(state, next_state)
+                    rewards.append(reward)
                 batch_next_states = torch.cat([torch.Tensor([next_robot_state + next_human_state]).to(self.device)
                                               for next_human_state in next_human_states], dim=0)
                 rotated_batch_input = self.rotate(batch_next_states).unsqueeze(0)
@@ -137,17 +61,18 @@ class MultiHumanRL(CADRL):
                     if occupancy_maps is None:
                         occupancy_maps = self.build_occupancy_maps(next_human_states).unsqueeze(0)
                     rotated_batch_input = torch.cat([rotated_batch_input, occupancy_maps], dim=2)
-                # VALUE UPDATE
-                next_state_value = self.model(rotated_batch_input).data.item()
-                value = reward + pow(self.gamma, self.time_step * state.robot_state.v_pref) * next_state_value
-                self.action_values.append(value)
-                if value > max_value:
-                    max_value = value
-                    max_action = action
-                    max_action_index = action_index
-                    if hasattr(self, 'attention_weights'):
-                        self.attention_weights = self.model.attention_weights
-                action_index = action_index + 1
+                if batch_input_tensor is None:
+                    batch_input_tensor = rotated_batch_input
+                else:
+                    batch_input_tensor = torch.cat([batch_input_tensor, rotated_batch_input], dim=0)
+            next_value = self.model(batch_input_tensor).squeeze(1)
+            rewards_tensor = torch.tensor(rewards).to(self.device)
+            value = rewards_tensor + next_value * 0.95
+            max_action_index = value.argmax()
+            best_value = value[max_action_index]
+            if best_value > max_value:
+                max_action = self.action_space[max_action_index]
+
             if max_action is None:
                 raise ValueError('Value network is not well trained. ')
 
@@ -156,30 +81,30 @@ class MultiHumanRL(CADRL):
 
         return max_action, int(max_action_index)
 
-    # def compute_reward(self, nav, humans):
-    #     # collision detection
-    #     dmin = float('inf')
-    #     collision = False
-    #     for i, human in enumerate(humans):
-    #         dist = np.linalg.norm((nav.px - human.px, nav.py - human.py)) - nav.radius - human.radius
-    #         if dist < 0:
-    #             collision = True
-    #             break
-    #         if dist < dmin:
-    #             dmin = dist
-    #
-    #     # check if reaching the goal
-    #     reaching_goal = np.linalg.norm((nav.px - nav.gx, nav.py - nav.gy)) < nav.radius
-    #     if collision:
-    #         reward = -0.25
-    #     elif reaching_goal:
-    #         reward = 1
-    #     elif dmin < 0.2:
-    #         reward = (dmin - 0.2) * 0.5 * self.time_step
-    #     else:
-    #         reward = 0
-    #
-    #     return reward
+    def compute_reward(self, nav, humans):
+        # collision detection
+        dmin = float('inf')
+        collision = False
+        for i, human in enumerate(humans):
+            dist = np.linalg.norm((nav.px - human.px, nav.py - human.py)) - nav.radius - human.radius
+            if dist < 0:
+                collision = True
+                break
+            if dist < dmin:
+                dmin = dist
+
+        # check if reaching the goal
+        reaching_goal = np.linalg.norm((nav.px - nav.gx, nav.py - nav.gy)) < nav.radius
+        if collision:
+            reward = -0.25
+        elif reaching_goal:
+            reward = 1
+        elif dmin < 0.2:
+            reward = (dmin - 0.2) * 0.5 * self.time_step
+        else:
+            reward = 0
+
+        return reward
 
     def transform(self, state):
         """
