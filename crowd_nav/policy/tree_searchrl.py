@@ -336,7 +336,7 @@ class TreeSearchRL(Policy):
             reward = 1
         elif dmin < 0.2:
             # adjust the reward based on FPS
-            reward = (dmin - 0.2) * 0.25
+            reward = (dmin - 0.2) * 0.25 * 0.5
             # self.time_step * 0.5
         else:
             reward = 0

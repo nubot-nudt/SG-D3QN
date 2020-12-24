@@ -334,7 +334,7 @@ class CrowdSim(gym.Env):
             info = ReachGoal()
         elif dmin < self.discomfort_dist:
             # adjust the reward based on FPS
-            reward = (dmin - self.discomfort_dist) * 0.5 * 0.5
+            reward = (dmin - self.discomfort_dist) * 0.25 * 0.5
             # * self.discomfort_penalty_factor
             done = False
             info = Discomfort(dmin)

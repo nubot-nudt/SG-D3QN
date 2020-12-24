@@ -308,7 +308,8 @@ class ModelPredictiveRL(Policy):
 
         for action in action_space_clipped:
             next_state_est = self.state_predictor(state, action)
-            reward_est = self.estimate_reward(state, action)
+            # reward_est = self.estimate_reward(state, action)
+            reward_est = self.estimate_reward_on_predictor(state, next_state_est)
             next_value, next_traj = self.V_planning(next_state_est, depth - 1, self.planning_width)
             return_value = current_state_value / depth + (depth - 1) / depth * (self.get_normalized_gamma() * next_value + reward_est)
 
@@ -418,7 +419,7 @@ class ModelPredictiveRL(Policy):
             reward = 1
         elif dmin < 0.2:
             # adjust the reward based on FPS
-            reward = (dmin - 0.2) * 0.25
+            reward = (dmin - 0.2) * 0.25 * 0.5
             # self.time_step * 0.5
         else:
             reward = 0
