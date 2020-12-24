@@ -344,7 +344,7 @@ class MPRLTrainer(object):
             outputs = self.value_estimator((robot_states, human_states))
             gamma_bar = pow(self.gamma, self.time_step * self.v_pref)
             next_value = self.target_model((next_robot_states, next_human_states))
-            target_values = rewards + next_value * 0.95
+            target_values = rewards + next_value * pow(self.gamma, self.time_step * self.v_pref)
             # values = values.to(self.device)
             loss = self.criterion(outputs, target_values)
             loss.backward()
