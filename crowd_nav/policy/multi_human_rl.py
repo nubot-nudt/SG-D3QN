@@ -67,7 +67,7 @@ class MultiHumanRL(CADRL):
                     batch_input_tensor = torch.cat([batch_input_tensor, rotated_batch_input], dim=0)
             next_value = self.model(batch_input_tensor).squeeze(1)
             rewards_tensor = torch.tensor(rewards).to(self.device)
-            value = rewards_tensor + next_value * 0.95
+            value = rewards_tensor + next_value * pow(self.gamma, self.time_step * state.robot_state.v_pref)
             max_action_index = value.argmax()
             best_value = value[max_action_index]
             if best_value > max_value:
