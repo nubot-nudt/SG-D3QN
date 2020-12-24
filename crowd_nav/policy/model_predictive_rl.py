@@ -6,11 +6,11 @@ import itertools
 from crowd_sim.envs.policy.policy import Policy
 from crowd_sim.envs.utils.action import ActionRot, ActionXY
 from crowd_sim.envs.utils.state import tensor_to_joint_state
-from crowd_sim.envs.utils.utils import point_to_segment_dist
+from crowd_nav.policy.reward_estimate import estimate_reward_on_predictor
+from crowd_nav.policy.value_estimator import ValueEstimator
 from crowd_nav.policy.state_predictor import StatePredictor, LinearStatePredictor
 from crowd_nav.policy.graph_model import RGL
-from crowd_nav.policy.value_estimator import ValueEstimator
-from crowd_nav.policy.reward_estimate import estimate_reward_on_predictor
+
 
 class ModelPredictiveRL(Policy):
     def __init__(self):
@@ -199,7 +199,7 @@ class ModelPredictiveRL(Policy):
 
         probability = np.random.random()
         if self.phase == 'train' and probability < self.epsilon:
-            max_action_index  = np.random.choice(len(self.action_space))
+            max_action_index = np.random.choice(len(self.action_space))
             max_action = self.action_space[max_action_index]
         else:
             max_action = None

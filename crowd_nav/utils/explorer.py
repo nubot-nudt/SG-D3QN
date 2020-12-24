@@ -15,6 +15,7 @@ class Explorer(object):
         self.gamma = gamma
         self.target_policy = target_policy
         self.statistics = None
+        self.use_noisy_net = False
 
     # @profile
     def run_k_episodes(self, k, phase, update_memory=False, imitation_learning=False, episode=None, epoch=None,
@@ -36,10 +37,11 @@ class Explorer(object):
             pbar = tqdm(total=k)
         else:
             pbar = None
-        if phase in ['test', 'val']:
-            self.robot.policy.model[2].eval()
-        else:
-            self.robot.policy.model[2].train()
+        if self.robot.policy.name in ['model_predictive_rl', 'tree_search_rl']:
+            if phase in ['test', 'val'] and self.use_noisy_net:
+                self.robot.policy.model[2].eval()
+            else:
+                self.robot.policy.model[2].train()
 
         for i in range(k):
             ob = self.env.reset(phase)
