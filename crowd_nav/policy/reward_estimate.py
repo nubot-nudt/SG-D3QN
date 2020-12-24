@@ -2,7 +2,7 @@ import numpy as np
 from numpy.linalg import norm
 from crowd_sim.envs.utils.state import tensor_to_joint_state
 from crowd_sim.envs.utils.utils import point_to_segment_dist
-def estimate_reward_on_predictor(self, state, next_state):
+def estimate_reward_on_predictor(state, next_state):
     """ If the time step is small enough, it's okay to model agent as linear movement during this period
     """
     # collision detection

@@ -228,7 +228,7 @@ class ModelPredictiveRL(Policy):
                     next_robot_states = torch.cat((next_robot_states, next_robot_state), dim=0)
                     next_human_states = torch.cat((next_human_states, next_human_state), dim=0)
                 next_state = tensor_to_joint_state((next_robot_state, next_human_state))
-                reward_est = self.estimate_reward_on_predictor(state, next_state)
+                reward_est = estimate_reward_on_predictor(state, next_state)
                 # reward_est = self.estimate_reward(state, action)
                 rewards.append(reward_est)
                 # next_state = self.state_predictor(state_tensor, action)
