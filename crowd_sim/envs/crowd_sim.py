@@ -115,12 +115,12 @@ class CrowdSim(gym.Env):
     def set_robot(self, robot):
         self.robot = robot
 
-    def generate_human(self, human=None):
+    def generate_human(self, human=None, non_stop=False, square=False):
         if human is None:
             human = Human(self.config, 'humans')
         if self.randomize_attributes:
             human.sample_random_attributes()
-        if self.current_scenario == 'circle_crossing':
+        if square is False and non_stop is False:
             while True:
                 angle = np.random.random() * np.pi * 2
                 # add some noise to simulate all the possible cases robot could meet with human
@@ -138,13 +138,37 @@ class CrowdSim(gym.Env):
                 if not collide:
                     break
             human.set(px, py, -px, -py, 0, 0, 0)
+        elif square is False and non_stop is True:
+            while True:
+                angle = np.random.random() * np.pi * 2
+                # add some noise to simulate all the possible cases robot could meet with human
+                px = human.px
+                py = human.py
+                gx_noise = (np.random.random() - 0.5) * human.v_pref
+                gy_noise = (np.random.random() - 0.5) * human.v_pref
+                gx = self.circle_radius * np.cos(angle) + gx_noise
+                gy = self.circle_radius * np.sin(angle) + gy_noise
+                collide = False
+                for agent in [self.robot] + self.humans:
+                    min_dist = human.radius + agent.radius + self.discomfort_dist
+                    # if norm((px - agent.px, py - agent.py)) == 0.0:
+                    #     continue
+                    if norm((px-gx, py-gy))<1.2*self.circle_radius or norm((gx - agent.gx, gy - agent.gy))<min_dist:
+                        collide = True
+                        break
+                if not collide:
+                    break
+            human.set(px, py, gx, gy, 0, 0, 0)
 
-        elif self.current_scenario == 'square_crossing':
+        elif square is True and non_stop is False:
             if np.random.random() > 0.5:
                 sign = -1
             else:
                 sign = 1
+            count = 0
+            goal_count = 0
             while True:
+                count = count + 1
                 px = np.random.random() * self.square_width * 0.5 * sign
                 py = (np.random.random() - 0.5) * self.square_width
                 collide = False
@@ -155,11 +179,36 @@ class CrowdSim(gym.Env):
                 if not collide:
                     break
             while True:
+                goal_count = goal_count + 1
                 gx = np.random.random() * self.square_width * 0.5 * - sign
                 gy = (np.random.random() - 0.5) * self.square_width
                 collide = False
                 for agent in [self.robot] + self.humans:
                     if norm((gx - agent.gx, gy - agent.gy)) < human.radius + agent.radius + self.discomfort_dist:
+                        collide = True
+                        break
+                if not collide:
+                    break
+            human.set(px, py, gx, gy, 0, 0, 0)
+
+        elif square is True and non_stop is True:
+            if np.random.random() > 0.5:
+                sign = -1
+            else:
+                sign = 1
+            goal_count = 0
+            while True:
+                goal_count = goal_count + 1
+                px = human.px
+                py = human.py
+                gx = np.random.random() * self.square_width * 0.5 * - sign
+                gy = (np.random.random() - 0.5) * self.square_width
+                collide = False
+                for agent in [self.robot] + self.humans:
+                    min_dist = human.radius + agent.radius + self.discomfort_dist
+                    # if norm((px - agent.px, py - agent.py)) == 0.0:
+                    #     break
+                    if norm((px-gx, py-gy))<1.2*self.circle_radius or norm((gx - agent.gx, gy - agent.gy))<min_dist:
                         collide = True
                         break
                 if not collide:
@@ -205,8 +254,14 @@ class CrowdSim(gym.Env):
                 self.current_scenario = self.test_scenario
                 human_num = self.human_num
             self.humans = []
-            for _ in range(human_num):
-                self.humans.append(self.generate_human())
+            for i in range(human_num):
+                if self.current_scenario == 'circle_crossing':
+                    if human_num > 5 and i > 4:
+                        self.humans.append(self.generate_human(square=True))
+                    else:
+                        self.humans.append(self.generate_human())
+                else:
+                    self.humans.append(self.generate_human(square=True))
 
             # case_counter is always between 0 and case_size[phase]
             self.case_counter[phase] = (self.case_counter[phase] + 1) % self.case_size[phase]
@@ -365,7 +420,14 @@ class CrowdSim(gym.Env):
             for human, action in zip(self.humans, human_actions):
                 human.step(action)
                 if self.nonstop_human and human.reached_destination():
-                    self.generate_human(human)
+                    human.reach_count = human.reach_count + 1
+                    if human.reach_count == 2:
+                        if self.current_scenario == 'circle_crossing':
+                            self.generate_human(human, non_stop=True)
+                            human.reach_count = 0
+                        else:
+                            self.generate_human(human, non_stop=True, square=True)
+                            human.reach_count = 0
 
             self.global_time += self.time_step
             self.states.append([self.robot.get_full_state(), [human.get_full_state() for human in self.humans],
