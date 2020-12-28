@@ -30,10 +30,10 @@ class BaseEnvConfig(object):
     sim = Config()
     sim.train_val_scenario = 'circle_crossing'
     sim.test_scenario = 'circle_crossing'
-    sim.square_width = 20
+    sim.square_width = 10
     sim.circle_radius = 4
-    sim.human_num = 5
-    sim.nonstop_human = False
+    sim.human_num = 10
+    sim.nonstop_human = True
     sim.centralized_planning = True
 
     humans = Config()
@@ -143,7 +143,7 @@ class BaseTrainConfig(object):
     # number of batches to train at the end of training episode il_episodes
     train.train_batches = 30
     # training episodes in outer loop
-    train.train_episodes = 30000
+    train.train_episodes = 10000
     # number of episodes sampled in one training episode
     train.sample_episodes = 1
     train.target_update_interval = 500
