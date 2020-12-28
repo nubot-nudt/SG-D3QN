@@ -153,7 +153,7 @@ class CrowdSim(gym.Env):
                     min_dist = human.radius + agent.radius + self.discomfort_dist
                     # if norm((px - agent.px, py - agent.py)) == 0.0:
                     #     continue
-                    if norm((px-gx, py-gy))<1.2*self.circle_radius or norm((gx - agent.gx, gy - agent.gy))<min_dist:
+                    if norm((gx - agent.gx, gy - agent.gy)) < min_dist:
                         collide = True
                         break
                 if not collide:
@@ -165,10 +165,7 @@ class CrowdSim(gym.Env):
                 sign = -1
             else:
                 sign = 1
-            count = 0
-            goal_count = 0
             while True:
-                count = count + 1
                 px = np.random.random() * self.square_width * 0.5 * sign
                 py = (np.random.random() - 0.5) * self.square_width
                 collide = False
@@ -179,8 +176,7 @@ class CrowdSim(gym.Env):
                 if not collide:
                     break
             while True:
-                goal_count = goal_count + 1
-                gx = np.random.random() * self.square_width * 0.5 * - sign
+                gx = np.random.random() * self.square_width * 0.5 * (- sign)
                 gy = (np.random.random() - 0.5) * self.square_width
                 collide = False
                 for agent in [self.robot] + self.humans:
@@ -201,14 +197,14 @@ class CrowdSim(gym.Env):
                 goal_count = goal_count + 1
                 px = human.px
                 py = human.py
-                gx = np.random.random() * self.square_width * 0.5 * - sign
+                gx = np.random.random() * self.square_width * 0.5 * (- sign)
                 gy = (np.random.random() - 0.5) * self.square_width
                 collide = False
                 for agent in [self.robot] + self.humans:
                     min_dist = human.radius + agent.radius + self.discomfort_dist
                     # if norm((px - agent.px, py - agent.py)) == 0.0:
                     #     break
-                    if norm((px-gx, py-gy))<1.2*self.circle_radius or norm((gx - agent.gx, gy - agent.gy))<min_dist:
+                    if norm((gx - agent.gx, gy - agent.gy))<min_dist:
                         collide = True
                         break
                 if not collide:
