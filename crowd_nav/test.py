@@ -106,7 +106,8 @@ def main(args):
     robot.print_info()
 
     if args.visualize:
-        policy.model[2].eval()
+        if robot.policy.name in ['tree_search_rl']:
+            policy.model[2].eval()
         rewards = []
         ob = env.reset(args.phase, args.test_case)
         done = False
