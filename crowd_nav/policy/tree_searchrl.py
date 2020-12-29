@@ -9,7 +9,7 @@ from crowd_sim.envs.utils.state import tensor_to_joint_state
 from crowd_sim.envs.utils.utils import point_to_segment_dist
 from crowd_nav.policy.state_predictor import StatePredictor, LinearStatePredictor
 from crowd_nav.policy.graph_model import RGL
-from crowd_nav.policy.value_estimator import DQNNetwork
+from crowd_nav.policy.value_estimator import DQNNetwork, Noisy_DQNNetwork
 from crowd_nav.policy.reward_estimate import estimate_reward_on_predictor
 
 
@@ -45,6 +45,7 @@ class TreeSearchRL(Policy):
         self.sparse_rotation_samples = 8
         self.action_group_index = []
         self.traj = None
+        self.use_noisy_net = True
         self.count=0
 
     def configure(self, config, device):
@@ -68,12 +69,12 @@ class TreeSearchRL(Policy):
         else:
             if self.share_graph_model:
                 graph_model = RGL(config, self.robot_state_dim, self.human_state_dim)
-                self.value_estimator = DQNNetwork(config, graph_model)
+                self.value_estimator = Noisy_DQNNetwork(config, graph_model)
                 self.state_predictor = StatePredictor(config, graph_model, self.time_step)
                 self.model = [graph_model, self.value_estimator.value_network, self.state_predictor.human_motion_predictor]
             else:
                 graph_model1 = RGL(config, self.robot_state_dim, self.human_state_dim)
-                self.value_estimator = DQNNetwork(config, graph_model1)
+                self.value_estimator = Noisy_DQNNetwork(config, graph_model1)
                 graph_model2 = RGL(config, self.robot_state_dim, self.human_state_dim)
                 self.state_predictor = StatePredictor(config, graph_model2, self.time_step)
                 self.model = [graph_model1, graph_model2, self.value_estimator.value_network,
@@ -101,6 +102,9 @@ class TreeSearchRL(Policy):
 
     def set_epsilon(self, epsilon):
         self.epsilon = epsilon
+
+    def set_noisy_net(self, use_noisy_net):
+        self.use_noisy_net = use_noisy_net
 
     def set_time_step(self, time_step):
         self.time_step = time_step
@@ -203,7 +207,7 @@ class TreeSearchRL(Policy):
         origin_max_value = float('-inf')
         state_tensor = state.to_tensor(add_batch_size=True, device=self.device)
         probability = np.random.random()
-        if self.phase == 'train' and probability < self.epsilon:
+        if self.phase == 'train' and probability < self.epsilon and self.use_noisy_net == False:
             max_action_index = np.random.choice(len(self.action_space))
             max_action = self.action_space[max_action_index]
             self.last_state = self.transform(state)
