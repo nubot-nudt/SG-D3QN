@@ -326,6 +326,7 @@ class CrowdSim(gym.Env):
         # collision detection
         dmin = float('inf')
         collision = False
+        collision_penalty = 0.0
         for i, human in enumerate(self.humans):
             px = human.px - self.robot.px
             py = human.py - self.robot.py
@@ -342,9 +343,10 @@ class CrowdSim(gym.Env):
             if closest_dist < 0:
                 collision = True
                 logging.debug("Collision: distance between robot and p{} is {:.2E} at time {:.2E}".format(human.id, closest_dist, self.global_time))
-                break
             elif closest_dist < dmin:
                 dmin = closest_dist
+            if closest_dist < 0.2:
+                collision_penalty = collision_penalty + (closest_dist - self.discomfort_dist) * 0.25 * 0.5
 
         # collision detection between humans
         human_num = len(self.humans)
@@ -385,7 +387,7 @@ class CrowdSim(gym.Env):
             info = ReachGoal()
         elif dmin < self.discomfort_dist:
             # adjust the reward based on FPS
-            reward = (dmin - self.discomfort_dist) * 0.25 * 0.5
+            reward = collision_penalty
             # * self.discomfort_penalty_factor
             done = False
             info = Discomfort(dmin)
