@@ -16,7 +16,7 @@ class ValueEstimator(nn.Module):
         assert len(state[1].shape) == 3
 
         # only use the feature of robot node as state representation
-        state_embedding = self.graph_model(self.trans_no_rotation(state))[:, 0, :]
+        state_embedding = self.graph_model(state)[:, 0, :]
         value = self.value_network(state_embedding)
         return value
 
