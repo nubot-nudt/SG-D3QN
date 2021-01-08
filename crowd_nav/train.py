@@ -230,8 +230,8 @@ def main(args):
 
             logging.info('Train in episode %d reward in last 100 episodes %f', eps_count, reward_rec[-1])
             reward_in_last_interval = 0.0
-            min_reward = int((np.min(reward_rec) // 10)*10)
-            max_reward = int((np.max(reward_rec) // 10 + 1)*10)
+            min_reward = -20
+            max_reward = 20
             pos = np.array(range(1, len(reward_rec)+1)) * interval
             plt.plot(pos, reward_rec, color='r', marker='.', linestyle='dashed')
             plt.axis([0, eps_count, min_reward, max_reward])
@@ -272,7 +272,7 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('Parse configuration file')
     parser.add_argument('--policy', type=str, default='tree_search_rl')
-    parser.add_argument('--config', type=str, default='configs/icra_benchmark/mp_separate.py')
+    parser.add_argument('--config', type=str, default='configs/icra_benchmark/ts_separate.py')
     parser.add_argument('--output_dir', type=str, default='data/output1')
     parser.add_argument('--overwrite', default=False, action='store_true')
     parser.add_argument('--weights', type=str)
