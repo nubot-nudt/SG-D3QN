@@ -14,13 +14,13 @@ class PolicyConfig(BasePolicyConfig):
         # gcn
         self.gcn.num_layer = 2
         self.gcn.X_dim = 32
-        self.gcn.similarity_function = 'embedded_gaussian'
+        self.gcn.similarity_function = 'concatenation'
         self.gcn.layerwise_graph = False
         self.gcn.skip_connection = True
 
         self.model_predictive_rl = Config()
         self.model_predictive_rl.linear_state_predictor = False
-        self.model_predictive_rl.planning_depth = 0
+        self.model_predictive_rl.planning_depth = 1
         self.model_predictive_rl.planning_width = 10
         self.model_predictive_rl.do_action_clip = False
         self.model_predictive_rl.motion_predictor_dims = [64, 5]
