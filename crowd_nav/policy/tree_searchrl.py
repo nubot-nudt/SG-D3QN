@@ -45,7 +45,7 @@ class TreeSearchRL(Policy):
         self.sparse_rotation_samples = 8
         self.action_group_index = []
         self.traj = None
-        self.use_noisy_net = True
+        self.use_noisy_net = False
         self.count=0
 
     def configure(self, config, device):
@@ -69,12 +69,12 @@ class TreeSearchRL(Policy):
         else:
             if self.share_graph_model:
                 graph_model = RGL(config, self.robot_state_dim, self.human_state_dim)
-                self.value_estimator = Noisy_DQNNetwork(config, graph_model)
+                self.value_estimator = DQNNetwork(config, graph_model)
                 self.state_predictor = StatePredictor(config, graph_model, self.time_step)
                 self.model = [graph_model, self.value_estimator.value_network, self.state_predictor.human_motion_predictor]
             else:
                 graph_model1 = RGL(config, self.robot_state_dim, self.human_state_dim)
-                self.value_estimator = Noisy_DQNNetwork(config, graph_model1)
+                self.value_estimator = DQNNetwork(config, graph_model1)
                 graph_model2 = RGL(config, self.robot_state_dim, self.human_state_dim)
                 self.state_predictor = StatePredictor(config, graph_model2, self.time_step)
                 self.model = [graph_model1, graph_model2, self.value_estimator.value_network,
