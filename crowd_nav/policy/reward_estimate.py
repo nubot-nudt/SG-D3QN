@@ -45,7 +45,7 @@ def estimate_reward_on_predictor(state, next_state):
     else:
         reward = 0
     reward = reward + reward_goal
-    if collision:
-        reward = reward - 100
+    # if collision:
+        # reward = reward - 100
     reward = reward * 10
     return reward

@@ -207,7 +207,7 @@ class TreeSearchRL(Policy):
         origin_max_value = float('-inf')
         state_tensor = state.to_tensor(add_batch_size=True, device=self.device)
         probability = np.random.random()
-        if self.phase == 'train' and probability < self.epsilon and self.use_noisy_net == False:
+        if self.phase == 'train' and probability < self.epsilon and self.use_noisy_net is False:
             max_action_index = np.random.choice(len(self.action_space))
             max_action = self.action_space[max_action_index]
             self.last_state = self.transform(state)

@@ -83,7 +83,7 @@ class RGL(nn.Module):
             selected_features = torch.index_select(X, dim=1, index=torch.LongTensor(indices).reshape(-1))
             pairwise_features = selected_features.reshape((-1, X.size(1) * X.size(1), X.size(2) * 2))
             A = self.w_a(pairwise_features).reshape(-1, X.size(1), X.size(1))
-            normalized_A = A
+            normalized_A = softmax(A, dim=2)
         elif self.similarity_function == 'squared':
             A = torch.matmul(X, X.permute(0, 2, 1))
             squared_A = A * A
