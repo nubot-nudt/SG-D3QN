@@ -21,6 +21,7 @@ def estimate_reward_on_predictor(state, next_state):
     reaching_goal = norm(end_position - np.array([robot_state.gx, robot_state.gy])) < robot_state.radius
     dmin = float('inf')
     collision = False
+    collision_penalty = 0
     for i, human in enumerate(human_states):
         next_human = next_human_states[i]
         px = human.px - robot_state.px
@@ -31,20 +32,16 @@ def estimate_reward_on_predictor(state, next_state):
         closest_dist = point_to_segment_dist(px, py, ex, ey, 0, 0) - human.radius - robot_state.radius
         if closest_dist < 0:
             collision = True
-            break
         elif closest_dist < dmin:
             dmin = closest_dist
+        if closest_dist < 0.2:
+            collision_penalty = collision_penalty + (closest_dist - 0.2) * 0.25 * 0.5
+    reward_col = 0
     if collision:
-        reward = -0.25
+        reward_col = -0.25
     elif reaching_goal:
-        reward = 1
-    elif dmin < 0.2:
-        # adjust the reward based on FPS
-        reward = (dmin - 0.2) * 0.25 * 0.5
-        # self.time_step * 0.5
-    else:
-        reward = 0
-    reward = reward + reward_goal
+        reward_goal = 1 + reward_goal
+    reward = reward_col + reward_goal + collision_penalty
     # if collision:
         # reward = reward - 100
     reward = reward * 10

@@ -326,6 +326,7 @@ class CrowdSim(gym.Env):
         # collision detection
         dmin = float('inf')
         collision = False
+        collision_penalty = 0.0
         for i, human in enumerate(self.humans):
             px = human.px - self.robot.px
             py = human.py - self.robot.py
@@ -342,9 +343,10 @@ class CrowdSim(gym.Env):
             if closest_dist < 0:
                 collision = True
                 logging.debug("Collision: distance between robot and p{} is {:.2E} at time {:.2E}".format(human.id, closest_dist, self.global_time))
-                break
             elif closest_dist < dmin:
                 dmin = closest_dist
+            if closest_dist < 0.2:
+                collision_penalty = collision_penalty + (closest_dist - self.discomfort_dist) * 0.25 * 0.5
 
         # collision detection between humans
         human_num = len(self.humans)
@@ -371,29 +373,25 @@ class CrowdSim(gym.Env):
             reward_omega = -0.01 * (0.5 - delta_w) * (0.5 - delta_w)
         else:
             reward_omega = 0.0
+        reward_col = 0.0
         if self.global_time >= self.time_limit - 1:
-            reward = 0
             done = True
             info = Timeout()
         elif collision:
-            reward = self.collision_penalty
+            reward_col = self.collision_penalty
             done = True
             info = Collision()
         elif reaching_goal:
-            reward = self.success_reward
+            reward_goal = self.success_reward + reward_goal
             done = True
             info = ReachGoal()
         elif dmin < self.discomfort_dist:
-            # adjust the reward based on FPS
-            reward = (dmin - self.discomfort_dist) * 0.25 * 0.5
-            # * self.discomfort_penalty_factor
             done = False
             info = Discomfort(dmin)
         else:
-            reward = 0
             done = False
             info = Nothing()
-        reward = reward + reward_goal
+        reward = reward_col + reward_goal + collision_penalty
         reward = reward * 10
 
         if update:
