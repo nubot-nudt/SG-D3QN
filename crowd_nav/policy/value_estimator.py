@@ -139,7 +139,7 @@ class DQNNetwork(nn.Module):
         assert len(state[1].shape) == 3
 
         # only use the feature of robot node as state representation
-        state_embedding = self.graph_model(self.trans_no_rotation(state))[:, 0, :]
+        state_embedding = self.graph_model(self.rotate(state))[:, 0, :]
         value = self.value_network(state_embedding)
         return value
 
@@ -175,7 +175,9 @@ class DQNNetwork(nn.Module):
               robot_state[:, :, 2].unsqueeze(1) * torch.sin(rot)).reshape((batch, 1, -1))
         v_pref = robot_state[:, :, 7].unsqueeze(1)
         theta = robot_state[:, :, 8].unsqueeze(1)
-        new_robot_state = torch.cat((theta, theta, vx, vy, radius_r, dg, rot, v_pref, theta), dim=2)
+        px_r = torch.zeros_like(v_pref)
+        py_r = torch.zeros_like(v_pref)
+        new_robot_state = torch.cat((px_r, py_r, vx, vy, radius_r, dg, rot, v_pref, theta), dim=2)
         new_human_state = None
         for i in range(human_num):
             dx1 = human_state[:, i, 0].unsqueeze(1) - robot_state[:, :, 0]
@@ -226,8 +228,10 @@ class DQNNetwork(nn.Module):
         vx = robot_state[:, :, 2].unsqueeze(1)
         vy = robot_state[:, :, 3].unsqueeze(1)
         v_pref = robot_state[:, :, 7].unsqueeze(1)
+        px_r = torch.zeros_like(v_pref)
+        py_r = torch.zeros_like(v_pref)
         theta = robot_state[:, :, 8].unsqueeze(1)
-        new_robot_state = torch.cat((theta, theta, vx, vy, radius_r, dg, rot, v_pref, theta), dim=2)
+        new_robot_state = torch.cat((px_r, py_r, vx, vy, radius_r, dg, rot, v_pref, theta), dim=2)
         new_human_state = None
         for i in range(human_num):
             dx1 = human_state[:, i, 0].unsqueeze(1) - robot_state[:, :, 0]
