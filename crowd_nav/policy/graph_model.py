@@ -265,7 +265,7 @@ class GAT_RL(nn.Module):
         zero_vec = -9e15 * torch.ones_like(e)
         attention = torch.where(adj > 0, e, zero_vec)
         attention = nn.functional.softmax(attention, dim=2)
-        next_H = relu(torch.matmul(torch.matmul(attention, self.w_v(X)), self.Ws[0]))
+        next_H = torch.matmul(attention, self.w_v(X))
 
         if self.skip_connection:
             next_H += H
