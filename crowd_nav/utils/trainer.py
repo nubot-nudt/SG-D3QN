@@ -158,7 +158,7 @@ class TSRLTrainer(object):
             # for dqn
             # max_next_Q = torch.max(self.target_model((next_robot_states, next_human_states)), dim=1)[0]
             # next_Q_value= max_next_Q.unsqueeze(dim=1)
-            target_values = rewards + next_Q_value * 0.95 #self.gamma *
+            target_values = rewards + next_Q_value * gamma_bar
             # target_values = rewards + gamma_bar * self.target_model((next_robot_states, next_human_states))
 
             # values = values.to(self.device)
@@ -345,7 +345,7 @@ class MPRLTrainer(object):
             outputs = self.value_estimator((robot_states, human_states))
             gamma_bar = pow(self.gamma, self.time_step * self.v_pref)
             next_value = self.target_model((next_robot_states, next_human_states))
-            target_values = rewards + next_value * pow(self.gamma, self.time_step * self.v_pref)
+            target_values = rewards + next_value * gamma_bar
             # values = values.to(self.device)
             loss = self.criterion(outputs, target_values)
             loss.backward()
