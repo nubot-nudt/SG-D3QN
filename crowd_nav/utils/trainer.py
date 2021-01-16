@@ -188,6 +188,8 @@ class TSRLTrainer(object):
                                                                 detach=self.detach_state_predictor)
                 loss = self.criterion(next_human_states_est, next_human_states)
                 s_losses += loss.data.item()
+
+
             batch_count += 1
             if batch_count > num_batches or batch_count == batch_num:
                 break

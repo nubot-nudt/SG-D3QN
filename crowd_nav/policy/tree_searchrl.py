@@ -175,9 +175,10 @@ class TreeSearchRL(Policy):
 
         action_space = [ActionXY(0, 0) if holonomic else ActionRot(0, 0)]
         self.action_group_index.append(0)
-        for j, speed in enumerate(speeds):
-            for i, rotation in enumerate(rotations):
-                action_index = j * self.rotation_samples + i + 1
+
+        for i, rotation in enumerate(rotations):
+            for j, speed in enumerate(speeds):
+                action_index = i * self.speed_samples + j + 1
                 self.action_group_index.append(action_index)
                 if holonomic:
                     action_space.append(ActionXY(speed * np.cos(rotation), speed * np.sin(rotation)))
