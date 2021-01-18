@@ -184,7 +184,7 @@ class TSRLTrainer(object):
                     self.s_optimizer.step()
                     s_losses += loss.data.item()
             else:
-                _, next_human_states_est = self.state_predictor((robot_states, human_states), ActionXY(0, 0),
+                _, next_human_states_est = self.state_predictor((robot_states, human_states), None,
                                                                 detach=self.detach_state_predictor)
                 loss = self.criterion(next_human_states_est, next_human_states)
                 s_losses += loss.data.item()

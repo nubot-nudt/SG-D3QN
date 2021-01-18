@@ -7,7 +7,7 @@ from crowd_sim.envs.policy.policy import Policy
 from crowd_sim.envs.utils.action import ActionRot, ActionXY
 from crowd_sim.envs.utils.state import tensor_to_joint_state
 from crowd_sim.envs.utils.utils import point_to_segment_dist
-from crowd_nav.policy.state_predictor import StatePredictor, LinearStatePredictor
+from crowd_nav.policy.state_predictor import StatePredictor, LinearStatePredictor_batch
 from crowd_nav.policy.graph_model import RGL,GAT_RL
 from crowd_nav.policy.value_estimator import DQNNetwork, Noisy_DQNNetwork
 from crowd_nav.policy.reward_estimate import estimate_reward_on_predictor
@@ -62,7 +62,7 @@ class TreeSearchRL(Policy):
 
 
         if self.linear_state_predictor:
-            self.state_predictor = LinearStatePredictor(config, self.time_step)
+            self.state_predictor = LinearStatePredictor_batch(config, self.time_step)
             graph_model = RGL(config, self.robot_state_dim, self.human_state_dim)
             self.value_estimator = DQNNetwork(config, graph_model)
             self.model = [graph_model, self.value_estimator.value_network]
