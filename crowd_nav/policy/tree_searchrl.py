@@ -75,7 +75,7 @@ class TreeSearchRL(Policy):
             else:
                 graph_model1 = GAT_RL(config, self.robot_state_dim, self.human_state_dim)
                 self.value_estimator = DQNNetwork(config, graph_model1)
-                graph_model2 = RGL(config, self.robot_state_dim, self.human_state_dim)
+                graph_model2 = GAT_RL(config, self.robot_state_dim, self.human_state_dim)
                 self.state_predictor = StatePredictor(config, graph_model2, self.time_step)
                 self.model = [graph_model1, graph_model2, self.value_estimator.value_network,
                               self.state_predictor.human_motion_predictor]

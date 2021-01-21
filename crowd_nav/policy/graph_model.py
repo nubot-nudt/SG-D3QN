@@ -309,13 +309,13 @@ class GAT_RL(nn.Module):
         robot_state_embedings = self.w_r(robot_state)
         human_state_embedings = self.w_h(human_states)
         X = torch.cat([robot_state_embedings, human_state_embedings], dim=1)
-        # compute matrix A
-        next_H = H = X
-        next_H = self.gat0(next_H, adj)
-        next_H = self.gat1(next_H, adj)
+        H1 = self.gat0(X, adj)
+        H2 = self.gat1(H1, adj)
         if self.skip_connection:
-            next_H += H
-        return next_H
+            output = H1 + H2 + X
+        else:
+            output = H2
+        return output
 
 class GraphAttentionLayer(nn.Module):
     """
