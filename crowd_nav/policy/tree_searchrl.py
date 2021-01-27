@@ -274,7 +274,7 @@ class TreeSearchRL(Policy):
             cur_width = int(self.planning_width/2)
         next_values, next_action_indexes, next_trajs = self.V_planning(next_state_batch, depth-1, cur_width)
         next_values = next_values.view(state[0].shape[0], width)
-        returns = (reward_est + self.get_normalized_gamma()*next_values + max_action_value) / (depth + 1)
+        returns = (reward_est + self.get_normalized_gamma()*next_values + max_action_value) / 2
 
         max_action_return, max_action_index = torch.max(returns, dim=1)
         trajs = []
@@ -322,3 +322,5 @@ class TreeSearchRL(Policy):
             next_state[2] = np.cos(next_state[7]) * action.v
             next_state[3] = np.sin(next_state[7]) * action.v
         return next_state.unsqueeze(0).unsqueeze(0)
+    def get_attention_weights(self):
+        return self.value_estimator.graph_model.attention_weights

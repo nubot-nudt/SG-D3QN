@@ -43,15 +43,13 @@ class TSRLTrainer(object):
 
     def set_learning_rate(self, learning_rate):
         if self.optimizer_str == 'Adam':
-            self.v_optimizer = optim.Adam(filter(lambda p: p.requires_grad, self.value_estimator.parameters()),
-                                          lr=learning_rate, momentum=0.9, weight_decay=1e-5)
-            # self.v_optimizer = optim.Adam(self.value_estimator.parameters(), lr=learning_rate)
+            self.v_optimizer = optim.Adam(self.value_estimator.parameters(), lr=learning_rate)
             if self.state_predictor.trainable:
                 self.s_optimizer = optim.Adam(self.state_predictor.parameters(), lr=learning_rate)
         elif self.optimizer_str == 'SGD':
             self.v_optimizer = optim.SGD(self.value_estimator.parameters(), lr=learning_rate, momentum=0.9)
             if self.state_predictor.trainable:
-                self.s_optimizer = optim.SGD(self.state_predictor.parameters(), lr=learning_rate)
+                self.s_optimizer = optim.SGD(self.state_predictor.parameters(), lr=learning_rate,momentum=0.9)
         else:
             raise NotImplementedError
 
@@ -237,14 +235,14 @@ class MPRLTrainer(object):
 
     def set_learning_rate(self, learning_rate):
         if self.optimizer_str == 'Adam':
-            self.v_optimizer = optim.Adam(filter(lambda p: p.requires_grad, self.value_estimator.parameters()), lr=learning_rate)
-            # self.v_optimizer = optim.Adam(self.value_estimator.parameters(), lr=learning_rate)
+            # self.v_optimizer = optim.Adam(filter(lambda p: p.requires_grad, self.value_estimator.parameters()), lr=learning_rate)
+            self.v_optimizer = optim.Adam(self.value_estimator.parameters(), lr=learning_rate)
             if self.state_predictor.trainable:
                 self.s_optimizer = optim.Adam(self.state_predictor.parameters(), lr=learning_rate)
         elif self.optimizer_str == 'SGD':
             self.v_optimizer = optim.SGD(self.value_estimator.parameters(), lr=learning_rate, momentum=0.9)
             if self.state_predictor.trainable:
-                self.s_optimizer = optim.SGD(self.state_predictor.parameters(), lr=learning_rate)
+                self.s_optimizer = optim.SGD(self.state_predictor.parameters(), lr=learning_rate, momentum=0.9)
         else:
             raise NotImplementedError
 

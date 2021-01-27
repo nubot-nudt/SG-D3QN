@@ -459,9 +459,11 @@ class CrowdSim(gym.Env):
         # plt.rcParams['animation.ffmpeg_path'] = '/usr/bin/ffmpeg'
         x_offset = 0.2
         y_offset = 0.4
-        cmap = plt.cm.get_cmap('hsv', 10)
-        robot_color = 'black'
-        arrow_style = patches.ArrowStyle("->", head_length=4, head_width=2)
+        cmap = plt.cm.get_cmap('terrain', 200)
+        robot_color = 'Yellow'
+        arrow_style = patches.ArrowStyle.Fancy(head_length=4, head_width=3, tail_width=.4)
+
+            # patches.ArrowStyle("->", head_length=4, head_width=2)
         display_numbers = True
 
         if mode == 'traj':
@@ -491,8 +493,8 @@ class CrowdSim(gym.Env):
 
             for k in range(len(self.states)):
                 if k % 4 == 0 or k == len(self.states) - 1:
-                    robot = plt.Circle(robot_positions[k], self.robot.radius, fill=False, color=robot_color)
-                    humans = [plt.Circle(human_positions[k][i], self.humans[i].radius, fill=False, color=cmap(i))
+                    robot = plt.Circle(robot_positions[k], self.robot.radius, fill=True, color=robot_color)
+                    humans = [plt.Circle(human_positions[k][i], self.humans[i].radius, fill=True, color=human_colors[i])
                               for i in range(len(self.humans))]
                     ax.add_artist(robot)
                     for human in humans:
@@ -513,7 +515,7 @@ class CrowdSim(gym.Env):
                                                color=robot_color, ls='solid')
                     human_directions = [plt.Line2D((self.states[k - 1][1][i].px, self.states[k][1][i].px),
                                                    (self.states[k - 1][1][i].py, self.states[k][1][i].py),
-                                                   color=cmap(i), ls='solid')
+                                                   color=human_colors[i], ls='solid')
                                         for i in range(self.human_num)]
                     ax.add_artist(nav_direction)
                     for human_direction in human_directions:
@@ -523,14 +525,14 @@ class CrowdSim(gym.Env):
         elif mode == 'video':
             fig, ax = plt.subplots(figsize=(7, 7))
             ax.tick_params(labelsize=12)
-            ax.set_xlim(-11, 11)
-            ax.set_ylim(-11, 11)
+            ax.set_xlim(-6, 6)
+            ax.set_ylim(-6, 6)
             ax.set_xlabel('x(m)', fontsize=14)
             ax.set_ylabel('y(m)', fontsize=14)
             show_human_start_goal = False
 
             # add human start positions and goals
-            human_colors = [cmap(i) for i in range(len(self.humans))]
+            human_colors = [cmap(i+70) for i in range(len(self.humans))]
             if show_human_start_goal:
                 for i in range(len(self.humans)):
                     human = self.humans[i]
@@ -551,9 +553,9 @@ class CrowdSim(gym.Env):
             # add robot and its goal
             robot_positions = [state[0].position for state in self.states]
             goal = mlines.Line2D([self.robot.get_goal_position()[0]], [self.robot.get_goal_position()[1]],
-                                 color=robot_color, marker='*', linestyle='None',
+                                 color='red', marker='*', linestyle='None',
                                  markersize=15, label='Goal')
-            robot = plt.Circle(robot_positions[0], self.robot.radius, fill=False, color=robot_color)
+            robot = plt.Circle(robot_positions[0], self.robot.radius, fill=True, color=robot_color)
             # sensor_range = plt.Circle(robot_positions[0], self.robot_sensor_range, fill=False, ls='dashed')
             ax.add_artist(robot)
             ax.add_artist(goal)
@@ -561,14 +563,18 @@ class CrowdSim(gym.Env):
 
             # add humans and their numbers
             human_positions = [[state[1][j].position for j in range(len(self.humans))] for state in self.states]
-            humans = [plt.Circle(human_positions[0][i], self.humans[i].radius, fill=False, color=cmap(i))
+            humans = [plt.Circle(human_positions[0][i], self.humans[i].radius, fill=True, color=human_colors[i])
                       for i in range(len(self.humans))]
 
             # disable showing human numbers
             if display_numbers:
                 human_numbers = [plt.text(humans[i].center[0] - x_offset, humans[i].center[1] + y_offset, str(i),
                                           color='black') for i in range(len(self.humans))]
-
+                if hasattr(self.robot.policy, 'get_attention_weights'):
+                    attentions =[plt.text(robot.center[0] + x_offset, robot.center[1] + y_offset,
+                                          '{:.2f}'.format(self.attention_weights[0][0]),color='black')] + \
+                                [plt.text(humans[i].center[0] + x_offset, humans[i].center[1] + y_offset, '{:.2f}'.format(self.attention_weights[0][i+1]),
+                              color='black') for i in range(len(self.humans))]
             for i, human in enumerate(humans):
                 ax.add_artist(human)
                 if display_numbers:
@@ -580,8 +586,8 @@ class CrowdSim(gym.Env):
 
             # visualize attention scores
             # if hasattr(self.robot.policy, 'get_attention_weights'):
-            #     attention_scores = [
-            #         plt.text(-5.5, 5 - 0.5 * i, 'Human {}: {:.2f}'.format(i + 1, self.attention_weights[0][i]),
+            #     attention_scores = [plt.text(-5.5, 5, 'robot {}: {:.2f}'.format(0, self.attention_weights[0][0]),
+            #                  fontsize=16)] + [plt.text(-5.5, 5 - 0.5 * (i+1), 'Human {}: {:.2f}'.format(i+1, self.attention_weights[0][i+1]),
             #                  fontsize=16) for i in range(len(self.humans))]
 
             # compute orientation in each step and use arrow to show the direction
@@ -602,66 +608,80 @@ class CrowdSim(gym.Env):
                     orientation.append(direction)
                 orientations.append(orientation)
                 if i == 0:
-                    arrow_color = 'black'
-                    arrows = [patches.FancyArrowPatch(*orientation[0], color=arrow_color, arrowstyle=arrow_style)]
+                    robot_arrow_color = 'red'
+                    arrows = [patches.FancyArrowPatch(*orientation[0], color=robot_arrow_color, arrowstyle=arrow_style)]
                 else:
+                    human_arrow_color = 'grey'
                     arrows.extend(
-                        [patches.FancyArrowPatch(*orientation[0], color=human_colors[i - 1], arrowstyle=arrow_style)])
+                        [patches.FancyArrowPatch(*orientation[0], color=human_arrow_color, arrowstyle=arrow_style)])
 
             for arrow in arrows:
                 ax.add_artist(arrow)
             global_step = 0
 
-            if len(self.trajs) != 0:
-                human_future_positions = []
-                human_future_circles = []
-                for traj in self.trajs:
-                    human_future_position = [[tensor_to_joint_state(traj[step+1][0]).human_states[i].position
-                                              for step in range(self.robot.policy.planning_depth)]
-                                             for i in range(self.human_num)]
-                    human_future_positions.append(human_future_position)
-
-                for i in range(self.human_num):
-                    circles = []
-                    for j in range(self.robot.policy.planning_depth):
-                        circle = plt.Circle(human_future_positions[0][i][j], self.humans[0].radius/(1.7+j), fill=False, color=cmap(i))
-                        ax.add_artist(circle)
-                        circles.append(circle)
-                    human_future_circles.append(circles)
+            # if len(self.trajs) != 0:
+            #     human_future_positions = []
+            #     human_future_circles = []
+            #     for traj in self.trajs:
+            #         human_future_position = [[tensor_to_joint_state(traj[step+1][0]).human_states[i].position
+            #                                   for step in range(self.robot.policy.planning_depth)]
+            #                                  for i in range(self.human_num)]
+            #         human_future_positions.append(human_future_position)
+            #
+            #     for i in range(self.human_num):
+            #         circles = []
+            #         for j in range(self.robot.policy.planning_depth):
+            #             circle = plt.Circle(human_future_positions[0][i][j], self.humans[0].radius/(1.7+j), fill=False, color=cmap(i))
+            #             ax.add_artist(circle)
+            #             circles.append(circle)
+            #         human_future_circles.append(circles)
 
             def update(frame_num):
                 nonlocal global_step
                 nonlocal arrows
+                # nonlocal scores
                 global_step = frame_num
                 robot.center = robot_positions[frame_num]
-
                 for i, human in enumerate(humans):
                     human.center = human_positions[frame_num][i]
                     if display_numbers:
-                        human_numbers[i].set_position((human.center[0] - x_offset, human.center[1] + y_offset))
+                        human_numbers[i].set_position((human.center[0], human.center[1]))
+                # if hasattr(self.robot.policy, 'get_attention_weights'):
+                    # self_attention_scores = [plt.text(robot.center[0] - x_offset, robot.center[1] + y_offset,
+                    #                                   '{:.2f}'.format(self.attention_weights[0][0]), color='black')]
+                if hasattr(self.robot.policy, 'get_attention_weights'):
+                    for i in range(len(humans)+1):
+                        if i ==0:
+                            attentions[i].set_position((robot.center[0]- 0.05, robot.center[1] - x_offset))
+                            attentions[i].set_text('{:.2f}'.format(self.attention_weights[frame_num][i]))
+                        else:
+                            attentions[i].set_position((humans[i-1].center[0] - 0.05 , humans[i-1].center[1] - x_offset))
+                            attentions[i].set_text('{:.2f}'.format(self.attention_weights[frame_num][i]))
+#                    self_attention_dis = plt.text(robot.center[0] - x_offset, robot.center[1] + y_offset,
+#                                               '{:.2f}'.format(self.attention_weights[0][0]), color='black')
+#                    ax.add_artist(self_attention_dis)
+
                 for arrow in arrows:
                     arrow.remove()
 
                 for i in range(self.human_num + 1):
                     orientation = orientations[i]
                     if i == 0:
-                        arrows = [patches.FancyArrowPatch(*orientation[frame_num], color='black',
+                        arrows = [patches.FancyArrowPatch(*orientation[frame_num], color=robot_arrow_color,
                                                           arrowstyle=arrow_style)]
                     else:
-                        arrows.extend([patches.FancyArrowPatch(*orientation[frame_num], color=cmap(i - 1),
+                        arrows.extend([patches.FancyArrowPatch(*orientation[frame_num], color=human_arrow_color,
                                                                arrowstyle=arrow_style)])
-
                 for arrow in arrows:
                     ax.add_artist(arrow)
-                    # if hasattr(self.robot.policy, 'get_attention_weights'):
-                    #     attention_scores[i].set_text('human {}: {:.2f}'.format(i, self.attention_weights[frame_num][i]))
+
 
                 time.set_text('Time: {:.2f}'.format(frame_num * self.time_step))
 
-                if len(self.trajs) != 0:
-                    for i, circles in enumerate(human_future_circles):
-                        for j, circle in enumerate(circles):
-                            circle.center = human_future_positions[global_step][i][j]
+                # if len(self.trajs) != 0:
+                #     for i, circles in enumerate(human_future_circles):
+                #         for j, circle in enumerate(circles):
+                #             circle.center = human_future_positions[global_step][i][j]
 
             def plot_value_heatmap():
                 if self.robot.kinematics != 'holonomic':
