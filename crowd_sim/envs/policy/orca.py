@@ -70,7 +70,7 @@ class ORCA(Policy):
         self.sampling = None
         self.rotation_constraint = None
 
-    def configure(self, config):
+    def configure(self, config, device='cpu'):
         return
 
     def set_common_parameters(self, config):
@@ -101,7 +101,7 @@ class ORCA(Policy):
             self.sim = None
         if self.sim is None:
             self.sim = rvo2.PyRVOSimulator(self.time_step, *params, self.radius, self.max_speed)
-            self.sim.addAgent(robot_state.position, *params, robot_state.radius + 0.01 + self.safety_space,
+            self.sim.addAgent(robot_state.position, *params, robot_state.radius + 0.01, #+ self.safety_space,
                               robot_state.v_pref, robot_state.velocity)
             for human_state in state.human_states:
                 self.sim.addAgent(human_state.position, *params, human_state.radius + 0.01 + self.safety_space,
@@ -134,19 +134,20 @@ class ORCA(Policy):
         rotation_samples = self.rotation_samples
         d_vel = 1.0 / speed_samples / 2
         action = ActionXY(*self.sim.getAgentVelocity(0))
-        vel_index = (np.sqrt(action.vx * action.vx + action.vy * action.vy) // d_vel + 1) // 2
-        if vel_index > speed_samples:
-            vel_index = speed_samples
-        d_rot = np.pi / rotation_samples
-        rot_index = (np.arctan2(action.vy, action.vx) // d_rot + 1) // 2
-        if rot_index < 0:
-            rot_index = rot_index + rotation_samples
-        if vel_index == 0:
-            action_index = int(0)
-        else:
-            action_index = int((vel_index - 1) * rotation_samples + rot_index + 1)
-        action = ActionXY(vel_index * d_vel * 2.0 * np.cos(rot_index * d_rot * 2.0), vel_index * d_vel * 2.0 *
-                          np.sin(rot_index * d_rot * 2.0))
+        # vel_index = (np.sqrt(action.vx * action.vx + action.vy * action.vy) // d_vel + 1) // 2
+        # if vel_index > speed_samples:
+        #     vel_index = speed_samples
+        # d_rot = np.pi / rotation_samples
+        # rot_index = (np.arctan2(action.vy, action.vx) // d_rot + 1) // 2
+        # if rot_index < 0:
+        #     rot_index = rot_index + rotation_samples
+        # if vel_index == 0:
+        #     action_index = int(0)
+        # else:
+        #     action_index = int((vel_index - 1) * rotation_samples + rot_index + 1)
+        # action = ActionXY(vel_index * d_vel * 2.0 * np.cos(rot_index * d_rot * 2.0), vel_index * d_vel * 2.0 *
+        #                   np.sin(rot_index * d_rot * 2.0))
+        action_index = -1
         self.last_state = state
 
         return action, action_index
