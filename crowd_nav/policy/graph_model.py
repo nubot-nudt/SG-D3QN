@@ -61,7 +61,7 @@ class RGL(nn.Module):
                 self.Ws.append(Parameter(torch.randn(embedding_dim, embedding_dim)))
 
         # for visualization
-        self.A = None
+        self.attention_weights = None
 
     def compute_similarity_matrix(self, X):
         if self.similarity_function == 'embedded_gaussian':
@@ -117,7 +117,7 @@ class RGL(nn.Module):
         if not self.layerwise_graph:
             normalized_A = self.compute_similarity_matrix(X)
             value_X = self.w_v(X)
-            self.A = normalized_A[0, :, :].data.cpu().numpy()
+            self.attention_weights = normalized_A[0, 0, :]
 
         next_H = H = value_X
         for i in range(self.num_layer):

@@ -350,3 +350,6 @@ class ModelPredictiveRL(Policy):
             next_state[2] = np.cos(next_state[7]) * action.v
             next_state[3] = np.sin(next_state[7]) * action.v
         return next_state.unsqueeze(0).unsqueeze(0)
+
+    def get_attention_weights(self):
+        return self.value_estimator.graph_model.attention_weights
