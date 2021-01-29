@@ -117,7 +117,7 @@ class RGL(nn.Module):
         if not self.layerwise_graph:
             normalized_A = self.compute_similarity_matrix(X)
             value_X = self.w_v(X)
-            self.attention_weights = normalized_A[0, 0, :]
+            self.attention_weights = normalized_A[0, 0, :].data.cpu().numpy()
 
         next_H = H = value_X
         for i in range(self.num_layer):
@@ -233,7 +233,7 @@ class GraphAttentionLayer(nn.Module):
         attention = torch.where(adj > 0, e, zero_vec)
         attention = nn.functional.softmax(attention, dim=2)
         next_H = torch.matmul(attention, input)
-        return next_H, attention[0, 0, :]
+        return next_H, attention[0, 0, :].data.cpu().numpy()
 
     def compute_similarity_matrix(self, X):
         indices = [pair for pair in itertools.product(list(range(X.size(1))), repeat=2)]
