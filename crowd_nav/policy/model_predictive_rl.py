@@ -9,7 +9,7 @@ from crowd_sim.envs.utils.state import tensor_to_joint_state
 from crowd_nav.policy.reward_estimate import estimate_reward_on_predictor
 from crowd_nav.policy.value_estimator import ValueEstimator
 from crowd_nav.policy.state_predictor import StatePredictor, LinearStatePredictor_batch
-from crowd_nav.policy.graph_model import RGL
+from crowd_nav.policy.graph_model import RGL,GAT_RL
 
 
 class ModelPredictiveRL(Policy):
