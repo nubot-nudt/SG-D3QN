@@ -107,16 +107,16 @@ class Explorer(object):
                      ' average return: {:.4f}'. format(phase.upper(), extra_info, success_rate, collision_rate,
                                                        avg_nav_time, sum(cumulative_rewards),
                                                        average(average_returns)))
-        if phase in ['val', 'test'] or imitation_learning:
-            total_time = sum(success_times + collision_times + timeout_times) / self.robot.time_step
-            logging.info('Frequency of being in danger: %.3f and average min separate distance in danger: %.2f',
-                         discomfort / total_time, average(min_dist))
+        # if phase in ['val', 'test'] or imitation_learning:
+        total_time = sum(success_times + collision_times + timeout_times) / self.robot.time_step
+        logging.info('Frequency of being in danger: %.3f and average min separate distance in danger: %.2f',
+                    discomfort / total_time, average(min_dist))
 
         if print_failure:
             logging.info('Collision cases: ' + ' '.join([str(x) for x in collision_cases]))
             logging.info('Timeout cases: ' + ' '.join([str(x) for x in timeout_cases]))
 
-        self.statistics = success_rate, collision_rate, avg_nav_time, sum(cumulative_rewards), average(average_returns)
+        self.statistics = success_rate, collision_rate, avg_nav_time, sum(cumulative_rewards), average(average_returns), discomfort, total_time
 
         return self.statistics
 
@@ -152,7 +152,7 @@ class Explorer(object):
                 self.memory.push((state, value, reward, next_state))
 
     def log(self, tag_prefix, global_step):
-        sr, cr, time, reward, avg_return = self.statistics
+        sr, cr, time, reward, avg_return,_,_ = self.statistics
         self.writer.add_scalar(tag_prefix + '/success_rate', sr, global_step)
         self.writer.add_scalar(tag_prefix + '/collision_rate', cr, global_step)
         self.writer.add_scalar(tag_prefix + '/time', time, global_step)

@@ -209,8 +209,18 @@ def main(args):
 
     episode = 0
     reward_rec = []
+    return_rec = []
+    discom_tim_rec = []
+    nav_time_rec = []
+    total_time_rec = []
     reward_in_last_interval = 0
+    return_in_last_interval = 0
+    nav_time__in_last_interval = 0
+    discom_time_in_last_interval = 0
+    total_time_in_last_interval = 0
     eps_count = 0
+    fw = open(sys_args.output_dir + '/data.txt', 'w')
+    print("%f %f %f %f %f" % (0,0,0,0,0), file=fw)
     while episode < train_episodes:
         if args.resume:
             epsilon = epsilon_end
@@ -222,17 +232,32 @@ def main(args):
         robot.policy.set_epsilon(epsilon)
 
         # sample k episodes into memory and optimize over the generated memory
-        _, _, _, sum_reward, _ = explorer.run_k_episodes(sample_episodes, 'train', update_memory=True, episode=episode)
+        _, _, nav_time, sum_reward, ave_return, discom_time, total_time = \
+            explorer.run_k_episodes(sample_episodes, 'train', update_memory=True, episode=episode)
         eps_count = eps_count + 1
         reward_in_last_interval = reward_in_last_interval + sum_reward
+        return_in_last_interval = return_in_last_interval + ave_return
+        nav_time__in_last_interval = nav_time__in_last_interval + nav_time
+        discom_time_in_last_interval = discom_time_in_last_interval + discom_time
+        total_time_in_last_interval = total_time_in_last_interval + total_time
         interval = 100
         if eps_count % interval == 0:
-            reward_rec.append(reward_in_last_interval/100)
-
-            logging.info('Train in episode %d reward in last 100 episodes %f', eps_count, reward_rec[-1])
-            reward_in_last_interval = 0.0
-            min_reward = -20
-            max_reward = 20
+            reward_rec.append(reward_in_last_interval/100.0)
+            return_rec.append(return_in_last_interval/100.0)
+            discom_tim_rec.append(discom_time_in_last_interval/100.0)
+            nav_time_rec.append(nav_time__in_last_interval/100.0)
+            total_time_rec.append(total_time_in_last_interval/100.0)
+            logging.info('Train in episode %d reward in last 100 episodes %f %f %f %f %f', eps_count, reward_rec[-1],
+                         return_rec[-1], discom_tim_rec[-1], nav_time_rec[-1], total_time_rec[-1])
+            print("%f %f %f %f %f" % (reward_rec[-1], return_rec[-1], discom_tim_rec[-1], nav_time_rec[-1],
+                                     total_time_rec[-1]), file=fw)
+            reward_in_last_interval = 0
+            return_in_last_interval = 0
+            nav_time__in_last_interval = 0
+            discom_time_in_last_interval = 0
+            total_time_in_last_interval = 0
+            min_reward = -10
+            max_reward = 10
             pos = np.array(range(1, len(reward_rec)+1)) * interval
             plt.plot(pos, reward_rec, color='r', marker='.', linestyle='dashed')
             plt.axis([0, eps_count, min_reward, max_reward])
@@ -246,7 +271,7 @@ def main(args):
             trainer.update_target_model(model)
         # evaluate the model
         if episode % evaluation_interval == 0:
-            _, _, _, reward, _ = explorer.run_k_episodes(env.case_size['val'], 'val', episode=episode)
+            _, _, _, reward, _, _, _ = explorer.run_k_episodes(env.case_size['val'], 'val', episode=episode)
             explorer.log('val', episode // evaluation_interval)
 
             if episode % checkpoint_interval == 0:
@@ -263,6 +288,7 @@ def main(args):
             policy.save_model(save_every_checkpoint_rl_weight_file)
 
     # # test with the best val model
+    fw.close()
     if best_val_model is not None:
         policy.load_state_dict(best_val_model)
         torch.save(best_val_model, os.path.join(args.output_dir, 'best_val.pth'))
@@ -281,7 +307,7 @@ if __name__ == '__main__':
     parser.add_argument('--gpu', default=False, action='store_true')
     parser.add_argument('--debug', default=False, action='store_true')
     parser.add_argument('--test_after_every_eval', default=False, action='store_true')
-    parser.add_argument('--randomseed', type=int, default=57)
+    parser.add_argument('--randomseed', type=int, default=7)
 
     # arguments for GCN
     # parser.add_argument('--X_dim', type=int, default=32)
