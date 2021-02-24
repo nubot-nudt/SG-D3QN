@@ -7,6 +7,7 @@ class Human(Agent):
         super().__init__(config, section)
         self.id = None
         self.reach_count = 0
+        self.start_pos = []
 
     def act(self, ob):
         """
