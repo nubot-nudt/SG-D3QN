@@ -491,7 +491,7 @@ class CrowdSim(gym.Env):
                         test_start = mlines.Line2D([pos[0]], [pos[1]], color=human_colors[i], marker=4,
                                                    linestyle='None', markersize=10)
                     else:
-                        test_start = mlines.Line2D([pos[0]], [pos[1]], color=human_colors[i], marker='o',
+                        test_start = mlines.Line2D([pos[0]], [pos[1]], color=human_colors[i], marker='s',
                                                    linestyle='None', markersize=10)
                     ax.add_artist(test_start)
                 # human_start = mlines.Line2D([human.get_start_position()[0]], [human.get_start_position()[1]],
@@ -542,10 +542,10 @@ class CrowdSim(gym.Env):
             ax.set_xlabel('x(m)', fontsize=14)
             ax.set_ylabel('y(m)', fontsize=14)
             show_human_start_goal = False
-
+            robot_color = 'black'
             # add human start positions and goals
-            human_colors = [cmap(i+70) for i in range(len(self.humans))]
-            if show_human_start_goal:
+            human_colors = [cmap(20) for i in range(len(self.humans))]
+            if False:
                 for i in range(len(self.humans)):
                     human = self.humans[i]
                     human_goal = mlines.Line2D([human.get_goal_position()[0]], [human.get_goal_position()[1]],
@@ -565,35 +565,35 @@ class CrowdSim(gym.Env):
             # add robot and its goal
             robot_positions = [state[0].position for state in self.states]
             goal = mlines.Line2D([self.robot.get_goal_position()[0]], [self.robot.get_goal_position()[1]],
-                                 color='blue', marker='*', linestyle='None',
+                                 color='red', marker='*', linestyle='None',
                                  markersize=15, label='Goal')
-            robot = plt.Circle(robot_positions[0], self.robot.radius, fill=True, color=robot_color)
+            robot = plt.Circle(robot_positions[0], self.robot.radius, fill=False, color=robot_color)
             # sensor_range = plt.Circle(robot_positions[0], self.robot_sensor_range, fill=False, ls='dashed')
             ax.add_artist(robot)
             ax.add_artist(goal)
-            plt.legend([robot, goal], ['Robot', 'Goal'], fontsize=14)
+
 
             # add humans and their numbers
             human_positions = [[state[1][j].position for j in range(len(self.humans))] for state in self.states]
-            humans = [plt.Circle(human_positions[0][i], self.humans[i].radius, fill=True, color=human_colors[i])
+            humans = [plt.Circle(human_positions[0][i], self.humans[i].radius, fill=False, color=human_colors[i])
                       for i in range(len(self.humans))]
-
+            plt.legend([robot, humans[0], goal], ['Robot', 'Human', 'Goal'], fontsize=14)
             # disable showing human numbers
             if display_numbers:
                 human_numbers = [plt.text(humans[i].center[0] - x_offset, humans[i].center[1] + y_offset, str(i),
-                                          color='black', fontsize=11) for i in range(len(self.humans))]
+                                          color='black', fontsize=12) for i in range(len(self.humans))]
                 if hasattr(self.robot.policy, 'get_attention_weights'):
                     attentions =[plt.text(robot.center[0] + x_offset, robot.center[1] + y_offset,
-                                          '{:.2f}'.format(self.attention_weights[0][0]),color='black',fontsize=11)] + \
+                                          '{:.2f}'.format(self.attention_weights[0][0]),color='black',fontsize=12)] + \
                                 [plt.text(humans[i].center[0] + x_offset, humans[i].center[1] + y_offset, '{:.2f}'.format(self.attention_weights[0][i+1]),
-                              color='black',fontsize=11) for i in range(len(self.humans))]
+                              color='black',fontsize=12) for i in range(len(self.humans))]
             for i, human in enumerate(humans):
                 ax.add_artist(human)
                 if display_numbers:
                     ax.add_artist(human_numbers[i])
 
             # add time annotation
-            time = plt.text(0.4, 1.05, 'Time: {}'.format(0), fontsize=16, transform=ax.transAxes)
+            time = plt.text(0.4, 1.02, 'Time: {}'.format(0), fontsize=16, transform=ax.transAxes)
             ax.add_artist(time)
 
             # visualize attention scores
@@ -759,13 +759,13 @@ class CrowdSim(gym.Env):
                 anim.running ^= True
 
             fig.canvas.mpl_connect('key_press_event', on_click)
-            anim = animation.FuncAnimation(fig, update, frames=len(self.states), interval=self.time_step * 500)
+            anim = animation.FuncAnimation(fig, update, frames=len(self.states), interval=self.time_step * 1000)
             anim.running = True
 
             if output_file is not None:
                 # save as video
                 ffmpeg_writer = animation.FFMpegWriter(fps=10, metadata=dict(artist='Me'), bitrate=1800)
-                # writer = ffmpeg_writer(fps=10, metadata=dict(artist='Me'), bitrate=1800)
+                # writer = ffmpeg_writer(fps=10, metadata=(artist='Me'), bitrate=1800)
                 anim.save(output_file, writer=ffmpeg_writer)
 
                 # save output file as gif if imagemagic is installed
