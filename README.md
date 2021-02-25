@@ -37,15 +37,15 @@ python test.py --policy tree-search-rl --model_dir data/output --phase test --vi
 ## Trajectory Diagram
 
 <figure class="half">
-   <img src="https://github.com/nubot-nudt/SG-DQN/blob/main/doc/sim_traj.png" alt="com_traj" style="zoom: 67%;" />
-   <img src="https://github.com/nubot-nudt/SG-DQN/blob/main/doc/com_traj.png" alt="sim_traj" style="zoom:67%;" />
+   <img src="https://github.com/nubot-nudt/SG-DQN/blob/main/doc/sim_traj.png" alt="com_traj" style="zoom: 50%;" />
+   <img src="https://github.com/nubot-nudt/SG-DQN/blob/main/doc/com_traj.png" alt="sim_traj" style="zoom:50%;" />
 </figure>
 
 ## Attention Weights
 
 <figure class="half">
-   <img src="https://github.com/nubot-nudt/SG-DQN/blob/main/doc/sim_att_wei.png" alt="sim_att_wei" style="zoom: 67%;" />
-   <img src="https://github.com/nubot-nudt/SG-DQN/blob/main/doc/com_att_wei.png" alt="com_att_wei" style="zoom:67%;" />
+   <img src="https://github.com/nubot-nudt/SG-DQN/blob/main/doc/sim_att_wei.png" alt="sim_att_wei" style="zoom: 50%;" />
+   <img src="https://github.com/nubot-nudt/SG-DQN/blob/main/doc/com_att_wei.png" alt="com_att_wei" style="zoom: 50%;" />
 </figure>
 
 ## Video Demo
