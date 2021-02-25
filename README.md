@@ -1,4 +1,7 @@
+
+
 # SG-DQN
+
 This repository contains the codes for our paper, which is in submission to RA-L and IROS 2021. 
 
 
@@ -46,14 +49,12 @@ python test.py --policy tree-search-rl --model_dir data/output --phase test --vi
 
 ## Video Demo
 
-<table>
-	<tr>
-		<td ><center><img src="doc/sim_suc_case.gif" width="600">Success Case</center></td>
-		<td ><center><img src="doc/com_suc_case.gif" width="600">Success Case</center></td>
-	</tr>
-	<tr>
-		<td ><center><img src="doc/sim_col_case.gif" width="600">Collision Case</center></td>
-		<td ><center><img src="doc/com_col_case.gif" width="600">Collision Case</center></td>
-	</tr>
-</table>
+|                A Success Case in Simple Scenarios                 |                A Success Case in Complex Scenarios               |
+| :--------------------------------------------: | :--------------------------------------------: |
+| <img src="doc/sim_suc_case.gif" width="500" /> | <img src="doc/com_suc_case.gif" width="500" /> |
+|         **A Collision Case in Simple Scenarios**   |    **A Collision Case in Complex Scenarios**     |
+| <img src="doc/sim_col_case.gif" width="500" /> | <img src="doc/com_col_case.gif" width="500" /> |
+
+## Acknowledge
+This work is based on [CrowdNav](https://github.com/vita-epfl/CrowdNav) and [RelationalGraphLearning](https://github.com/ChanganVR/RelationalGraphLearning).  The authors thank Changan Chen, Yuejiang Liu, Sven Kreiss, Alexandre Alahi, Sha Hu, Payam Nikdel, Greg Mori, Manolis Savva for their works.
 
