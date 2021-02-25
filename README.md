@@ -6,7 +6,7 @@ This repository contains the codes for our paper, which is in submission to RA-L
 we propose a graph-based deep reinforcement learning method, SG-DQN, that (i) introduces a social attention mechanism to extract an efficient graph representation for the crowd-robot state; (ii) directly evaluates the coarse q-values of the raw state with a learned dueling deep Q network(DQN); and then (iii) refines the coarse q-values via online planning on possible future trajectories. The experimental results indicate that our model can help the robot better understand the crowd and achieve a high success rate of more than 0.99 in the crowd navigation task. Compared against previous state-of-the-art algorithms, our algorithm achieves an equivalent, if not better, performance while requiring less than half of the computational cost.
 
 ## Method Overview
-<img src="https://github.com/nubot-nudt/SG-DQN/blob/main/doc/framework.png" alt="framework" style="zoom: 80%;" />
+<img src="doc/framework.png" alt="framework" width="1000" />
 
 
 ## Setup
@@ -35,20 +35,25 @@ python test.py --model_dir data/output
 python test.py --policy tree-search-rl --model_dir data/output --phase test --visualize --test_case 0
 ```
 ## Trajectory Diagram
-
-<figure class="half">
-   <img src="https://github.com/nubot-nudt/SG-DQN/blob/main/doc/sim_traj.png" alt="com_traj" style="zoom: 50%;" />
-   <img src="https://github.com/nubot-nudt/SG-DQN/blob/main/doc/com_traj.png" alt="sim_traj" style="zoom:50%;" />
-</figure>
-
+|              Simple Scenario               |              Complex Scenario              |
+| :----------------------------------------: | :----------------------------------------: |
+| <img src="doc/sim_traj.png" width="500" /> | <img src="doc/com_traj.png" width="500" /> |
 ## Attention Weights
 
-<figure class="half">
-   <img src="https://github.com/nubot-nudt/SG-DQN/blob/main/doc/sim_att_wei.png" alt="sim_att_wei" style="zoom: 50%;" />
-   <img src="https://github.com/nubot-nudt/SG-DQN/blob/main/doc/com_att_wei.png" alt="com_att_wei" style="zoom: 50%;" />
-</figure>
+|                Simple Scenario                |               Complex Scenario                |
+| :-------------------------------------------: | :-------------------------------------------: |
+| <img src="doc/sim_att_wei.png" width="500" /> | <img src="doc/com_att_wei.png" width="500" /> |
 
 ## Video Demo
 
-<video src="doc/demo.mp4"></video>
+<table>
+	<tr>
+		<td ><center><img src="doc/sim_suc_case.gif" width="600">Success Case</center></td>
+		<td ><center><img src="doc/com_suc_case.gif" width="600">Success Case</center></td>
+	</tr>
+	<tr>
+		<td ><center><img src="doc/sim_col_case.gif" width="600">Collision Case</center></td>
+		<td ><center><img src="doc/com_col_case.gif" width="600">Collision Case</center></td>
+	</tr>
+</table>
 
