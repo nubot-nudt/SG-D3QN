@@ -151,10 +151,10 @@ class TSRLTrainer(object):
             # outputs = self.value_estimator((robot_states, human_states))
             outputs = self.value_estimator((robot_states, human_states)).gather(1, actions.unsqueeze(1))
             gamma_bar = pow(self.gamma, self.time_step * self.v_pref)
-            # max_next_Q_index = torch.max(self.value_estimator((next_robot_states, next_human_states)), dim=1)[1]
-            # next_Q_value = self.target_model((next_robot_states, next_human_states)).gather(1, max_next_Q_index.unsqueeze(1))
-            next_Q_values = self.target_model((next_robot_states, next_human_states))
-            next_Q_value, _ = torch.max(next_Q_values, dim=1)
+            max_next_Q_index = torch.max(self.value_estimator((next_robot_states, next_human_states)), dim=1)[1]
+            next_Q_value = self.target_model((next_robot_states, next_human_states)).gather(1, max_next_Q_index.unsqueeze(1))
+            # next_Q_values = self.target_model((next_robot_states, next_human_states))
+            # next_Q_value, _ = torch.max(next_Q_values, dim=1)
             # for DQN
             done_infos = (1-done).squeeze(1)
             target_values = rewards + torch.mul(done_infos, next_Q_value * gamma_bar).unsqueeze(1)
