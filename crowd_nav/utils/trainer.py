@@ -156,8 +156,8 @@ class TSRLTrainer(object):
             next_Q_values = self.target_model((next_robot_states, next_human_states))
             next_Q_value, _ = torch.max(next_Q_values, dim=1)
             # for DQN
-            done_info = 1-done
-            target_values = rewards + (1-done) * next_Q_value * gamma_bar
+            done_infos = (1-done).squeeze(1)
+            target_values = rewards + torch.mul(done_infos, next_Q_value * gamma_bar).unsqueeze(1)
 
             # values = values.to(self.device)
             loss = self.criterion(outputs, target_values)
