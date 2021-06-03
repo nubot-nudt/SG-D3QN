@@ -320,20 +320,6 @@ class ModelPredictiveRL(Policy):
         max_traj = trajs[max_index]
         return max_return, max_traj
 
-
-    def transform(self, state):
-        """
-        Take the JointState to tensors
-
-        :param state:
-        :return: tensor of shape (# of agent, len(state))
-        """
-        robot_state_tensor = torch.Tensor([state.robot_state.to_tuple()]).to(self.device)
-        human_states_tensor = torch.Tensor([human_state.to_tuple() for human_state in state.human_states]). \
-            to(self.device)
-
-        return robot_state_tensor, human_states_tensor
-
     def compute_next_robot_state(self, robot_state, action):
         if robot_state.shape[0] != 1:
             raise NotImplementedError

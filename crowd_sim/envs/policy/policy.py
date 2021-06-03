@@ -63,3 +63,17 @@ class Policy(object):
             return True
         else:
             return False
+
+    def transform(self, state):
+        """
+        Take the JointState to tensors
+
+        :param state:
+        :return: tensor of shape (# of agent, len(state))
+        """
+        robot_state_tensor = torch.Tensor([state.robot_state.to_tuple()]).to(self.device)
+        human_states_tensor = torch.Tensor([human_state.to_tuple() for human_state in state.human_states]). \
+            to(self.device)
+
+        return robot_state_tensor, human_states_tensor
+
