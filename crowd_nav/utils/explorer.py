@@ -49,17 +49,20 @@ class Explorer(object):
             states = []
             actions = []
             rewards = []
+            dones = []
             while not done:
                 action, action_index = self.robot.act(ob)
                 ob, reward, done, info = self.env.step(action)
                 states.append(self.robot.policy.last_state)
                 actions.append(action_index)
                 rewards.append(reward)
+                dones.append(done)
 
                 if isinstance(info, Discomfort):
                     discomfort += 1
                     min_dist.append(info.min_dist)
-
+            # add the terminal state
+            states.append(self.robot.get_state(ob))
             if isinstance(info, ReachGoal):
                 success += 1
                 success_times.append(self.env.global_time)
@@ -79,7 +82,7 @@ class Explorer(object):
             if update_memory:
                 # if isinstance(info, ReachGoal) or isinstance(info, Collision):
                     # only add positive(success) or negative(collision) experience in experience set
-                self.update_memory(states, actions, rewards, imitation_learning)
+                self.update_memory(states, actions, rewards, dones, imitation_learning)
 
             # cumulative_rewards.append(sum([pow(self.gamma, t * self.robot.time_step * self.robot.v_pref)
             #                                * reward for t, reward in enumerate(rewards)]))
@@ -120,7 +123,7 @@ class Explorer(object):
 
         return self.statistics
 
-    def update_memory(self, states, actions, rewards, imitation_learning=False):
+    def update_memory(self, states, actions, rewards,dones, imitation_learning=False):
         if self.memory is None or self.gamma is None:
             raise ValueError('Memory or gamma value is not set!')
         
@@ -132,6 +135,7 @@ class Explorer(object):
                 # define the value of states in IL as cumulative discounted rewards, which is the same in RL
                 state = self.target_policy.transform(state)
                 action = actions[i]
+                done = dones[i]
                 next_state = self.target_policy.transform(states[i+1])
                 value = sum([pow(self.gamma, (t - i) * self.robot.time_step * self.robot.v_pref) * reward *
                              (1 if t >= i else 0) for t, reward in enumerate(rewards)])
@@ -143,11 +147,12 @@ class Explorer(object):
                     value = reward
                 else:
                     value = 0
-            value = torch.Tensor([value]).to(self.device)
-            reward = torch.Tensor([rewards[i]]).to(self.device)
+                value = torch.Tensor([value]).to(self.device)
+                reward = torch.Tensor([rewards[i]]).to(self.device)
+                done = torch.Tensor([dones[i]]).to(self.device)
 
             if self.target_policy.name == 'ModelPredictiveRL' or self.target_policy.name == 'TreeSearchRL':
-                self.memory.push((state[0], state[1], action, value, reward, next_state[0], next_state[1]))
+                self.memory.push((state[0], state[1], action, value, done, reward, next_state[0], next_state[1]))
             else:
                 self.memory.push((state, value, reward, next_state))
 

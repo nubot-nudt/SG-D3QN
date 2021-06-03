@@ -80,7 +80,7 @@ class TSRLTrainer(object):
         else:
             logging.info('Lr: {} for parameters {} with {} optimizer'.format(learning_rate, ' '.join(
                 [name for name, param in list(self.value_estimator.named_parameters())]), self.optimizer_str))
-
+    # just build for imitation learning
     def optimize_epoch(self, num_epochs):
         if self.v_optimizer is None:
             raise ValueError('Learning rate is not set!')
@@ -93,7 +93,7 @@ class TSRLTrainer(object):
 
             update_counter = 0
             for data in self.data_loader:
-                robot_states, human_states, actions, values, _, next_robot_state, next_human_states = data
+                robot_states, human_states, actions, values, dones, rewards, next_robot_state, next_human_states = data
 
                 # optimize value estimator
                 self.v_optimizer.zero_grad()
@@ -143,7 +143,7 @@ class TSRLTrainer(object):
         self.value_estimator.value_network.eval()
         for data in self.data_loader:
             batch_num = int(self.data_loader.sampler.num_samples // self.batch_size)
-            robot_states, human_states, actions, _, rewards, next_robot_states, next_human_states = data
+            robot_states, human_states, actions, _, done, rewards, next_robot_states, next_human_states = data
 
             # optimize value estimator
             self.v_optimizer.zero_grad()
@@ -151,13 +151,13 @@ class TSRLTrainer(object):
             # outputs = self.value_estimator((robot_states, human_states))
             outputs = self.value_estimator((robot_states, human_states)).gather(1, actions.unsqueeze(1))
             gamma_bar = pow(self.gamma, self.time_step * self.v_pref)
-            max_next_Q_index = torch.max(self.value_estimator((next_robot_states, next_human_states)), dim=1)[1]
-            next_Q_value = self.target_model((next_robot_states, next_human_states)).gather(1, max_next_Q_index.unsqueeze(1))
-            # for dqn
-            # max_next_Q = torch.max(self.target_model((next_robot_states, next_human_states)), dim=1)[0]
-            # next_Q_value= max_next_Q.unsqueeze(dim=1)
-            target_values = rewards + next_Q_value * gamma_bar
-            # target_values = rewards + gamma_bar * self.target_model((next_robot_states, next_human_states))
+            # max_next_Q_index = torch.max(self.value_estimator((next_robot_states, next_human_states)), dim=1)[1]
+            # next_Q_value = self.target_model((next_robot_states, next_human_states)).gather(1, max_next_Q_index.unsqueeze(1))
+            next_Q_values = self.target_model((next_robot_states, next_human_states))
+            next_Q_value, _ = torch.max(next_Q_values, dim=1)
+            # for DQN
+            done_info = 1-done
+            target_values = rewards + (1-done) * next_Q_value * gamma_bar
 
             # values = values.to(self.device)
             loss = self.criterion(outputs, target_values)
