@@ -159,7 +159,7 @@ class GAT_RL(nn.Module):
         self.layerwise_graph = layerwise_graph
         self.skip_connection = skip_connection
         self.gat0 = GraphAttentionLayer(self.X_dim, self.X_dim)
-        self.gat1 = GraphAttentionLayer(self.X_dim, self.X_dim)
+        # self.gat1 = GraphAttentionLayer(self.X_dim, self.X_dim)
 
         logging.info('Similarity_func: {}'.format(self.similarity_function))
         logging.info('Layerwise_graph: {}'.format(self.layerwise_graph))
@@ -200,11 +200,11 @@ class GAT_RL(nn.Module):
             H1, self.attention_weights = self.gat0(X, adj)
         else:
             H1, _ = self.gat0(X, adj)
-        H2, _ = self.gat1(H1, adj)
+        # H2, _ = self.gat1(H1, adj)
         if self.skip_connection:
-            output = H1 + H2 + X
+            output = H1 + X
         else:
-            output = H2
+            output = H1
         return output
 
 class GraphAttentionLayer(nn.Module):
