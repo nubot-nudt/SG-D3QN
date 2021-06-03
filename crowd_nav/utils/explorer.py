@@ -56,7 +56,11 @@ class Explorer(object):
                 states.append(self.robot.policy.last_state)
                 actions.append(action_index)
                 rewards.append(reward)
-                dones.append(done)
+                # actually, final states of timeout cases is not terminal states
+                if isinstance(info, Timeout):
+                    dones.append(False)
+                else:
+                    dones.append(done)
 
                 if isinstance(info, Discomfort):
                     discomfort += 1
@@ -123,7 +127,7 @@ class Explorer(object):
 
         return self.statistics
 
-    def update_memory(self, states, actions, rewards,dones, imitation_learning=False):
+    def update_memory(self, states, actions, rewards, dones, imitation_learning=False):
         if self.memory is None or self.gamma is None:
             raise ValueError('Memory or gamma value is not set!')
         

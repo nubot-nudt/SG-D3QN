@@ -156,14 +156,13 @@ class TSRLTrainer(object):
             # next_Q_values = self.target_model((next_robot_states, next_human_states))
             # next_Q_value, _ = torch.max(next_Q_values, dim=1)
             # for DQN
-            done_infos = (1-done).squeeze(1)
-            target_values = rewards + torch.mul(done_infos, next_Q_value * gamma_bar).unsqueeze(1)
-
-            # values = values.to(self.device)
-            loss = self.criterion(outputs, target_values)
-            loss.backward()
+            done_infos = (1-done)
+            target_values = rewards + torch.mul(done_infos, next_Q_value * gamma_bar)
+            clip_base = outputs - target_values
+            value_loss = self.criterion(outputs, target_values)
+            value_loss.backward()
             self.v_optimizer.step()
-            v_losses += loss.data.item()
+            v_losses += value_loss.data.item()
 
             # optimize state predictor
             if self.state_predictor.trainable:
