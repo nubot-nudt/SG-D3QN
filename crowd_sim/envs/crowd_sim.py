@@ -348,7 +348,7 @@ class CrowdSim(gym.Env):
             elif closest_dist < dmin:
                 dmin = closest_dist
             if closest_dist < 0.2:
-                collision_penalty = collision_penalty + (closest_dist - self.discomfort_dist) * 0.25 * 0.5
+                collision_penalty = collision_penalty + (closest_dist - self.discomfort_dist) * 0.5
 
         # collision detection between humans
         human_num = len(self.humans)
@@ -365,7 +365,7 @@ class CrowdSim(gym.Env):
         end_position = np.array(self.robot.compute_position(action, self.time_step))
         cur_position = np.array((self.robot.px, self.robot.py))
         goal_position = np.array(self.robot.get_goal_position())
-        reward_goal = 0.01 * (norm(cur_position - goal_position) - norm(end_position - goal_position))
+        reward_goal = 0.1 * (norm(cur_position - goal_position) - norm(end_position - goal_position))
         reaching_goal = norm(end_position - goal_position) < self.robot.radius
         action_vel_length = np.sqrt(action.vx*action.vx + action.vy*action.vy)
         robot_vel_length = np.sqrt(self.robot.vx*self.robot.vx + self.robot.vy*self.robot.vy)
@@ -394,7 +394,7 @@ class CrowdSim(gym.Env):
             done = False
             info = Nothing()
         reward = reward_col + reward_goal + collision_penalty
-        reward = reward * 10
+        reward = reward
 
         if update:
             # store state, action value and attention weights

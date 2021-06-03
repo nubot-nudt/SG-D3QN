@@ -308,6 +308,7 @@ if __name__ == '__main__':
     parser.add_argument('--debug', default=False, action='store_true')
     parser.add_argument('--test_after_every_eval', default=False, action='store_true')
     parser.add_argument('--randomseed', type=int, default=7)
+    parser.add_argument('--human_num', type=int, default=5)
 
     # arguments for GCN
     # parser.add_argument('--X_dim', type=int, default=32)
