@@ -285,7 +285,7 @@ class MPRLTrainer(object):
 
             update_counter = 0
             for data in self.data_loader:
-                robot_states, human_states, actions, values, _, next_robot_state, next_human_states = data
+                robot_states, human_states, actions, values, dones, rewards, next_robot_state, next_human_states = data
 
                 # optimize value estimator
                 self.v_optimizer.zero_grad()
@@ -335,7 +335,7 @@ class MPRLTrainer(object):
         self.value_estimator.value_network.eval()
         for data in self.data_loader:
             batch_num = int(self.data_loader.sampler.num_samples // self.batch_size)
-            robot_states, human_states, actions, _, rewards, next_robot_states, next_human_states = data
+            robot_states, human_states, actions, _, done, rewards, next_robot_states, next_human_states = data
 
             # optimize value estimator
             self.v_optimizer.zero_grad()
