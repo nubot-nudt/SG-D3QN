@@ -5,15 +5,12 @@ from numpy.linalg import norm
 import itertools
 from crowd_sim.envs.policy.policy import Policy
 from crowd_sim.envs.utils.action import ActionRot, ActionXY
-from crowd_sim.envs.utils.state import tensor_to_joint_state
-from crowd_sim.envs.utils.utils import point_to_segment_dist
+
 from crowd_nav.policy.state_predictor import StatePredictor, LinearStatePredictor_batch
 from crowd_nav.policy.graph_model import RGL,GAT_RL
 from crowd_nav.policy.value_estimator import DQNNetwork, Noisy_DQNNetwork
-from crowd_nav.policy.reward_estimate import estimate_reward_on_predictor
 from crowd_nav.policy.actor import Actor
 from crowd_nav.policy.critic import Critic
-
 
 class TD3RL(Policy):
     def __init__(self):
@@ -65,29 +62,16 @@ class TD3RL(Policy):
         # self.set_device(device)
         self.device = device
 
-
-        if self.linear_state_predictor:
-            self.state_predictor = LinearStatePredictor_batch(config, self.time_step)
-            graph_model = RGL(config, self.robot_state_dim, self.human_state_dim)
-            self.value_estimator = DQNNetwork(config, graph_model)
-            self.model = [graph_model, self.value_estimator.value_network]
-        else:
-            if self.share_graph_model:
-                graph_model = RGL(config, self.robot_state_dim, self.human_state_dim)
-                self.value_estimator = DQNNetwork(config, graph_model)
-                self.state_predictor = StatePredictor(config, graph_model, self.time_step)
-                self.model = [graph_model, self.value_estimator.value_network, self.state_predictor.human_motion_predictor]
-            else:
-                graph_model1 = GAT_RL(config, self.robot_state_dim, self.human_state_dim)
-                self.actor = Actor(config,graph_model1,self.action_dim, self.max_action)
-                graph_model2 = GAT_RL(config, self.robot_state_dim, self.human_state_dim)
-                graph_model3 = GAT_RL(config, self.robot_state_dim, self.human_state_dim)
-                self.critic = Critic(config, graph_model2, graph_model3, self.action_dim)
-                graph_model4 = GAT_RL(config, self.robot_state_dim, self.human_state_dim)
-                self.state_predictor = StatePredictor(config, graph_model4, self.time_step)
-                self.model = [graph_model1, graph_model2, graph_model3, self.actor.action_network,
-                              self.critic.score_network1, self.critic.score_network2,
-                              self.state_predictor.human_motion_predictor]
+        graph_model1 = GAT_RL(config, self.robot_state_dim, self.human_state_dim)
+        self.actor = Actor(config,graph_model1,self.action_dim, self.max_action)
+        graph_model2 = GAT_RL(config, self.robot_state_dim, self.human_state_dim)
+        graph_model3 = GAT_RL(config, self.robot_state_dim, self.human_state_dim)
+        self.critic = Critic(config, graph_model2, graph_model3, self.action_dim)
+        graph_model4 = GAT_RL(config, self.robot_state_dim, self.human_state_dim)
+        self.state_predictor = StatePredictor(config, graph_model4, self.time_step)
+        self.model = [graph_model1, graph_model2, graph_model3, self.actor.action_network,
+                        self.critic.score_network1, self.critic.score_network2,
+                        self.state_predictor.human_motion_predictor]
 
         logging.info('TD3 action_dim is : {}'.format(self.action_dim))
 
@@ -132,7 +116,6 @@ class TD3RL(Policy):
                 'motion_predictor': self.state_predictor.human_motion_predictor.state_dict()
             }
 
-
     def get_traj(self):
         return self.traj
 
@@ -157,7 +140,6 @@ class TD3RL(Policy):
         """
         A base class for all methods that takes pairwise joint state as input to value network.
         The input to the value network is always of shape (batch_size, # humans, rotated joint state length)
-
         """
         if self.phase is None or self.device is None:
             raise AttributeError('Phase, device attributes have to be set!')
