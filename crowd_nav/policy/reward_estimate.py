@@ -10,9 +10,11 @@ def estimate_reward_on_predictor(state, next_state):
         state = tensor_to_joint_state(state)
     human_states = state.human_states
     robot_state = state.robot_state
-    weight_goal = 0.4
-    weight_safe = 0.6
+    weight_goal = 0.5
+    weight_safe = 0.5
     weight_terminal = 10.0
+    re_collision = -0.25
+    re_arrival = 1.0
     next_robot_state = next_state.robot_state
     next_human_states = next_state.human_states
     cur_position = np.array((robot_state.px, robot_state.py))
@@ -51,9 +53,9 @@ def estimate_reward_on_predictor(state, next_state):
     reward_col = 0
     reward_arrival = 0
     if collision:
-        reward_col = -1.0
+        reward_col = re_collision
     elif reaching_goal:
-        reward_arrival = 1.0
+        reward_arrival = re_arrival
     reward_terminal = reward_col + reward_arrival
     reward = weight_terminal * reward_terminal + weight_goal * reward_goal + weight_safe * safety_penalty
     # if collision:

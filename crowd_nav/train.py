@@ -37,11 +37,7 @@ def main(args):
         if args.overwrite:
             shutil.rmtree(args.output_dir)
         else:
-            key = input('Output directory already exists! Overwrite the folder? (y/n)')
-            if key == 'y' and not args.resume:
-                shutil.rmtree(args.output_dir)
-            else:
-                make_new_dir = False
+            shutil.rmtree(args.output_dir)
     if make_new_dir:
         os.makedirs(args.output_dir)
         shutil.copy(args.config, os.path.join(args.output_dir, 'config.py'))

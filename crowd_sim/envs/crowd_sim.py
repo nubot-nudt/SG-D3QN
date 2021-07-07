@@ -328,7 +328,8 @@ class CrowdSim(gym.Env):
         weight_goal = 0.5
         weight_safe = 0.5
         weight_terminal = 10.0
-
+        re_collision = -0.25
+        re_arrival = 1.0
         # collision detection
         dmin = float('inf')
         collision = False
@@ -394,11 +395,11 @@ class CrowdSim(gym.Env):
             done = True
             info = Timeout()
         elif collision:
-            reward_col = self.collision_penalty
+            reward_col = re_collision#self.collision_penalty
             done = True
             info = Collision()
         elif reaching_goal:
-            reward_arrival = self.success_reward
+            reward_arrival = re_arrival#self.success_reward
             done = True
             info = ReachGoal()
         elif dis_end < self.discomfort_dist:
