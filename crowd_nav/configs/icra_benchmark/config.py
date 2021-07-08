@@ -134,12 +134,12 @@ class BaseTrainConfig(object):
     imitation_learning.il_episodes = 2000
     imitation_learning.il_policy = 'orca'
     imitation_learning.il_epochs = 100
-    imitation_learning.il_learning_rate = 0.0005
+    imitation_learning.il_learning_rate = 0.001
     imitation_learning.safety_space = 0.15
 
     train = Config()
     train.rl_train_epochs = 1
-    train.rl_learning_rate = 0.0005
+    train.rl_learning_rate = 0.001
     # number of batches to train at the end of training episode il_episodes
     train.train_batches = 50
     # training episodes in outer loop

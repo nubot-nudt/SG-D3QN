@@ -340,11 +340,12 @@ class MPRLTrainer(object):
             # optimize value estimator
             self.v_optimizer.zero_grad()
             actions = actions.to(self.device)
-            # outputs = self.value_estimator((robot_states, human_states))
             outputs = self.value_estimator((robot_states, human_states))
             gamma_bar = pow(self.gamma, self.time_step * self.v_pref)
             next_value = self.target_model((next_robot_states, next_human_states))
-            target_values = rewards + next_value * gamma_bar
+            done_infos = (1 - done)
+            target_values = rewards + torch.mul(done_infos, next_value * gamma_bar)
+
             # values = values.to(self.device)
             loss = self.criterion(outputs, target_values)
             loss.backward()
