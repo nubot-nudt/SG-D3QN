@@ -1,5 +1,6 @@
 #!/bin/bash
-day='date +%y%m%d'
+day=`date +%m%d`
+echo "The Script begin at $d1"
 # Script to reproduce results
 for ((i=0;i<3;i+=1))
 do 
