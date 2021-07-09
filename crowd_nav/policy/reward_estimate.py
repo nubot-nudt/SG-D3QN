@@ -10,10 +10,10 @@ def estimate_reward_on_predictor(state, next_state):
         state = tensor_to_joint_state(state)
     human_states = state.human_states
     robot_state = state.robot_state
-    weight_goal = 0.5
-    weight_safe = 0.5
+    weight_goal = 0.2
+    weight_safe = 0.8
     weight_terminal = 10.0
-    re_collision = -5.0
+    re_collision = -0.5
     re_arrival = 1.0
     next_robot_state = next_state.robot_state
     next_human_states = next_state.human_states

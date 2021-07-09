@@ -149,10 +149,15 @@ class TSRLTrainer(object):
             self.v_optimizer.zero_grad()
             actions = actions.to(self.device)
             # outputs = self.value_estimator((robot_states, human_states))
+            #利用value estimator计算当前动作下的q_value
             outputs = self.value_estimator((robot_states, human_states)).gather(1, actions.unsqueeze(1))
             gamma_bar = pow(self.gamma, self.time_step * self.v_pref)
+            #利用value_estimaor选取s_(t+1)下的最优动作
             max_next_Q_index = torch.max(self.value_estimator((next_robot_states, next_human_states)), dim=1)[1]
+            #利用target model估计最优动作对应的q_value
+            #这就是一个double DQN版本，而不是dqn版本
             next_Q_value = self.target_model((next_robot_states, next_human_states)).gather(1, max_next_Q_index.unsqueeze(1))
+            # 这个是DQN版本
             # next_Q_values = self.target_model((next_robot_states, next_human_states))
             # next_Q_value, _ = torch.max(next_Q_values, dim=1)
             # for DQN
