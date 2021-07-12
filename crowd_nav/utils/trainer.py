@@ -4,6 +4,7 @@ import copy
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from crowd_sim.envs.utils.action import ActionXY
 
@@ -339,6 +340,7 @@ class MPRLTrainer(object):
         self.target_model.value_network.eval()
         self.value_estimator.value_network.eval()
         for data in self.data_loader:
+            # 从这一步来看，他的学习过程中，将所有的样本都是放进了学习过程的，而不是随机采样的样本
             batch_num = int(self.data_loader.sampler.num_samples // self.batch_size)
             robot_states, human_states, actions, _, done, rewards, next_robot_states, next_human_states = data
 
@@ -478,6 +480,238 @@ class VNRLTrainer(object):
 
         return average_loss
 
+class TD3RLTrainer(object):
+    def __init__(self, actor_network, critic_network, state_predictor, memory, device, policy, writer, batch_size, optimizer_str, human_num,
+                 reduce_sp_update_frequency, freeze_state_predictor, detach_state_predictor, share_graph_model):
+        """
+        Train the trainable model of a policy
+        """
+        self.actor_network = actor_network
+        self.critic_network = critic_network
+        self.target_actor_network = None
+        self.target_critic_network = None
+        self.state_predictor = state_predictor
+        self.actor_optimizer = None
+        self.critic_optimizer = None
+        self.state_optimizer = None
+
+        self.data_loader = None
+        self.batch_size = batch_size
+        self.optimizer_str = optimizer_str
+
+        self.device = device
+        self.writer = writer
+        # self.target_model = None
+        self.criterion = nn.MSELoss().to(device)
+        self.memory = memory
+        self.reduce_sp_update_frequency = reduce_sp_update_frequency
+        self.state_predictor_update_interval = human_num
+        self.freeze_state_predictor = freeze_state_predictor
+        self.detach_state_predictor = detach_state_predictor
+
+        policy_noise = 0.2
+        noise_clip = 0.5
+        policy_freq = 2
+        max_action = [1, 1]
+        # parameter for TD3
+        self.policy_noise = policy_noise
+        self.noise_clip = noise_clip
+        self.policy_freq = policy_freq
+        self.max_action = max_action
+        self.tau = 0.005
+        # for value update
+        self.gamma = 0.9
+        self.time_step = 0.25
+        self.v_pref = 1
+        self.discount = pow(self.gamma,self.time_step*self.v_pref)
+        self.total_iteration = 0
+
+    def update_target_model(self, target_model):
+        self.target_model = copy.deepcopy(target_model)
+
+    def set_learning_rate(self, learning_rate):
+        if self.optimizer_str == 'Adam':
+            self.actor_optimizer = optim.Adam(self.actor_network.parameters(), lr=learning_rate)
+            self.critic_optimizer = optim.Adam(self.critic_network.parameters(), lr=learning_rate)
+            if self.state_predictor.trainable:
+                self.state_optimizer = optim.Adam(self.state_predictor.parameters(), lr=learning_rate)
+        elif self.optimizer_str == 'SGD':
+            self.actor_optimizer = optim.SGD(self.actor_network.parameters(), lr=learning_rate, momentum=0.9)
+            self.critic_optimizer = optim.SGD(self.critic_network.parameters(), lr=learning_rate, momentum=0.9)
+            if self.state_predictor.trainable:
+                self.state_optimizer = optim.SGD(self.state_predictor.parameters(), lr=learning_rate, momentum=0.9)
+        else:
+            raise NotImplementedError
+
+        if self.state_predictor.trainable:
+            logging.info('Lr: {} for parameters {} with {} optimizer'.format(learning_rate, ' '.join(
+                [name for name, param in
+                 list(self.actor_network.named_parameters()) + list(self.critic_network.named_parameters())
+                 + list(self.state_predictor.named_parameters())]), self.optimizer_str))
+        else:
+            logging.info('Lr: {} for parameters {} with {} optimizer'.format(learning_rate, ' '.join(
+                [name for name, param in list(self.actor_network.named_parameters()) +
+                 list(self.critic_network.named_parameters())]), self.optimizer_str))
+    # wait for revise
+    # def optimize_epoch(self, num_epochs):
+    #     if self.v_optimizer is None:
+    #         raise ValueError('Learning rate is not set!')
+    #     if self.data_loader is None:
+    #         self.data_loader = DataLoader(self.memory, self.batch_size, shuffle=True)
+    #     for epoch in range(num_epochs):
+    #         epoch_v_loss = 0
+    #         epoch_s_loss = 0
+    #         logging.debug('{}-th epoch starts'.format(epoch))
+    #
+    #         update_counter = 0
+    #         for data in self.data_loader:
+    #             robot_states, human_states, actions, values, dones, rewards, next_robot_state, next_human_states = data
+    #
+    #             # optimize value estimator
+    #             self.v_optimizer.zero_grad()
+    #             actions = actions.to(self.device)
+    #             outputs = self.value_estimator((robot_states, human_states))
+    #             values = values.to(self.device)
+    #             loss = self.criterion(outputs, values)
+    #             loss.backward()
+    #             self.v_optimizer.step()
+    #             epoch_v_loss += loss.data.item()
+    #
+    #             # optimize state predictor
+    #             if self.state_predictor.trainable:
+    #                 update_state_predictor = True
+    #                 if update_counter % self.state_predictor_update_interval != 0:
+    #                     update_state_predictor = False
+    #
+    #                 if update_state_predictor:
+    #                     self.s_optimizer.zero_grad()
+    #                     _, next_human_states_est = self.state_predictor((robot_states, human_states), None)
+    #                     loss = self.criterion(next_human_states_est, next_human_states)
+    #                     loss.backward()
+    #                     self.s_optimizer.step()
+    #                     epoch_s_loss += loss.data.item()
+    #                 update_counter += 1
+    #             else:
+    #                 _, next_human_states_est = self.state_predictor((robot_states, human_states), ActionXY(0, 0))
+    #                 loss = self.criterion(next_human_states_est, next_human_states)
+    #                 epoch_s_loss += loss.data.item()
+    #
+    #         logging.debug('{}-th epoch ends'.format(epoch))
+    #         self.writer.add_scalar('IL/epoch_v_loss', epoch_v_loss / len(self.memory), epoch)
+    #         self.writer.add_scalar('IL/epoch_s_loss', epoch_s_loss / len(self.memory), epoch)
+    #         logging.info('Average loss in epoch %d: %.2E, %.2E', epoch, epoch_v_loss / len(self.memory),
+    #                      epoch_s_loss / len(self.memory))
+    #     return
+
+    def optimize_batch(self, num_batches, episode):
+        self.total_iteration += 1
+        if self.actor_optimizer is None or self.critic_network is None:
+            raise ValueError('Learning rate is not set!')
+        if self.data_loader is None:
+            self.data_loader = DataLoader(self.memory, self.batch_size, shuffle=True)
+
+        v_losses = 0
+        s_losses = 0
+        batch_count = 0
+        # 前向预测过程中，需要利用eval关闭算法中所有的dropout层和batch normalization
+        # 与之对应的是，在train过程中，需要利用train开启算法中所有的dropout层和normalization
+
+        self.actor_network.train()
+        self.target_actor_network.train()
+        self.critic_network.train()
+        self.target_critic_network.train()
+        # self.target_model.value_network.train()
+        # self.value_estimator.value_network.train()
+        for data in self.data_loader:
+            batch_num = int(self.data_loader.sampler.num_samples // self.batch_size)
+            robot_states, human_states, actions, _, done, rewards, next_robot_states, next_human_states = data
+            with torch.no_grad():
+                next_states = (next_robot_states, next_human_states)
+                cur_states = (robot_states, human_states)
+                # Select action according to policy and add clipped noise
+                # 在策略优化过程中，往往会添加噪声，使得训练的结果更加地平滑
+                noise = (
+                        torch.randn_like(actions) * self.policy_noise
+                ).clamp(-self.noise_clip, self.noise_clip)
+
+                next_action = (
+                        self.target_actor_network((next_robot_states, next_states)) + noise
+                ).clamp(-self.max_action, self.max_action)
+
+                # Compute the target Q value
+                target_Q1, target_Q2 = self.target_critic_network(next_states, next_action)
+                target_Q = torch.min(target_Q1, target_Q2)
+                done_infos = (1 - done)
+                target_Q = rewards + done_infos * self.discount * target_Q
+
+            # Get current Q estimates
+            current_Q1, current_Q2 = self.critic_network(cur_states, actions)
+            # 在反向传播过程中，是可以区分到两个critic network的
+            # Compute critic loss
+            critic_loss = F.mse_loss(current_Q1, target_Q) + F.mse_loss(current_Q2, target_Q)
+
+            # Optimize the critic
+            self.critic_optimizer.zero_grad()
+            critic_loss.backward()
+            self.critic_optimizer.step()
+
+            # Delayed policy updates
+            if self.total_iteration % self.policy_freq == 0:
+
+                # Compute actor losse
+                actor_loss = -self.critic_network.Q1(cur_states, self.actor_network(cur_states)).mean()
+
+                # Optimize the actor
+                self.actor_optimizer.zero_grad()
+                actor_loss.backward()
+                self.actor_optimizer.step()
+
+                # Update the frozen target models
+                for param, target_param in zip(self.critic_network.parameters(), self.target_critic_network.parameters()):
+                    target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
+
+                for param, target_param in zip(self.actor_network.parameters(), self.target_actor_network.parameters()):
+                    target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
+
+
+            # values = values.to(self.device)
+            loss = self.criterion(outputs, target_values)
+            loss.backward()
+            self.v_optimizer.step()
+            v_losses += loss.data.item()
+
+            # optimize state predictor
+            if self.state_predictor.trainable:
+                update_state_predictor = True
+                if self.freeze_state_predictor:
+                    update_state_predictor = False
+                elif self.reduce_sp_update_frequency and batch_count % self.state_predictor_update_interval == 0:
+                    update_state_predictor = False
+
+                if update_state_predictor:
+                    self.s_optimizer.zero_grad()
+                    _, next_human_states_est = self.state_predictor((robot_states, human_states), None,
+                                                                    detach=self.detach_state_predictor)
+                    loss = self.criterion(next_human_states_est, next_human_states)
+                    loss.backward()
+                    self.s_optimizer.step()
+                    s_losses += loss.data.item()
+            else:
+                _, next_human_states_est = self.state_predictor((robot_states, human_states), None,
+                                                                detach=self.detach_state_predictor)
+                loss = self.criterion(next_human_states_est, next_human_states)
+                s_losses += loss.data.item()
+            batch_count += 1
+            if batch_count > num_batches or batch_count == batch_num:
+                break
+
+        average_v_loss = v_losses / num_batches
+        average_s_loss = s_losses / num_batches
+        logging.info('Average loss : %.2E, %.2E', average_v_loss, average_s_loss)
+        self.writer.add_scalar('RL/average_v_loss', average_v_loss, episode)
+        self.writer.add_scalar('RL/average_s_loss', average_s_loss, episode)
+        self.value_estimator.value_network.train()
+        return average_v_loss, average_s_loss
 
 def pad_batch(batch):
     """

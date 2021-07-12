@@ -34,6 +34,8 @@ class TD3RL(Policy):
         self.v_pref = 1
         self.share_graph_model = None
         self.value_estimator = None
+        self.actor = None
+        self.critic = None
         self.linear_state_predictor = None
         self.state_predictor = None
         self.planning_depth = None
@@ -50,18 +52,19 @@ class TD3RL(Policy):
         # max_action must be a tensor
         self.max_action = None
 
+    def set_common_parameters(self, config):
+        self.gamma = config.rl.gamma
+        self.kinematics = config.action_space.kinematics
+        self.rotation_constraint = config.action_space.rotation_constraint
+
     def configure(self, config, device):
         self.set_common_parameters(config)
         self.planning_depth = config.model_predictive_rl.planning_depth
-        self.do_action_clip = config.model_predictive_rl.do_action_clip
-        if hasattr(config.model_predictive_rl, 'sparse_search'):
-            self.sparse_search = config.model_predictive_rl.sparse_search
         self.planning_width = config.model_predictive_rl.planning_width
         self.share_graph_model = config.model_predictive_rl.share_graph_model
         self.linear_state_predictor = config.model_predictive_rl.linear_state_predictor
         # self.set_device(device)
         self.device = device
-
         graph_model1 = GAT_RL(config, self.robot_state_dim, self.human_state_dim)
         self.actor = Actor(config,graph_model1,self.action_dim, self.max_action)
         graph_model2 = GAT_RL(config, self.robot_state_dim, self.human_state_dim)
@@ -69,19 +72,10 @@ class TD3RL(Policy):
         self.critic = Critic(config, graph_model2, graph_model3, self.action_dim)
         graph_model4 = GAT_RL(config, self.robot_state_dim, self.human_state_dim)
         self.state_predictor = StatePredictor(config, graph_model4, self.time_step)
-        self.model = [graph_model1, graph_model2, graph_model3, self.actor.action_network,
-                        self.critic.score_network1, self.critic.score_network2,
-                        self.state_predictor.human_motion_predictor]
-
+        self.model = [graph_model1, graph_model2, graph_model3, graph_model4, self.actor.action_network,
+                      self.critic.score_network1, self.critic.score_network2,
+                      self.state_predictor.human_motion_predictor]
         logging.info('TD3 action_dim is : {}'.format(self.action_dim))
-
-    def set_common_parameters(self, config):
-        self.gamma = config.rl.gamma
-        self.kinematics = config.action_space.kinematics
-        self.sampling = config.action_space.sampling
-        self.speed_samples = config.action_space.speed_samples
-        self.rotation_samples = config.action_space.rotation_samples
-        self.rotation_constraint = config.action_space.rotation_constraint
 
     def set_device(self, device):
         self.device = device
@@ -102,7 +96,7 @@ class TD3RL(Policy):
         return pow(self.gamma, self.time_step * self.v_pref)
 
     def get_model(self):
-        return self.value_estimator
+        return self.actor
 
     def get_state_dict(self):
         return {
@@ -151,8 +145,8 @@ class TD3RL(Policy):
         probability = np.random.random()
         if self.phase == 'train' and probability < self.epsilon and self.use_noisy_net is False:
             random_action = torch.Tensor(np.random.random(self.action_dim)) * self.max_action
-            return ActionXY(random_action[0],random_action[1]) if self.kinematics == 'holonomic' \
-                else ActionRot(random_action[0],random_action[1])
+            return ActionXY(random_action[0], random_action[1]) if self.kinematics == 'holonomic' \
+                else ActionRot(random_action[0], random_action[1])
         else:
             action = self.actor(state)
             return ActionXY(action[0], action[1]) if self.kinematics == 'holonomic' else ActionRot(action[0], action[1])

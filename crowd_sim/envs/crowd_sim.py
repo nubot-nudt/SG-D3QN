@@ -353,7 +353,7 @@ class CrowdSim(gym.Env):
             if closest_dist < dmin:
                 dmin = closest_dist
             if closest_dist < 0.2:
-                safety_penalty = safety_penalty + (closest_dist - self.discomfort_dist)
+                safety_penalty = safety_penalty + (closest_dist - 0.2)
             # dis_begin = np.sqrt(px**2 + py**2) - human.radius - self.robot.radius
             # dis_end = np.sqrt(ex**2 + ey**2) - human.radius - self.robot.radius
             # penalty_begin = 0
