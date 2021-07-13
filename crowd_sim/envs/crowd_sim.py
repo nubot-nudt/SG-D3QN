@@ -3,6 +3,7 @@ import random
 import math
 
 import gym
+from gym import spaces
 import matplotlib.lines as mlines
 from matplotlib import patches
 import numpy as np
@@ -73,6 +74,12 @@ class CrowdSim(gym.Env):
         self.human_starts = []
         self.human_goals = []
 
+        # 动作空间: 速度，朝向
+        self.action_space = spaces.Box(
+            low=np.array([-1.0, -np.pi/2.0]),
+            high=np.array([1.0, np.pi/2.0]),
+            dtype=np.float32
+        )
         self.phase = None
 
     def configure(self, config):

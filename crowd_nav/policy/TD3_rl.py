@@ -7,7 +7,7 @@ from crowd_sim.envs.policy.policy import Policy
 from crowd_sim.envs.utils.action import ActionRot, ActionXY
 
 from crowd_nav.policy.state_predictor import StatePredictor, LinearStatePredictor_batch
-from crowd_nav.policy.graph_model import RGL,GAT_RL
+from crowd_nav.policy.graph_model import RGL, GAT_RL
 from crowd_nav.policy.value_estimator import DQNNetwork, Noisy_DQNNetwork
 from crowd_nav.policy.actor import Actor
 from crowd_nav.policy.critic import Critic
@@ -66,7 +66,7 @@ class TD3RL(Policy):
         # self.set_device(device)
         self.device = device
         graph_model1 = GAT_RL(config, self.robot_state_dim, self.human_state_dim)
-        self.actor = Actor(config,graph_model1,self.action_dim, self.max_action)
+        self.actor = Actor(config, graph_model1, self.action_dim, self.max_action)
         graph_model2 = GAT_RL(config, self.robot_state_dim, self.human_state_dim)
         graph_model3 = GAT_RL(config, self.robot_state_dim, self.human_state_dim)
         self.critic = Critic(config, graph_model2, graph_model3, self.action_dim)
@@ -76,6 +76,10 @@ class TD3RL(Policy):
                       self.critic.score_network1, self.critic.score_network2,
                       self.state_predictor.human_motion_predictor]
         logging.info('TD3 action_dim is : {}'.format(self.action_dim))
+
+    def set_action(self, action_dims, max_action):
+        self.action_dim = action_dims
+        self.max_action = max_action
 
     def set_device(self, device):
         self.device = device

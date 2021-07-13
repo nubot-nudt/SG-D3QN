@@ -512,12 +512,12 @@ class TD3RLTrainer(object):
         policy_noise = 0.2
         noise_clip = 0.5
         policy_freq = 2
-        max_action = [1, 1]
         # parameter for TD3
         self.policy_noise = policy_noise
         self.noise_clip = noise_clip
         self.policy_freq = policy_freq
-        self.max_action = max_action
+        self.action_dim = policy.action_dim
+        self.max_action = policy.max_action
         self.tau = 0.005
         # for value update
         self.gamma = 0.9
@@ -526,10 +526,13 @@ class TD3RLTrainer(object):
         self.discount = pow(self.gamma,self.time_step*self.v_pref)
         self.total_iteration = 0
 
+    # 没有必要通过外面的model进行参数传递吧，总感不咋聪明
     def update_target_model(self, target_model):
-        self.target_model = copy.deepcopy(target_model)
+        print('test for update target model')
+        # self.target_actor_network = copy.deepcopy(self.actor_network)
+        # self.target_critic_network = copy.deepcopy(self.critic_network)
 
-    def set_learning_rate(self, learning_rate):
+    def set_rl_learning_rate(self, learning_rate):
         if self.optimizer_str == 'Adam':
             self.actor_optimizer = optim.Adam(self.actor_network.parameters(), lr=learning_rate)
             self.critic_optimizer = optim.Adam(self.critic_network.parameters(), lr=learning_rate)
@@ -650,6 +653,7 @@ class TD3RLTrainer(object):
             # Compute critic loss
             critic_loss = F.mse_loss(current_Q1, target_Q) + F.mse_loss(current_Q2, target_Q)
 
+            v_losses += critic_loss.data.item()
             # Optimize the critic
             self.critic_optimizer.zero_grad()
             critic_loss.backward()
@@ -657,28 +661,12 @@ class TD3RLTrainer(object):
 
             # Delayed policy updates
             if self.total_iteration % self.policy_freq == 0:
-
-                # Compute actor losse
+                # Compute actor loss
                 actor_loss = -self.critic_network.Q1(cur_states, self.actor_network(cur_states)).mean()
-
                 # Optimize the actor
                 self.actor_optimizer.zero_grad()
                 actor_loss.backward()
                 self.actor_optimizer.step()
-
-                # Update the frozen target models
-                for param, target_param in zip(self.critic_network.parameters(), self.target_critic_network.parameters()):
-                    target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
-
-                for param, target_param in zip(self.actor_network.parameters(), self.target_actor_network.parameters()):
-                    target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
-
-
-            # values = values.to(self.device)
-            loss = self.criterion(outputs, target_values)
-            loss.backward()
-            self.v_optimizer.step()
-            v_losses += loss.data.item()
 
             # optimize state predictor
             if self.state_predictor.trainable:
@@ -689,28 +677,39 @@ class TD3RLTrainer(object):
                     update_state_predictor = False
 
                 if update_state_predictor:
-                    self.s_optimizer.zero_grad()
+                    self.state_optimizer.zero_grad()
                     _, next_human_states_est = self.state_predictor((robot_states, human_states), None,
                                                                     detach=self.detach_state_predictor)
                     loss = self.criterion(next_human_states_est, next_human_states)
                     loss.backward()
-                    self.s_optimizer.step()
+                    self.state_optimizer.step()
                     s_losses += loss.data.item()
             else:
                 _, next_human_states_est = self.state_predictor((robot_states, human_states), None,
                                                                 detach=self.detach_state_predictor)
                 loss = self.criterion(next_human_states_est, next_human_states)
                 s_losses += loss.data.item()
+
             batch_count += 1
             if batch_count > num_batches or batch_count == batch_num:
                 break
+
+        if self.total_iteration % self.policy_freq == 0:
+            # Update the frozen target models
+            for param, target_param in zip(self.critic_network.parameters(), self.target_critic_network.parameters()):
+                target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
+            for param, target_param in zip(self.actor_network.parameters(), self.target_actor_network.parameters()):
+                target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
 
         average_v_loss = v_losses / num_batches
         average_s_loss = s_losses / num_batches
         logging.info('Average loss : %.2E, %.2E', average_v_loss, average_s_loss)
         self.writer.add_scalar('RL/average_v_loss', average_v_loss, episode)
         self.writer.add_scalar('RL/average_s_loss', average_s_loss, episode)
-        self.value_estimator.value_network.train()
+        self.actor_network.eval()
+        self.critic_network.eval()
+        self.target_critic_network.eval()
+        self.target_actor_network.eval()
         return average_v_loss, average_s_loss
 
 def pad_batch(batch):
