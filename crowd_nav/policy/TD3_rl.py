@@ -125,10 +125,11 @@ class TD3RL(Policy):
         self.critic.graph_model1.load_state_dict(state_dict['graph_model2'])
         self.critic.graph_model2.load_state_dict(state_dict['graph_model3'])
         self.state_predictor.graph_model.load_state_dict(state_dict['graph_model4'])
-        self.actor.action_network.load_state_dict(['action_network'])
-        self.critic.score_network1.load_state_dict(['score_network1'])
-        self.critic.score_network2.load_state_dict(['score_network2'])
+        self.actor.action_network.load_state_dict(state_dict['action_network'])
+        self.critic.score_network1.load_state_dict(state_dict['score_network1'])
+        self.critic.score_network2.load_state_dict(state_dict['score_network2'])
         self.state_predictor.human_motion_predictor.load_state_dict(state_dict['motion_predictor'])
+
 
     def save_model(self, file):
         torch.save(self.get_state_dict(), file)

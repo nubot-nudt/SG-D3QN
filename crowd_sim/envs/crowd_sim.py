@@ -333,9 +333,9 @@ class CrowdSim(gym.Env):
                 human_actions.append(human.act(ob))
 
         weight_goal = 0.1
-        weight_safe = 0.9
-        weight_terminal = 0.01
-        re_collision = -0.5
+        weight_safe = 1.25
+        weight_terminal = 0.001
+        re_collision = -0.25
         re_arrival = 1.0
         # collision detection
         dmin = float('inf')
