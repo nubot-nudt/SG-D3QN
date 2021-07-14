@@ -529,8 +529,8 @@ class TD3RLTrainer(object):
     # 没有必要通过外面的model进行参数传递吧，总感不咋聪明
     def update_target_model(self, target_model):
         print('test for update target model')
-        self.target_actor_network = copy.deepcopy(self.actor_network)
-        self.target_critic_network = copy.deepcopy(self.critic_network)
+        # self.target_actor_network = copy.deepcopy(self.actor_network)
+        # self.target_critic_network = copy.deepcopy(self.critic_network)
 
     def set_rl_learning_rate(self, learning_rate):
         if self.optimizer_str == 'Adam':
