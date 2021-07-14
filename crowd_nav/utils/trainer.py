@@ -623,8 +623,6 @@ class TD3RLTrainer(object):
         self.target_actor_network.train()
         self.critic_network.train()
         self.target_critic_network.train()
-        # self.target_model.value_network.train()
-        # self.value_estimator.value_network.train()
         for data in self.data_loader:
             batch_num = int(self.data_loader.sampler.num_samples // self.batch_size)
             robot_states, human_states, actions, _, done, rewards, next_robot_states, next_human_states = data
@@ -666,33 +664,34 @@ class TD3RLTrainer(object):
             # Delayed policy updates
             if self.total_iteration % self.policy_freq == 0:
                 # Compute actor loss
+
                 actor_loss = -self.critic_network.Q1(cur_states, self.actor_network(cur_states)).mean()
                 # Optimize the actor
                 self.actor_optimizer.zero_grad()
                 actor_loss.backward()
                 self.actor_optimizer.step()
 
-            # optimize state predictor
-            if self.state_predictor.trainable:
-                update_state_predictor = True
-                if self.freeze_state_predictor:
-                    update_state_predictor = False
-                elif self.reduce_sp_update_frequency and batch_count % self.state_predictor_update_interval == 0:
-                    update_state_predictor = False
-
-                if update_state_predictor:
-                    self.state_optimizer.zero_grad()
-                    _, next_human_states_est = self.state_predictor((robot_states, human_states), None,
-                                                                    detach=self.detach_state_predictor)
-                    loss = self.criterion(next_human_states_est, next_human_states)
-                    loss.backward()
-                    self.state_optimizer.step()
-                    s_losses += loss.data.item()
-            else:
-                _, next_human_states_est = self.state_predictor((robot_states, human_states), None,
-                                                                detach=self.detach_state_predictor)
-                loss = self.criterion(next_human_states_est, next_human_states)
-                s_losses += loss.data.item()
+            # # optimize state predictor
+            # if self.state_predictor.trainable:
+            #     update_state_predictor = True
+            #     if self.freeze_state_predictor:
+            #         update_state_predictor = False
+            #     elif self.reduce_sp_update_frequency and batch_count % self.state_predictor_update_interval == 0:
+            #         update_state_predictor = False
+            #
+            #     if update_state_predictor:
+            #         self.state_optimizer.zero_grad()
+            #         _, next_human_states_est = self.state_predictor((robot_states, human_states), None,
+            #                                                         detach=self.detach_state_predictor)
+            #         loss = self.criterion(next_human_states_est, next_human_states)
+            #         loss.backward()
+            #         self.state_optimizer.step()
+            #         s_losses += loss.data.item()
+            # else:
+            #     _, next_human_states_est = self.state_predictor((robot_states, human_states), None,
+            #                                                     detach=self.detach_state_predictor)
+            #     loss = self.criterion(next_human_states_est, next_human_states)
+            #     s_losses += loss.data.item()
 
             batch_count += 1
             if batch_count > num_batches or batch_count == batch_num:

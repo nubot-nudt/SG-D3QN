@@ -153,7 +153,7 @@ class TD3RL(Policy):
         state_tensor = state.to_tensor(add_batch_size=True, device=self.device)
         probability = np.random.random()
         if self.phase == 'train' and probability < self.epsilon and self.use_noisy_net is False:
-            random_action = np.random.random(self.action_dim) * self.max_action
+            random_action = (np.random.random(self.action_dim) * 2.0 - 1.0) * self.max_action
             speed = random_action[0]
             theta = random_action[1]
             Action = ActionXY(speed * np.cos(theta), speed * np.sin(theta)) \
