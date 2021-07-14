@@ -488,8 +488,8 @@ class TD3RLTrainer(object):
         """
         self.actor_network = actor_network
         self.critic_network = critic_network
-        self.target_actor_network = None
-        self.target_critic_network = None
+        self.target_actor_network = copy.deepcopy(self.actor_network)
+        self.target_critic_network = copy.deepcopy(self.critic_network)
         self.state_predictor = state_predictor
         self.actor_optimizer = None
         self.critic_optimizer = None
@@ -529,8 +529,8 @@ class TD3RLTrainer(object):
     # 没有必要通过外面的model进行参数传递吧，总感不咋聪明
     def update_target_model(self, target_model):
         print('test for update target model')
-        # self.target_actor_network = copy.deepcopy(self.actor_network)
-        # self.target_critic_network = copy.deepcopy(self.critic_network)
+        self.target_actor_network = copy.deepcopy(self.actor_network)
+        self.target_critic_network = copy.deepcopy(self.critic_network)
 
     def set_rl_learning_rate(self, learning_rate):
         if self.optimizer_str == 'Adam':
@@ -636,11 +636,15 @@ class TD3RLTrainer(object):
                 noise = (
                         torch.randn_like(actions) * self.policy_noise
                 ).clamp(-self.noise_clip, self.noise_clip)
-
+                noise = noise.float()
+                #next action is a tensor
                 next_action = (
-                        self.target_actor_network((next_robot_states, next_states)) + noise
-                ).clamp(-self.max_action, self.max_action)
-
+                        self.target_actor_network(next_states) + noise
+                )
+                next_action_array = next_action.numpy()
+                next_action_array = next_action_array.clip(-self.max_action, self.max_action)
+                # float 32
+                next_action = torch.tensor(next_action_array, dtype=torch.float32)
                 # Compute the target Q value
                 target_Q1, target_Q2 = self.target_critic_network(next_states, next_action)
                 target_Q = torch.min(target_Q1, target_Q2)

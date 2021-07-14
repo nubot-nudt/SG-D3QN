@@ -334,7 +334,7 @@ class CrowdSim(gym.Env):
 
         weight_goal = 0.5
         weight_safe = 0.5
-        weight_terminal = 10.0
+        weight_terminal = 0.01
         re_collision = -0.5
         re_arrival = 1.0
         # collision detection

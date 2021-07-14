@@ -54,6 +54,11 @@ class Explorer(object):
                 action, action_index = self.robot.act(ob)
                 ob, reward, done, info = self.env.step(action)
                 states.append(self.robot.policy.last_state)
+                # if(self.robot.policy.name in ['TD3RL']):
+                #     actions.append(torch.tensor((action.vx, action.vy)).float())
+                # else:
+
+                # for TD3rl, append the velocity and theta
                 actions.append(action_index)
                 rewards.append(reward)
                 # actually, final states of timeout cases is not terminal states
@@ -155,7 +160,7 @@ class Explorer(object):
                 reward = torch.Tensor([rewards[i]]).to(self.device)
                 done = torch.Tensor([dones[i]]).to(self.device)
 
-            if self.target_policy.name == 'ModelPredictiveRL' or self.target_policy.name == 'TreeSearchRL':
+            if self.target_policy.name == 'ModelPredictiveRL' or self.target_policy.name == 'TreeSearchRL' or self.target_policy.name == 'TD3RL':
                 self.memory.push((state[0], state[1], action, value, done, reward, next_state[0], next_state[1]))
             else:
                 self.memory.push((state, value, reward, next_state))

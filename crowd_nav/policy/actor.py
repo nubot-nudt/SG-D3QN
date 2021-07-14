@@ -9,7 +9,12 @@ class Actor(nn.Module):
         self.graph_model = graph_model
         self.action_network = mlp(config.gcn.X_dim, [256, action_dim])
         self.max_action = max_action
+        self.action_dim = action_dim
 
+    def set_action(self, action_dim, max_action):
+        self.action_dim = action_dim
+        self.max_action = max_action
+        self.max_action = torch.from_numpy(self.max_action)
 
     def forward(self, state):
         """ Embed state into a latent space. Take the first row of the feature matrix as state representation.

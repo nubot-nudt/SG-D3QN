@@ -15,6 +15,11 @@ class Critic(nn.Module):
         # Q2 architecture
         self.graph_model2 = graph_model2
         self.score_network2 = mlp(config.gcn.X_dim + action_dim, [256, 256, 1])
+        self.action_dim = action_dim
+
+    def set_action(self, action_dim):
+        self.action_dim = action_dim
+
 
     def forward(self, state, action):
         """ Embed state into a latent space. Take the first row of the feature matrix as state representation.

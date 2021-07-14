@@ -1,6 +1,7 @@
 import logging
 import torch
 import numpy as np
+
 from numpy.linalg import norm
 import itertools
 from crowd_sim.envs.policy.policy import Policy
@@ -80,6 +81,8 @@ class TD3RL(Policy):
     def set_action(self, action_dims, max_action):
         self.action_dim = action_dims
         self.max_action = max_action
+        self.actor.set_action(action_dims, max_action)
+        self.critic.set_action(action_dims)
 
     def set_device(self, device):
         self.device = device
@@ -143,17 +146,27 @@ class TD3RL(Policy):
             raise AttributeError('Phase, device attributes have to be set!')
         if self.phase == 'train' and self.epsilon is None:
             raise AttributeError('Epsilon attribute has to be set in training phase')
-
+        if self.phase == 'train':
+            self.last_state = self.transform(state)
         if self.reach_destination(state):
             return ActionXY(0, 0) if self.kinematics == 'holonomic' else ActionRot(0, 0)
+        state_tensor = state.to_tensor(add_batch_size=True, device=self.device)
         probability = np.random.random()
         if self.phase == 'train' and probability < self.epsilon and self.use_noisy_net is False:
-            random_action = torch.Tensor(np.random.random(self.action_dim)) * self.max_action
-            return ActionXY(random_action[0], random_action[1]) if self.kinematics == 'holonomic' \
-                else ActionRot(random_action[0], random_action[1])
+            random_action = np.random.random(self.action_dim) * self.max_action
+            speed = random_action[0]
+            theta = random_action[1]
+            Action = ActionXY(speed * np.cos(theta), speed * np.sin(theta)) \
+                if self.kinematics == 'holonomic' else ActionRot(speed, theta)
+            return Action, torch.tensor(random_action).float()
         else:
-            action = self.actor(state)
-            return ActionXY(action[0], action[1]) if self.kinematics == 'holonomic' else ActionRot(action[0], action[1])
+            with torch.no_grad():
+                action = self.actor(state_tensor).squeeze().numpy()
+                speed = action[0]
+                theta = action[1]
+                Action = ActionXY(speed * np.cos(theta), speed * np.sin(theta)) \
+                    if self.kinematics == 'holonomic' else ActionRot(speed, theta)
+            return Action, torch.tensor(action).float()
 
     def get_attention_weights(self):
         return self.actor.graph_model.attention_weights

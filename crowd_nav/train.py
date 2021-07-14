@@ -101,7 +101,7 @@ def main(args):
     env.set_robot(robot)
     # for continous action
     action_dim = env.action_space.shape[0]
-    max_action = float(env.action_space.high[0])
+    max_action = env.action_space.high
 
     # read training parameters
     train_config = config.TrainConfig(args.debug)
