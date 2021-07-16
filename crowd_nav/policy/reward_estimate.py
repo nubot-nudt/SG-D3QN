@@ -12,7 +12,7 @@ def estimate_reward_on_predictor(state, next_state):
     robot_state = state.robot_state
     weight_goal = 0.1
     weight_safe = 1.25
-    weight_terminal = 1.0
+    weight_terminal = 10
     re_collision = -0.25
     re_arrival = 1.0
     next_robot_state = next_state.robot_state
