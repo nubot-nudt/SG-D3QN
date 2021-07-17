@@ -11,10 +11,10 @@ def estimate_reward_on_predictor(state, next_state):
     human_states = state.human_states
     robot_state = state.robot_state
     weight_goal = 0.1
-    weight_safe = 1.25
-    weight_terminal = 10
-    re_collision = -0.25
-    re_arrival = 1.0
+    weight_safe = 2
+    weight_terminal = 1.0
+    re_collision = -0.5
+    re_arrival = 2.0
     next_robot_state = next_state.robot_state
     next_human_states = next_state.human_states
     cur_position = np.array((robot_state.px, robot_state.py))
