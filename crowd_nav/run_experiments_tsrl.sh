@@ -2,7 +2,7 @@
 day=`date +%m%d`
 echo "The Script begin at $day"
 # Script to reproduce results
-for ((i=0;i<3;i+=1))
+for ((i=0;i<10;i+=1))
 do 
 	python train.py \
 	--policy tree-search-rl \

@@ -262,8 +262,8 @@ def main(args):
             nav_time__in_last_interval = 0
             discom_time_in_last_interval = 0
             total_time_in_last_interval = 0
-            min_reward = (np.min(reward_rec) // 10 - 1) * 10
-            max_reward = (np.max(reward_rec) // 10 + 1) * 10
+            min_reward = (np.min(reward_rec) // 5.0 ) * 5.0
+            max_reward = (np.max(reward_rec) // 5.0 + 1) * 5.0
             pos = np.array(range(1, len(reward_rec)+1)) * interval
             plt.plot(pos, reward_rec, color='r', marker='.', linestyle='dashed')
             plt.axis([0, eps_count, min_reward, max_reward])
