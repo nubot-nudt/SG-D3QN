@@ -38,6 +38,7 @@ class CrowdSim(gym.Env):
         self.success_reward = None
         self.collision_penalty = None
         self.discomfort_dist = None
+        self.goal_factor = None
         self.discomfort_penalty_factor = None
         # simulation configuration
         self.config = None
@@ -90,8 +91,9 @@ class CrowdSim(gym.Env):
         self.robot_sensor_range = config.env.robot_sensor_range
         self.success_reward = config.reward.success_reward
         self.collision_penalty = config.reward.collision_penalty
-        self.discomfort_dist = config.reward.discomfort_dist
+        self.goal_factor = config.reward.goal_factor
         self.discomfort_penalty_factor = config.reward.discomfort_penalty_factor
+        self.discomfort_dist = config.reward.discomfort_dist
         self.case_capacity = {'train': np.iinfo(np.uint32).max - 2000, 'val': 1000, 'test': 1000}
         self.case_size = {'train': config.env.train_size, 'val': config.env.val_size,
                           'test': config.env.test_size}
@@ -332,11 +334,11 @@ class CrowdSim(gym.Env):
                 ob = self.compute_observation_for(human)
                 human_actions.append(human.act(ob))
 
-        weight_goal = 0.1
-        weight_safe = 1
+        weight_goal = self.goal_factor
+        weight_safe = self.discomfort_penalty_factor
         weight_terminal = 1.0
-        re_collision = -1.0
-        re_arrival = 1.0
+        re_collision = self.collision_penalty
+        re_arrival = self.success_reward
         # collision detection
         dmin = float('inf')
         collision = False
@@ -359,8 +361,8 @@ class CrowdSim(gym.Env):
                 logging.debug("Collision: distance between robot and p{} is {:.2E} at time {:.2E}".format(human.id, closest_dist, self.global_time))
             if closest_dist < dmin:
                 dmin = closest_dist
-            if closest_dist < 0.2:
-                safety_penalty = safety_penalty + (closest_dist - 0.2)
+            if closest_dist < self.discomfort_dist:
+                safety_penalty = safety_penalty + (closest_dist - self.discomfort_dist)
             # dis_begin = np.sqrt(px**2 + py**2) - human.radius - self.robot.radius
             # dis_end = np.sqrt(ex**2 + ey**2) - human.radius - self.robot.radius
             # penalty_begin = 0

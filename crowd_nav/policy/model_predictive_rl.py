@@ -6,7 +6,6 @@ import itertools
 from crowd_sim.envs.policy.policy import Policy
 from crowd_sim.envs.utils.action import ActionRot, ActionXY
 from crowd_sim.envs.utils.state import tensor_to_joint_state
-from crowd_nav.policy.reward_estimate import estimate_reward_on_predictor
 from crowd_nav.policy.value_estimator import ValueEstimator
 from crowd_nav.policy.state_predictor import StatePredictor, LinearStatePredictor_batch
 from crowd_nav.policy.graph_model import RGL,GAT_RL
@@ -228,7 +227,7 @@ class ModelPredictiveRL(Policy):
                     next_robot_states = torch.cat((next_robot_states, next_robot_state), dim=0)
                     next_human_states = torch.cat((next_human_states, next_human_state), dim=0)
                 next_state = tensor_to_joint_state((next_robot_state, next_human_state))
-                reward_est = estimate_reward_on_predictor(state, next_state)
+                reward_est = self.reward_estimator.estimate_reward_on_predictor(state, next_state)
                 # reward_est = self.estimate_reward(state, action)
                 rewards.append(reward_est)
                 # next_state = self.state_predictor(state_tensor, action)
@@ -310,7 +309,7 @@ class ModelPredictiveRL(Policy):
         for action in action_space_clipped:
             next_state_est = self.state_predictor(state, action)
             # reward_est = self.estimate_reward(state, action)
-            reward_est = estimate_reward_on_predictor(state, next_state_est)
+            reward_est = self.reward_estimator.estimate_reward_on_predictor(state, next_state_est)
             next_value, next_traj = self.V_planning(next_state_est, depth - 1, self.planning_width)
             return_value = current_state_value / depth + (depth - 1) / depth * (self.get_normalized_gamma() * next_value + reward_est)
             returns.append(return_value)

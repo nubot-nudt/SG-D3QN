@@ -4,7 +4,6 @@ import numpy as np
 from crowd_sim.envs.utils.action import ActionRot, ActionXY
 from crowd_nav.policy.cadrl import CADRL
 from crowd_sim.envs.utils.state import tensor_to_joint_state, JointState
-from crowd_nav.policy.reward_estimate import estimate_reward_on_predictor
 
 
 class MultiHumanRL(CADRL):
@@ -52,7 +51,7 @@ class MultiHumanRL(CADRL):
                     next_human_states = [self.propagate(human_state, ActionXY(human_state.vx, human_state.vy))
                                          for human_state in state.human_states]
                     next_state = JointState(next_robot_state, next_human_states)
-                    reward = estimate_reward_on_predictor(state, next_state)
+                    reward = self.reward_estimator.estimate_reward_on_predictor(state, next_state)
                     rewards.append(reward)
                 batch_next_states = torch.cat([torch.Tensor([next_robot_state + next_human_state]).to(self.device)
                                               for next_human_state in next_human_states], dim=0)

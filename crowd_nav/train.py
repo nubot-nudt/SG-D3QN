@@ -15,6 +15,7 @@ from crowd_nav.utils.trainer import VNRLTrainer, MPRLTrainer, TSRLTrainer, TD3RL
 from crowd_nav.utils.memory import ReplayMemory
 from crowd_nav.utils.explorer import Explorer
 from crowd_nav.policy.policy_factory import policy_factory
+from crowd_nav.policy.reward_estimate import Reward_Estimator
 
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import plot, savefig
@@ -79,6 +80,10 @@ def main(args):
     repo = git.Repo(search_parent_directories=True)
     logging.info('Current git head hash code: {}'.format(repo.head.object.hexsha))
     logging.info('Current random seed: {}'.format(sys_args.randomseed))
+    logging.info('Current safe_weight: {}'.format(sys_args.safe_weight))
+    logging.info('Current goal_weight: {}'.format(sys_args.goal_weight))
+    logging.info('Current re_collision: {}'.format(sys_args.re_collision))
+    logging.info('Current re_arrival: {}'.format(sys_args.re_arrival))
     logging.info('Current config content is :{}'.format(config))
     device = torch.device("cuda:0" if torch.cuda.is_available() and args.gpu else "cpu")
     logging.info('Using device: %s', device)
@@ -94,11 +99,20 @@ def main(args):
 
     # configure environment
     env_config = config.EnvConfig(args.debug)
+    env_config.reward.collision_penalty = args.re_collision
+    env_config.reward.success_reward = args.re_arrival
+    env_config.reward.goal_factor = args.goal_weight
+    env_config.reward.discomfort_penalty_factor = args.safe_weight
+
     env = gym.make('CrowdSim-v0')
     env.configure(env_config)
     robot = Robot(env_config, 'robot')
     robot.time_step = env.time_step
     env.set_robot(robot)
+
+    reward_estimator = Reward_Estimator()
+    reward_estimator.configure(env_config)
+    policy.reward_estimator = reward_estimator
     # for continous action
     action_dim = env.action_space.shape[0]
     max_action = env.action_space.high
@@ -304,8 +318,8 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('Parse configuration file')
-    parser.add_argument('--policy', type=str, default='td3_rl')
-    parser.add_argument('--config', type=str, default='configs/icra_benchmark/td3.py')
+    parser.add_argument('--policy', type=str, default='tree_search_rl')
+    parser.add_argument('--config', type=str, default='configs/icra_benchmark/ts_separate.py')
     parser.add_argument('--output_dir', type=str, default='data/output1')
     parser.add_argument('--overwrite', default=False, action='store_true')
     parser.add_argument('--weights', type=str)
@@ -315,6 +329,11 @@ if __name__ == '__main__':
     parser.add_argument('--test_after_every_eval', default=False, action='store_true')
     parser.add_argument('--randomseed', type=int, default=7)
     parser.add_argument('--human_num', type=int, default=5)
+    parser.add_argument('--safe_weight', type=float, default=1.0)
+    parser.add_argument('--goal_weight', type=float, default=0.1)
+    parser.add_argument('--re_collision', type=float, default=-1.0)
+    parser.add_argument('--re_arrival', type=float, default=1.0)
+
 
     # arguments for GCN
     # parser.add_argument('--X_dim', type=int, default=32)

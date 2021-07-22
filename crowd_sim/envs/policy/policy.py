@@ -16,6 +16,7 @@ class Policy(object):
         self.time_step = None
         # if agent is assumed to know the dynamics of real world
         self.env = None
+        self.reward_estimator = None
 
     @abc.abstractmethod
     def configure(self, config):

@@ -10,7 +10,6 @@ from crowd_sim.envs.utils.utils import point_to_segment_dist
 from crowd_nav.policy.state_predictor import StatePredictor, LinearStatePredictor_batch
 from crowd_nav.policy.graph_model import RGL,GAT_RL
 from crowd_nav.policy.value_estimator import DQNNetwork, Noisy_DQNNetwork
-from crowd_nav.policy.reward_estimate import estimate_reward_on_predictor
 
 
 class TreeSearchRL(Policy):
@@ -265,7 +264,7 @@ class TreeSearchRL(Policy):
                 else:
                     next_robot_state_batch = torch.cat((next_robot_state_batch, next_robot_state), dim=0)
                     next_human_state_batch = torch.cat((next_human_state_batch, next_human_state), dim=0)
-                reward_est[i][j] = estimate_reward_on_predictor(
+                reward_est[i][j] = self.reward_estimator.estimate_reward_on_predictor(
                     tensor_to_joint_state(cur_state), tensor_to_joint_state((next_robot_state, next_human_state)))
         next_state_batch = (next_robot_state_batch, next_human_state_batch)
         if self.planning_depth - depth >= 2 and self.planning_depth > 2:
