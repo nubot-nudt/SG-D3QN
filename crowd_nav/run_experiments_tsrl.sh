@@ -13,9 +13,10 @@ do
 		do	
 			for((m=1;m<5;m+=1))
 			do	
+				num=`echo " $i * 1000 + $j * 100 + $k * 10 + $m" | bc`
 				python train.py \
 				--policy tree-search-rl \
-				--output_dir data/$day/tsrl/$i \
+				--output_dir data/$day/tsrl/$num \
 				--randomseed $i  \
 				--config configs/icra_benchmark/ts_separate.py \
 				--safe_weight 1.0 \
