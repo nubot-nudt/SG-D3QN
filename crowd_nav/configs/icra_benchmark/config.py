@@ -22,9 +22,9 @@ class BaseEnvConfig(object):
     env.robot_sensor_range = 5
 
     reward = Config()
-    reward.success_reward = 1
     reward.collision_penalty = -0.25
-    reward.goal_reward = 0.5
+    reward.success_reward = 0.5
+    reward.goal_factor = 0.5
     reward.discomfort_penalty_factor = 0.5
     reward.discomfort_dist = 0.2
 
