@@ -5,6 +5,7 @@ from crowd_sim.envs import policy
 class Robot(Agent):
     def __init__(self, config, section):
         super().__init__(config, section)
+        self.rotation_constraint = getattr(config, section).rotation_constraint
 
     def act(self, ob):
         if self.policy is None:

@@ -43,15 +43,14 @@ class TD3RL(Policy):
         self.planning_width = None
         self.do_action_clip = None
         self.sparse_search = None
-        self.sparse_speed_samples = 2
-        self.sparse_rotation_samples = 8
         self.action_group_index = []
         self.traj = None
         self.use_noisy_net = False
-        self.count=0
+        self.count = 0
         self.action_dim = 2
         # max_action must be a tensor
         self.max_action = None
+        self.min_action = None
 
     def set_common_parameters(self, config):
         self.gamma = config.rl.gamma
@@ -67,7 +66,7 @@ class TD3RL(Policy):
         # self.set_device(device)
         self.device = device
         graph_model1 = GAT_RL(config, self.robot_state_dim, self.human_state_dim)
-        self.actor = Actor(config, graph_model1, self.action_dim, self.max_action)
+        self.actor = Actor(config, graph_model1, self.action_dim, self.max_action, self.min_action)
         graph_model2 = GAT_RL(config, self.robot_state_dim, self.human_state_dim)
         graph_model3 = GAT_RL(config, self.robot_state_dim, self.human_state_dim)
         self.critic = Critic(config, graph_model2, graph_model3, self.action_dim)
@@ -78,10 +77,11 @@ class TD3RL(Policy):
                       self.state_predictor.human_motion_predictor]
         logging.info('TD3 action_dim is : {}'.format(self.action_dim))
 
-    def set_action(self, action_dims, max_action):
+    def set_action(self, action_dims, max_action, min_action):
         self.action_dim = action_dims
         self.max_action = max_action
-        self.actor.set_action(action_dims, max_action)
+        self.min_action = min_action
+        self.actor.set_action(action_dims, max_action, min_action)
         self.critic.set_action(action_dims)
 
     def set_device(self, device):

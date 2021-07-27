@@ -4,17 +4,23 @@ import torch.nn.functional as F
 from crowd_nav.policy.helpers import mlp
 
 class Actor(nn.Module):
-    def __init__(self, config, graph_model, action_dim, max_action):
+    def __init__(self, config, graph_model, action_dim, max_action, min_action):
         super(Actor, self).__init__()
         self.graph_model = graph_model
         self.action_network = mlp(config.gcn.X_dim, [256, action_dim])
-        self.max_action = max_action
+        self.max_action = None
+        self.min_action = None
         self.action_dim = action_dim
+        self.action_amplitude = max_action
+        self.action_middle = min_action
 
-    def set_action(self, action_dim, max_action):
+    def set_action(self, action_dim, max_action, min_action):
         self.action_dim = action_dim
         self.max_action = max_action
-        self.max_action = torch.from_numpy(self.max_action)
+        self.min_action = min_action
+        self.action_amplitude = (self.max_action - self.min_action) / 2.0
+        self.action_amplitude = torch.from_numpy(self.action_amplitude)
+        self.action_middle = torch.from_numpy(self.min_action + self.max_action) / 2.0
 
     def forward(self, state):
         """ Embed state into a latent space. Take the first row of the feature matrix as state representation.
@@ -25,7 +31,9 @@ class Actor(nn.Module):
         # only use the feature of robot node as state representation
         state_embedding = self.graph_model(self.trans_no_rotation(state))[:, 0, :]
         a = self.action_network(state_embedding)
-        return self.max_action * torch.tanh(a)
+        action = self.action_middle + self.action_amplitude * torch.tanh(a)
+        return action
+        # return self.max_action * torch.tanh(a)
 
     def rotate(self, state):
         """

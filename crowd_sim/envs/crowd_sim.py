@@ -77,8 +77,8 @@ class CrowdSim(gym.Env):
 
         # 动作空间: 速度，朝向
         self.action_space = spaces.Box(
-            low=np.array([-1.0, -np.pi/2.0]),
-            high=np.array([1.0, np.pi/2.0]),
+            low=np.array([0, -np.pi]),
+            high=np.array([1, np.pi]),
             dtype=np.float32
         )
         self.phase = None
@@ -123,6 +123,20 @@ class CrowdSim(gym.Env):
 
     def set_robot(self, robot):
         self.robot = robot
+
+        if self.robot.kinematics == "holonomic":
+            # 动作空间: 速度，朝向
+            self.action_space = spaces.Box(
+                low=np.array([0, -np.pi]),
+                high=np.array([1, np.pi]),
+                dtype=np.float32
+            )
+        else:
+            self.action_space = spaces.Box(
+                low=np.array([0, -self.robot.rotation_constraint]),
+                high=np.array([1, self.robot.rotation_constraint]),
+                dtype=np.float32
+            )
 
     def generate_human(self, human=None, non_stop=False, square=False):
         if human is None:
@@ -350,8 +364,8 @@ class CrowdSim(gym.Env):
                 vx = human_actions[i].vx - action.vx
                 vy = human_actions[i].vy - action.vy
             else:
-                vx = human_actions[i].v * np.cos(human_actions[i].r + self.robot.theta) - action.v * np.cos(action.r + self.robot.theta)
-                vy = human_actions[i].v * np.sin(human_actions[i].r + self.robot.theta) - action.v * np.sin(action.r + self.robot.theta)
+                vx = human_actions[i].vx - action.v * np.cos(action.r + self.robot.theta)
+                vy = human_actions[i].vy - action.v * np.sin(action.r + self.robot.theta)
             ex = px + vx * self.time_step
             ey = py + vy * self.time_step
             # closest distance between boundaries of two agents
@@ -390,9 +404,6 @@ class CrowdSim(gym.Env):
         goal_position = np.array(self.robot.get_goal_position())
         reward_goal = (norm(cur_position - goal_position) - norm(end_position - goal_position))
         reaching_goal = norm(end_position - goal_position) < self.robot.radius
-        action_vel_length = np.sqrt(action.vx*action.vx + action.vy*action.vy)
-        robot_vel_length = np.sqrt(self.robot.vx*self.robot.vx + self.robot.vy*self.robot.vy)
-        # delta_w = (self.robot.vx*action.vx + self.robot.vy*action.vy)/action_vel_length/robot_vel_length
         delta_w = 0.0
         if delta_w < 0.5:
             reward_omega = -0.01 * (0.5 - delta_w) * (0.5 - delta_w)
@@ -404,11 +415,11 @@ class CrowdSim(gym.Env):
             done = True
             info = Timeout()
         elif collision:
-            reward_col = re_collision#self.collision_penalty
+            reward_col = re_collision
             done = True
             info = Collision()
         elif reaching_goal:
-            reward_arrival = re_arrival#self.success_reward
+            reward_arrival = re_arrival
             done = True
             info = ReachGoal()
         elif dmin < self.discomfort_dist:

@@ -116,6 +116,7 @@ def main(args):
     # for continous action
     action_dim = env.action_space.shape[0]
     max_action = env.action_space.high
+    min_action = env.action_space.low
 
     # read training parameters
     train_config = config.TrainConfig(args.debug)
@@ -157,7 +158,7 @@ def main(args):
                               detach_state_predictor=train_config.train.detach_state_predictor,
                               share_graph_model=policy_config.model_predictive_rl.share_graph_model)
     elif policy_config.name == 'td3_rl':
-        policy.set_action(action_dim, max_action)
+        policy.set_action(action_dim, max_action, min_action)
         trainer = TD3RLTrainer(policy.actor, policy.critic, policy.state_predictor, memory, device, policy, writer,
                               batch_size, optimizer, env.human_num, reduce_sp_update_frequency=train_config.train.reduce_sp_update_frequency,
                               freeze_state_predictor=train_config.train.freeze_state_predictor,
@@ -318,8 +319,8 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('Parse configuration file')
-    parser.add_argument('--policy', type=str, default='tree_search_rl')
-    parser.add_argument('--config', type=str, default='configs/icra_benchmark/ts_separate.py')
+    parser.add_argument('--policy', type=str, default='td3_rl')
+    parser.add_argument('--config', type=str, default='configs/icra_benchmark/td3.py')
     parser.add_argument('--output_dir', type=str, default='data/output1')
     parser.add_argument('--overwrite', default=False, action='store_true')
     parser.add_argument('--weights', type=str)

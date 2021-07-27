@@ -246,7 +246,10 @@ class TreeSearchRL(Policy):
             max_action_value, max_action_indexes = torch.topk(q_value, width, dim=1)
         action_stay = []
         for i in range(robot_state_batch.shape[0]):
-            action_stay.append(ActionXY(0, 0))
+            if self.kinematics == "holonomic":
+                action_stay.append(ActionXY(0, 0))
+            else:
+                action_stay.append(ActionRot(0, 0))
         _, pre_next_state = self.state_predictor(state, action_stay)
         next_robot_state_batch = None
         next_human_state_batch = None

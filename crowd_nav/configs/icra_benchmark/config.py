@@ -10,7 +10,7 @@ class Config(object):
     def __init__(self):
         pass
 
-
+rotation_constraint = np.pi/3
 class BaseEnvConfig(object):
     env = Config()
     env.time_limit = 30
@@ -51,6 +51,7 @@ class BaseEnvConfig(object):
     robot.radius = 0.3
     robot.v_pref = 1
     robot.sensor = 'coordinates'
+    robot.rotation_constraint = rotation_constraint
 
     def __init__(self, debug=False):
         if debug:
@@ -68,12 +69,13 @@ class BasePolicyConfig(object):
     om.om_channel_size = 3
 
     action_space = Config()
-    action_space.kinematics = 'holonomic'
+    #action_space.kinematics = 'holonomic'
+    action_space.kinematics = 'unicycle'
     action_space.speed_samples = 5
     action_space.rotation_samples = 16
     action_space.sampling = 'exponential'
     action_space.query_env = False
-    action_space.rotation_constraint = np.pi / 3
+    action_space.rotation_constraint = rotation_constraint
 
     cadrl = Config()
     cadrl.mlp_dims = [150, 100, 100, 1]

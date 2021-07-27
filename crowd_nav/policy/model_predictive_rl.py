@@ -212,7 +212,11 @@ class ModelPredictiveRL(Policy):
                 action_space_clipped = self.action_space
             state_tensor = state.to_tensor(add_batch_size=True, device=self.device)
             actions = []
-            actions.append(ActionXY(0, 0))
+            if self.kinematics == "holonomic":
+                actions.append(ActionXY(0, 0))
+            else:
+                actions.append(ActionRot(0, 0))
+            # actions.append(ActionXY(0, 0))
             pre_next_state = self.state_predictor(state_tensor, actions)
             next_robot_states = None
             next_human_states = None
