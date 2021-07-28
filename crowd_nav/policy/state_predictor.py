@@ -54,11 +54,12 @@ class StatePredictor(nn.Module):
             next_state[2] = action.vx
             next_state[3] = action.vy
         else:
-            next_state[7] = next_state[7] + action.r
-            next_state[0] = next_state[0] + np.cos(next_state[7]) * action.v * self.time_step
-            next_state[1] = next_state[1] + np.sin(next_state[7]) * action.v * self.time_step
-            next_state[2] = np.cos(next_state[7]) * action.v
-            next_state[3] = np.sin(next_state[7]) * action.v
+            next_state[7] = 1.0
+            next_state[8] = next_state[8] + action.r
+            next_state[0] = next_state[0] + np.cos(next_state[8]) * action.v * self.time_step
+            next_state[1] = next_state[1] + np.sin(next_state[8]) * action.v * self.time_step
+            next_state[2] = np.cos(next_state[8]) * action.v
+            next_state[3] = np.sin(next_state[8]) * action.v
 
         return next_state.unsqueeze(0).unsqueeze(0)
 
