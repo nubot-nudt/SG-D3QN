@@ -10,7 +10,7 @@ from crowd_nav.utils.explorer import Explorer
 from crowd_nav.policy.policy_factory import policy_factory
 from crowd_sim.envs.utils.robot import Robot
 from crowd_sim.envs.policy.orca import ORCA
-
+from crowd_nav.policy.reward_estimate import Reward_Estimator
 
 def main(args):
     # configure logging and device
@@ -51,6 +51,10 @@ def main(args):
     # configure policy
     policy_config = config.PolicyConfig(args.debug)
     policy = policy_factory[policy_config.name]()
+    reward_estimator = Reward_Estimator()
+    env_config = config.EnvConfig(args.debug)
+    reward_estimator.configure(env_config)
+    policy.reward_estimator = reward_estimator
     if args.planning_depth is not None:
         policy_config.model_predictive_rl.do_action_clip = True
         policy_config.model_predictive_rl.planning_depth = args.planning_depth
