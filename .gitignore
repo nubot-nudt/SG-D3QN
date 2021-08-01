@@ -14,3 +14,7 @@ data/
 *.mp4
 videos/
 *.log
+
+build/
+devel/
+.catkin_workspace
