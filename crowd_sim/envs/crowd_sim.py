@@ -479,6 +479,14 @@ class CrowdSim(gym.Env):
 
         return ob, reward, done, info
 
+    def peds_predict(self, agent_states, robot_state):
+        if self.robot.visible:
+            agent_states.append(robot_state)
+            human_actions = self.centralized_planner.predict(agent_states)[:-1]
+        else:
+            human_actions = self.centralized_planner.predict(agent_states)
+        return human_actions
+
     def compute_observation_for(self, agent):
         if agent == self.robot:
             ob = []

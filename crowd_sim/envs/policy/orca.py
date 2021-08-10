@@ -156,6 +156,21 @@ class ORCA(Policy):
 class CentralizedORCA(ORCA):
     def __init__(self):
         super().__init__()
+        self.name = 'ORCA'
+        self.kinematics = 'holonomic'
+        self.safety_space = 0
+        self.neighbor_dist = 10
+        self.max_neighbors = 10
+        self.time_horizon = 5
+        self.time_horizon_obst = 5
+        self.radius = 0.3
+        self.max_speed = 1
+        self.sim = None
+        self.speed_samples = 5
+        self.rotation_samples = 16
+        self.sampling = None
+        self.rotation_constraint = None
+        self.time_step = 0.25
 
     def predict(self, state):
         """ Centralized planning for all agents """
