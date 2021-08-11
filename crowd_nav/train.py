@@ -295,7 +295,7 @@ def main(args):
             _, _, _, reward, _, _, _ = explorer.run_k_episodes(env.case_size['val'], 'val', episode=episode)
             explorer.log('val', episode // evaluation_interval)
 
-            if episode % checkpoint_interval == 0:
+            if episode % checkpoint_interval == 0 and reward > best_val_reward:
                 best_val_reward = reward
                 best_val_model = copy.deepcopy(policy.get_state_dict())
         # test after every evaluation to check how the generalization performance evolves
