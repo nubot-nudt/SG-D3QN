@@ -8,10 +8,10 @@ c=0.25
 for ((i=0;i<10;i+=1))
 do
 	python train.py \
-	--policy tree-search-rl \
-	--output_dir data/$day/tsrl/$i \
+	--policy model-predictive-rl\
+	--output_dir data/$day/mprl/$i \
 	--randomseed $i  \
-	--config configs/icra_benchmark/ts_separate.py \
+	--config configs/icra_benchmark/mp_separate.py \
 	--safe_weight 1.0 \
 	--goal_weight $a \
 	--re_collision $b \
