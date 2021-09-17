@@ -13,19 +13,20 @@ from crowd_sim.envs.policy.orca import ORCA
 from crowd_nav.policy.reward_estimate import Reward_Estimator
 import rospy
 from crowd_sim.envs.utils.state import ObservableState, FullState, JointState
-from sgdqn_common.msg import ObserveInfo, VelInfo, AgentVel
-from crowd_sim.envs.utils.action import ActionXY, ActionRot
+from sgdqn_common.msg import ObserveInfo, ActionCmd
+from crowd_sim.envs.utils.action import ActionXY, ActionRot, ActionDiff
 
 class sgdqn_planner:
     def init(self):
         self.robot_policy = None
         self.peds_policy = None
+        self.cur_state = None
         rospy.init_node('sgdqn_planner_node', anonymous=True)
 
     def start(self):
-        rospy.Subscriber("observe_info", ObserveInfo, self.state_callback)
-        self.human_vel_pub = rospy.Publisher('human_vel_cmd', VelInfo, queue_size=10)
-        self.robot_vel_pub = rospy.Publisher('robot_vel_cmd', AgentVel, queue_size=10)
+        rospy.Subscriber("observeInfo", ObserveInfo, self.state_callback)
+        # self.human_vel_pub = rospy.Publisher('human_vel_cmd', VelInfo, queue_size=10)
+        self.robot_action_pub = rospy.Publisher('robot_action_cmd', ActionCmd, queue_size=10)
         rospy.spin()
 
     def configure(self):
@@ -132,28 +133,39 @@ class sgdqn_planner:
         robot_full_state = FullState(robot_state.pos_x, robot_state.pos_y, robot_state.vel_x, robot_state.vel_y,
                                      robot_state.radius, robot_state.goal_x, robot_state.goal_y, robot_state.vmax,
                                      robot_state.theta)
-        peds_full_state = [FullState(ped_state.pos_x, ped_state.pos_y, ped_state.vel_x, ped_state.vel_y,
-                                     ped_state.radius, ped_state.goal_x, ped_state.goal_y, ped_state.vmax,
-                                     ped_state.theta) for ped_state in observe_info.ped_states]
-        observable_states = self.compute_observation(peds_full_state)
-        state = JointState(robot_full_state, observable_states)
-        # robot_action, robot_action_index = self.robot_policy.predict(state)
-        human_actions = self.peds_policy.predict(peds_full_state)
-        test_action = ActionXY(0.0, 0.0)
-        robot_vel = AgentVel()
-        robot_vel.vel_x = test_action.vx
-        robot_vel.vel_y = test_action.vy
-        vel_infos = VelInfo()
-        vel_infos.vel_info.append(robot_vel)
+        peds_full_state = [ObservableState(ped_state.pos_x, ped_state.pos_y, ped_state.vel_x, ped_state.vel_y,
+                                     ped_state.radius) for ped_state in observe_info.ped_states]
+        observable_states = peds_full_state
+        self.cur_state = JointState(robot_full_state, observable_states)
+        action_cmd = ActionCmd()
 
-
-        # human policy
-        for human_action in human_actions:
-            human_vel = AgentVel()
-            human_vel.vel_x = human_action.vx
-            human_vel.vel_y = human_action.vy
-            vel_infos.vel_info.append(human_vel)
-        self.human_vel_pub.publish(vel_infos)
+        dis = np.sqrt((robot_full_state.px - robot_full_state.gx)**2 + (robot_full_state.py - robot_full_state.gy)**2)
+        if dis < 0.3:
+            action_cmd.stop = True
+            action_cmd.vel_x = - np.sign(robot_full_state.vx) * robot_full_state.vx * 2.0
+            action_cmd.vel_y = - np.sign(robot_full_state.vy) * robot_full_state.vy * 2.0
+        else:
+            action_cmd.stop = False
+            robot_action, robot_action_index = self.robot_policy.predict(self.cur_state)
+            print('robot_action', robot_action.al, robot_action.ar)
+            action_cmd.vel_x = robot_action.al
+            action_cmd.vel_y = robot_action.ar
+        self.robot_action_pub.publish(action_cmd)
+        # human_actions = self.peds_policy.predict(peds_full_state)
+        #
+        # test_action = ActionXY(0.0, 0.0)
+        # robot_vel = AgentVel()
+        # robot_vel.vel_x = test_action.vx
+        # robot_vel.vel_y = test_action.vy
+        # vel_infos = VelInfo()
+        # vel_infos.vel_info.append(robot_vel)
+        # # human policy
+        # for human_action in human_actions:
+        #     human_vel = AgentVel()
+        #     human_vel.vel_x = human_action.vx
+        #     human_vel.vel_y = human_action.vy
+        #     vel_infos.vel_info.append(human_vel)
+        # self.human_vel_pub.publish(vel_infos)
 
     def compute_observation(self, full_states):
         observation_states = [full_state.get_observable_state() for full_state in full_states]
@@ -163,8 +175,8 @@ class sgdqn_planner:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('Parse configuration file')
     parser.add_argument('--config', type=str, default=None)
-    parser.add_argument('--policy', type=str, default='model_predictive_rl')
-    parser.add_argument('-m', '--model_dir', type=str, default='data/output1')#None
+    parser.add_argument('--policy', type=str, default='tree_search_rl')
+    parser.add_argument('-m', '--model_dir', type=str, default='data/0827/tsrl/2')#None
     parser.add_argument('--il', default=False, action='store_true')
     parser.add_argument('--rl', default=False, action='store_true')
     parser.add_argument('--gpu', default=False, action='store_true')
