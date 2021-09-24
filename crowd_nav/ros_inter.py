@@ -14,7 +14,7 @@ from crowd_nav.policy.reward_estimate import Reward_Estimator
 import rospy
 from crowd_sim.envs.utils.state import ObservableState, FullState, JointState
 from sgdqn_common.msg import ObserveInfo, ActionCmd
-from crowd_sim.envs.utils.action import ActionXY, ActionRot, ActionDiff
+from crowd_sim.envs.utils.action import ActionXY, ActionRot
 
 class sgdqn_planner:
     def init(self):
@@ -111,9 +111,8 @@ class sgdqn_planner:
         min_action = env.action_space.low
         if policy.name == 'TD3RL':
             policy.set_action(action_dim, max_action, min_action)
-        self.robot_policy.set_time_step(env.time_step)
         self.robot_policy = policy
-
+        self.robot_policy.set_time_step(env.time_step)
         train_config = config.TrainConfig(args.debug)
         epsilon_end = train_config.train.epsilon_end
         if not isinstance(self.robot_policy, ORCA):
@@ -128,7 +127,6 @@ class sgdqn_planner:
             logging.info('ORCA agent buffer: %f', self.robot_policy.safety_space)
 
     def state_callback(self, observe_info):
-        print("state callback")
         robot_state = observe_info.robot_state
         robot_full_state = FullState(robot_state.pos_x, robot_state.pos_y, robot_state.vel_x, robot_state.vel_y,
                                      robot_state.radius, robot_state.goal_x, robot_state.goal_y, robot_state.vmax,
@@ -142,14 +140,15 @@ class sgdqn_planner:
         dis = np.sqrt((robot_full_state.px - robot_full_state.gx)**2 + (robot_full_state.py - robot_full_state.gy)**2)
         if dis < 0.3:
             action_cmd.stop = True
-            action_cmd.vel_x = - np.sign(robot_full_state.vx) * robot_full_state.vx * 2.0
-            action_cmd.vel_y = - np.sign(robot_full_state.vy) * robot_full_state.vy * 2.0
+            action_cmd.vel_x = 0.0
+            action_cmd.vel_y = 0.0
         else:
+            print("state callback")
             action_cmd.stop = False
             robot_action, robot_action_index = self.robot_policy.predict(self.cur_state)
-            print('robot_action', robot_action.al, robot_action.ar)
-            action_cmd.vel_x = robot_action.al
-            action_cmd.vel_y = robot_action.ar
+            print('robot_action', robot_action.v, robot_action.r)
+            action_cmd.vel_x = robot_action.v
+            action_cmd.vel_y = robot_action.r
         self.robot_action_pub.publish(action_cmd)
         # human_actions = self.peds_policy.predict(peds_full_state)
         #

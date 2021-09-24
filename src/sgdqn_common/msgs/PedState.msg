@@ -3,7 +3,3 @@ float32 pos_y
 float32 vel_x
 float32 vel_y
 float32 radius
-float32 goal_x
-float32 goal_y
-float32 vmax
-float32 theta

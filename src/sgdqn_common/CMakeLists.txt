@@ -20,8 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(DIRECTORY msgs FILES ObserveInfo.msg
 RobotState.msg
 PedState.msg
-AgentVel.msg
-VelInfo.msg
+ActionCmd.msg
 )
 
 generate_messages(DEPENDENCIES std_msgs)

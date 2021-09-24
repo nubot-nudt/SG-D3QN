@@ -46,6 +46,7 @@ class TreeSearchRL(Policy):
         self.traj = None
         self.use_noisy_net = False
         self.count=0
+        self.time_step = 0.25
 
     def configure(self, config, device):
         self.set_common_parameters(config)
