@@ -33,6 +33,7 @@ class sgdqn_planner:
         self.robot_policy = policy_factory['tree_search_rl']()
         self.peds_policy = policy_factory['centralized_orca']()
 
+
     def load_policy_model(self, args):
         level = logging.DEBUG if args.debug else logging.INFO
         logging.basicConfig(level=level, format='%(asctime)s, %(levelname)s: %(message)s',
@@ -112,6 +113,7 @@ class sgdqn_planner:
         if policy.name == 'TD3RL':
             policy.set_action(action_dim, max_action, min_action)
         self.robot_policy = policy
+        policy.set_v_pref(0.7)
         self.robot_policy.set_time_step(env.time_step)
         train_config = config.TrainConfig(args.debug)
         epsilon_end = train_config.train.epsilon_end
@@ -138,7 +140,7 @@ class sgdqn_planner:
         action_cmd = ActionCmd()
 
         dis = np.sqrt((robot_full_state.px - robot_full_state.gx)**2 + (robot_full_state.py - robot_full_state.gy)**2)
-        if dis < 0.3:
+        if dis < 0.5:
             action_cmd.stop = True
             action_cmd.vel_x = 0.0
             action_cmd.vel_y = 0.0
@@ -175,7 +177,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser('Parse configuration file')
     parser.add_argument('--config', type=str, default=None)
     parser.add_argument('--policy', type=str, default='tree_search_rl')
-    parser.add_argument('-m', '--model_dir', type=str, default='data/0916/tsrl/3')#None
+    parser.add_argument('-m', '--model_dir', type=str, default='data/0928/tsrl/1')#None
     parser.add_argument('--il', default=False, action='store_true')
     parser.add_argument('--rl', default=False, action='store_true')
     parser.add_argument('--gpu', default=False, action='store_true')

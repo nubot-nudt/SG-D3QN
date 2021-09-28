@@ -17,6 +17,7 @@ class Policy(object):
         # if agent is assumed to know the dynamics of real world
         self.env = None
         self.reward_estimator = None
+        self.v_pref = 1
 
     @abc.abstractmethod
     def configure(self, config):
@@ -24,6 +25,9 @@ class Policy(object):
 
     def set_phase(self, phase):
         self.phase = phase
+
+    def set_v_pref(self, v_pref):
+        self.v_pref = v_pref
 
     def set_device(self, device):
         self.device = device
