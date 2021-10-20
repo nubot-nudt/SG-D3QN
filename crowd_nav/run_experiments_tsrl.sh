@@ -1,7 +1,7 @@
 #!/bin/bash
 day=`date +%m%d`
 echo "The Script begin at $day"
-a=0.2
+a=0.1
 b=-0.25
 c=0.25
 # Script to reproduce results
@@ -16,7 +16,7 @@ do
 	--goal_weight $a \
 	--re_collision $b \
 	--re_arrival $c \
-	--human_num 10
+	--human_num 5
 
 #	python train.py \
 #	--policy model-predictive-rl \
