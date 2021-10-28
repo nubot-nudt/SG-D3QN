@@ -14,7 +14,7 @@ def mlp(input_dim, mlp_dims, last_relu=False):
         # nn.init.orthogonal(layers[-1].weight)
         if i != len(mlp_dims) - 2 or last_relu:
             # layers.append(nn.ReLU())
-            layers.append(nn.LeakyReLU(negative_slope=0.01))
+            layers.append(nn.LeakyReLU(negative_slope=0.1))
     net = nn.Sequential(*layers)
     return net
 
@@ -134,18 +134,18 @@ class NoisyDuelingDQN(nn.Module):
 
         self.feauture_layer = nn.Sequential(
             FactorizedNoisyLinear(self.input_dim, 128),
-            nn.LeakyReLU(negative_slope=0.01)
+            nn.LeakyReLU(negative_slope=0.1)
         )
 
         self.value_stream = nn.Sequential(
             FactorizedNoisyLinear(128, 128),
-            nn.LeakyReLU(negative_slope=0.01),
+            nn.LeakyReLU(negative_slope=0.1),
             FactorizedNoisyLinear(128, 1)
         )
 
         self.advantage_stream = nn.Sequential(
             FactorizedNoisyLinear(128, 128),
-            nn.LeakyReLU(negative_slope=0.01),
+            nn.LeakyReLU(negative_slope=0.1),
             FactorizedNoisyLinear(128, self.output_dim)
         )
 
@@ -176,7 +176,7 @@ class GraphAttentionLayer(nn.Module):
         nn.init.orthogonal(self.a.data, gain=1.414)
         self.bias = nn.Parameter(torch.zeros(size=(1, out_features)))
         nn.init.orthogonal(self.bias.data, gain=1.414)
-        self.leakyrelu = nn.LeakyReLU(negative_slope=0.01)
+        self.leakyrelu = nn.LeakyReLU(negative_slope=0.1)
 
     def forward(self, input, adj):
 
@@ -215,7 +215,7 @@ class GraphAttentionLayerSim(nn.Module):
         nn.init.xavier_uniform_(self.W_a.data, gain=1.414)
         self.bias = nn.Parameter(torch.zeros(size=(1, out_features)))
         nn.init.xavier_uniform_(self.bias.data, gain=1.414)
-        self.leakyrelu = nn.LeakyReLU(negative_slope=0.01)
+        self.leakyrelu = nn.LeakyReLU(negative_slope=0.1)
 
 
     def forward(self, input, adj):
