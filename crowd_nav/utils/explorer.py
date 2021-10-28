@@ -144,7 +144,7 @@ class Explorer(object):
                 # define the value of states in IL as cumulative discounted rewards, which is the same in RL
                 state = self.target_policy.transform(state)
                 action = actions[i]
-                done = dones[i]
+                done = torch.Tensor([dones[i]]).to(self.device)
                 next_state = self.target_policy.transform(states[i+1])
                 value = sum([pow(self.gamma, (t - i) * self.robot.time_step * self.robot.v_pref) * reward *
                              (1 if t >= i else 0) for t, reward in enumerate(rewards)])
@@ -163,7 +163,7 @@ class Explorer(object):
             if self.target_policy.name == 'ModelPredictiveRL' or self.target_policy.name == 'TreeSearchRL' or self.target_policy.name == 'TD3RL':
                 self.memory.push((state[0], state[1], action, value, done, reward, next_state[0], next_state[1]))
             else:
-                self.memory.push((state, value, reward, next_state))
+                self.memory.push((state, value, done, reward, next_state))
 
     def log(self, tag_prefix, global_step):
         sr, cr, time, reward, avg_return,_,_ = self.statistics

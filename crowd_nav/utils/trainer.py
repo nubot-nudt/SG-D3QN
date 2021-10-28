@@ -437,7 +437,7 @@ class VNRLTrainer(object):
             epoch_loss = 0
             logging.debug('{}-th epoch starts'.format(epoch))
             for data in self.data_loader:
-                inputs, values, _, _ = data
+                inputs, values, _, _, _ = data
                 self.optimizer.zero_grad()
                 outputs = self.model(inputs)
                 values = values.to(self.device)
@@ -460,12 +460,14 @@ class VNRLTrainer(object):
         losses = 0
         batch_count = 0
         for data in self.data_loader:
-            inputs, _, rewards, next_states = data
+            inputs, _, done, rewards, next_states = data
             self.optimizer.zero_grad()
             outputs = self.model(inputs)
 
             gamma_bar = pow(self.gamma, self.time_step * self.v_pref)
-            target_values = rewards + gamma_bar * self.target_model(next_states)
+            done_infos = (1 - done)
+            next_value = self.target_model(next_states)
+            target_values = rewards + torch.mul(done_infos, next_value * gamma_bar)
 
             loss = self.criterion(outputs, target_values)
             loss.backward()
