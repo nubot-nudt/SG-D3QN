@@ -9,10 +9,10 @@ d=0.125
 for ((i=0;i<3;i+=1))
 do
 	python train.py \
-	--policy tree-search-rl \
-	--output_dir data/$day/tsrl/$i \
+	--policy sarl \
+	--output_dir data/$day/sarl/$i \
 	--randomseed $i  \
-	--config configs/icra_benchmark/ts_separate.py \
+	--config configs/icra_benchmark/sarl.py \
 	--safe_weight $d \
 	--goal_weight $a \
 	--re_collision $b \
