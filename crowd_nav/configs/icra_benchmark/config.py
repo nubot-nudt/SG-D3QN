@@ -35,7 +35,7 @@ class BaseEnvConfig(object):
     sim.square_width = 10
     sim.circle_radius = 4
     sim.human_num = 5
-    sim.nonstop_human = False
+    sim.nonstop_human = True
     sim.centralized_planning = True
 
     humans = Config()
@@ -69,10 +69,10 @@ class BasePolicyConfig(object):
     om.om_channel_size = 3
 
     action_space = Config()
-    #action_space.kinematics = 'holonomic'
-    action_space.kinematics = 'unicycle'
-    action_space.speed_samples = 3
-    action_space.rotation_samples = 8
+    action_space.kinematics = 'holonomic'
+    # action_space.kinematics = 'unicycle'
+    action_space.speed_samples = 5
+    action_space.rotation_samples = 16
     action_space.sampling = 'exponential'
     action_space.query_env = False
     action_space.rotation_constraint = rotation_constraint

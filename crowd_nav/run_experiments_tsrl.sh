@@ -5,7 +5,7 @@ a=0.1
 b=-0.25
 c=0.25
 # Script to reproduce results
-for ((i=0;i<10;i+=1))
+for ((i=0;i<3;i+=1))
 do
 	python train.py \
 	--policy tree-search-rl \
