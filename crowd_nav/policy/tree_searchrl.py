@@ -236,7 +236,7 @@ class TreeSearchRL(Policy):
         # current_state_value = self.value_estimator(state)
         robot_state_batch = state[0]
         human_state_batch = state[1]
-        if state[1].shape[1]==0:
+        if state[1] is None:
             if depth == 0:
                 q_value = torch.Tensor(self.value_estimator(state))
                 max_action_value, max_action_indexes = torch.max(q_value, dim=1)
@@ -254,25 +254,24 @@ class TreeSearchRL(Policy):
                     action_stay.append(ActionXY(0, 0))
                 else:
                     action_stay.append(ActionRot(0, 0))
-            _, pre_next_state = self.state_predictor(state, action_stay)
+            pre_next_state = None
             next_robot_state_batch = None
             next_human_state_batch = None
             reward_est = torch.zeros(state[0].shape[0], width) * float('inf')
 
             for i in range(robot_state_batch.shape[0]):
-                cur_state = (robot_state_batch[i, :, :].unsqueeze(0), human_state_batch[i, :, :].unsqueeze(0))
-                next_human_state = pre_next_state[i, :, :].unsqueeze(0)
+                cur_state = (robot_state_batch[i, :, :].unsqueeze(0), None)
+                next_human_state = None
                 for j in range(width):
                     cur_action = self.action_space[max_action_indexes[i][j]]
                     next_robot_state = self.compute_next_robot_state(cur_state[0], cur_action)
                     if next_robot_state_batch is None:
                         next_robot_state_batch = next_robot_state
-                        next_human_state_batch = next_human_state
                     else:
                         next_robot_state_batch = torch.cat((next_robot_state_batch, next_robot_state), dim=0)
-                        next_human_state_batch = torch.cat((next_human_state_batch, next_human_state), dim=0)
                     reward_est[i][j] = self.reward_estimator.estimate_reward_on_predictor(
                         tensor_to_joint_state(cur_state), tensor_to_joint_state((next_robot_state, next_human_state)))
+
             next_state_batch = (next_robot_state_batch, next_human_state_batch)
             if self.planning_depth - depth >= 2 and self.planning_depth > 2:
                 cur_width = 1
@@ -287,7 +286,7 @@ class TreeSearchRL(Policy):
             max_returns = []
             max_actions = []
             for i in range(robot_state_batch.shape[0]):
-                cur_state = (robot_state_batch[i, :, :].unsqueeze(0), human_state_batch[i, :, :].unsqueeze(0))
+                cur_state = (robot_state_batch[i, :, :].unsqueeze(0), None)
                 action_id = max_action_index[i]
                 trajs_id = i * width + action_id
                 action = max_action_indexes[i][action_id]

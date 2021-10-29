@@ -239,7 +239,25 @@ class DQNNetwork(nn.Module):
         #  'px', 'py', 'vx', 'vy', 'radius'
         #  0     1      2     3      4
         assert len(state[0].shape) == 3
-        if len(state[1].shape) == 3:
+        if state[1] == None:
+            robot_state = state[0]
+            dx = robot_state[:, :, 5] - robot_state[:, :, 0]
+            dy = robot_state[:, :, 6] - robot_state[:, :, 1]
+            dx = dx.unsqueeze(1)
+            dy = dy.unsqueeze(1)
+            radius_r = robot_state[:, :, 4].unsqueeze(1)
+            dg = torch.norm(torch.cat([dx, dy], dim=2), 2, dim=2, keepdim=True)
+            rot = torch.atan2(dy, dx)
+            vx = robot_state[:, :, 2].unsqueeze(1)
+            vy = robot_state[:, :, 3].unsqueeze(1)
+            v_pref = robot_state[:, :, 7].unsqueeze(1)
+            px_r = torch.zeros_like(v_pref)
+            py_r = torch.zeros_like(v_pref)
+            theta = robot_state[:, :, 8].unsqueeze(1)
+            new_robot_state = torch.cat((px_r, py_r, vx, vy, radius_r, dg, rot, v_pref, theta), dim=2)
+            new_state = (new_robot_state, None)
+            return new_state
+        else:
             batch = state[0].shape[0]
             robot_state = state[0]
             human_state = state[1]
@@ -273,24 +291,6 @@ class DQNNetwork(nn.Module):
                 else:
                     new_human_state = torch.cat((new_human_state, cur_human_state), dim=1)
             new_state = (new_robot_state, new_human_state)
-            return new_state
-        else:
-            robot_state = state[0]
-            dx = robot_state[:, :, 5] - robot_state[:, :, 0]
-            dy = robot_state[:, :, 6] - robot_state[:, :, 1]
-            dx = dx.unsqueeze(1)
-            dy = dy.unsqueeze(1)
-            radius_r = robot_state[:, :, 4].unsqueeze(1)
-            dg = torch.norm(torch.cat([dx, dy], dim=2), 2, dim=2, keepdim=True)
-            rot = torch.atan2(dy, dx)
-            vx = robot_state[:, :, 2].unsqueeze(1)
-            vy = robot_state[:, :, 3].unsqueeze(1)
-            v_pref = robot_state[:, :, 7].unsqueeze(1)
-            px_r = torch.zeros_like(v_pref)
-            py_r = torch.zeros_like(v_pref)
-            theta = robot_state[:, :, 8].unsqueeze(1)
-            new_robot_state = torch.cat((px_r, py_r, vx, vy, radius_r, dg, rot, v_pref, theta), dim=2)
-            new_state = (new_robot_state, None)
             return new_state
 
 class Noisy_DQNNetwork(nn.Module):

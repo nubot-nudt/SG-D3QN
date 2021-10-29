@@ -76,6 +76,8 @@ class JointState(object):
             robot_state_tensor.to(device)
             human_states_tensor.to(device)
 
+        if human_states_tensor.shape[1]==0:
+            human_states_tensor = None
         return robot_state_tensor, human_states_tensor
 
 
@@ -85,8 +87,11 @@ def tensor_to_joint_state(state):
     robot_state = robot_state.cpu().squeeze().data.numpy()
     robot_state = FullState(robot_state[0], robot_state[1], robot_state[2], robot_state[3], robot_state[4],
                             robot_state[5], robot_state[6], robot_state[7], robot_state[8])
-    human_states = human_states.cpu().squeeze(0).data.numpy()
-    human_states = [ObservableState(human_state[0], human_state[1], human_state[2], human_state[3],
-                                    human_state[4]) for human_state in human_states]
+    if human_states is None:
+        human_states = []
+    else:
+        human_states = human_states.cpu().squeeze(0).data.numpy()
+        human_states = [ObservableState(human_state[0], human_state[1], human_state[2], human_state[3],
+                                        human_state[4]) for human_state in human_states]
 
     return JointState(robot_state, human_states)

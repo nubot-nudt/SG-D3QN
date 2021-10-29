@@ -42,20 +42,24 @@ class Reward_Estimator(object):
         dmin = float('inf')
         collision = False
         safety_penalty = 0
-        for i, human in enumerate(human_states):
-            next_human = next_human_states[i]
-            px = human.px - robot_state.px
-            py = human.py - robot_state.py
-            ex = next_human.px - next_robot_state.px
-            ey = next_human.py - next_robot_state.py
-            # closest distance between boundaries of two agents
-            closest_dist = point_to_segment_dist(px, py, ex, ey, 0, 0) - human.radius - robot_state.radius
-            if closest_dist < 0:
-                collision = True
-            if closest_dist < dmin:
-                dmin = closest_dist
-            if closest_dist < self.discomfort_dist:
-                safety_penalty = safety_penalty + (closest_dist - self.discomfort_dist)
+        if human_states is None or next_human_states is None:
+            safety_penalty = 0.0
+            collision = False
+        else:
+            for i, human in enumerate(human_states):
+                next_human = next_human_states[i]
+                px = human.px - robot_state.px
+                py = human.py - robot_state.py
+                ex = next_human.px - next_robot_state.px
+                ey = next_human.py - next_robot_state.py
+                # closest distance between boundaries of two agents
+                closest_dist = point_to_segment_dist(px, py, ex, ey, 0, 0) - human.radius - robot_state.radius
+                if closest_dist < 0:
+                    collision = True
+                if closest_dist < dmin:
+                    dmin = closest_dist
+                if closest_dist < self.discomfort_dist:
+                    safety_penalty = safety_penalty + (closest_dist - self.discomfort_dist)
             # dis_begin = np.sqrt(px ** 2 + py ** 2) - human.radius - robot_state.radius
             # dis_end = np.sqrt(ex ** 2 + ey ** 2) - human.radius - robot_state.radius
             # penalty_begin = 0
@@ -76,5 +80,4 @@ class Reward_Estimator(object):
         reward = weight_terminal * reward_terminal + weight_goal * reward_goal + weight_safe * safety_penalty
         # if collision:
         # reward = reward - 100
-        reward = reward
         return reward
