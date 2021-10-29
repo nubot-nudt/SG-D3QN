@@ -191,21 +191,37 @@ class GAT_RL(nn.Module):
         :return:
         """
         robot_state, human_states = state
-        adj = self.compute_adjectory_matrix(state)
-        # compute feature matrix X
-        robot_state_embedings = self.w_r(robot_state)
-        human_state_embedings = self.w_h(human_states)
-        X = torch.cat([robot_state_embedings, human_state_embedings], dim=1)
-        if robot_state.shape[0]==1:
-            H1, self.attention_weights = self.gat0(X, adj)
+        if human_states == None:
+            robot_state_embedings = self.w_r(robot_state)
+            adj = torch.ones((1, 1))
+            adj = adj.repeat(robot_state.size()[0], 1, 1)
+            X = robot_state_embedings
+            if robot_state.shape[0]==1:
+                H1, self.attention_weights = self.gat0(X, adj)
+            else:
+                H1, _ = self.gat0(X, adj)
+            H2, _ = self.gat1(H1, adj)
+            if self.skip_connection:
+                output = H1 + H2 + X
+            else:
+                output = H2
+            return output
         else:
-            H1, _ = self.gat0(X, adj)
-        H2, _ = self.gat1(H1, adj)
-        if self.skip_connection:
-            output = H1 + H2 + X
-        else:
-            output = H2
-        return output
+            adj = self.compute_adjectory_matrix(state)
+            # compute feature matrix X
+            robot_state_embedings = self.w_r(robot_state)
+            human_state_embedings = self.w_h(human_states)
+            X = torch.cat([robot_state_embedings, human_state_embedings], dim=1)
+            if robot_state.shape[0]==1:
+                H1, self.attention_weights = self.gat0(X, adj)
+            else:
+                H1, _ = self.gat0(X, adj)
+            H2, _ = self.gat1(H1, adj)
+            if self.skip_connection:
+                output = H1 + H2 + X
+            else:
+                output = H2
+            return output
 
 class GraphAttentionLayer(nn.Module):
     """

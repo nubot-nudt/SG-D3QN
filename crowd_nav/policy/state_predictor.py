@@ -23,23 +23,33 @@ class StatePredictor(nn.Module):
         :return: tensor of shape (batch_size, # of agents, feature_size)
         """
         assert len(state[0].shape) == 3
-        assert len(state[1].shape) == 3
+        if len(state[1].shape) == 3:
+            state_embedding = self.graph_model(state)
+            if detach:
+                state_embedding = state_embedding.detach()
+            if action is None:
+                # for training purpose
+                next_robot_state = None
+            else:
+                # if state[0].shape[0] == 1:
+                #     next_robot_state = self.compute_next_state(state[0], action)
+                # else:
+                next_robot_state = self.compute_next_states(state[0], action)
+            next_human_states = self.human_motion_predictor(state_embedding)[:, 1:, :]
 
-        state_embedding = self.graph_model(state)
-        if detach:
-            state_embedding = state_embedding.detach()
-        if action is None:
-            # for training purpose
-            next_robot_state = None
+            next_observation = [next_robot_state, next_human_states]
+            return next_observation
         else:
-            # if state[0].shape[0] == 1:
-            #     next_robot_state = self.compute_next_state(state[0], action)
-            # else:
-            next_robot_state = self.compute_next_states(state[0], action)
-        next_human_states = self.human_motion_predictor(state_embedding)[:, 1:, :]
-
-        next_observation = [next_robot_state, next_human_states]
-        return next_observation
+            if action is None:
+                # for training purpose
+                next_robot_state = None
+            else:
+                # if state[0].shape[0] == 1:
+                #     next_robot_state = self.compute_next_state(state[0], action)
+                # else:
+                next_robot_state = self.compute_next_states(state[0], action)
+            next_observation = [next_robot_state, None]
+            return next_observation
 
     def compute_next_state(self, robot_state, action):
         # currently it can not perform parallel computation

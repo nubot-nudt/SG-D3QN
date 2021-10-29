@@ -615,64 +615,99 @@ class CrowdSim(gym.Env):
             ax.add_artist(robot)
             ax.add_artist(goal)
 
-
-            # add humans and their numbers
-            human_positions = [[state[1][j].position for j in range(len(self.humans))] for state in self.states]
-            humans = [plt.Circle(human_positions[0][i], self.humans[i].radius, fill=False, color=human_colors[i])
-                      for i in range(len(self.humans))]
-            plt.legend([robot, humans[0], goal], ['Robot', 'Human', 'Goal'], fontsize=14)
-            # disable showing human numbers
-            if display_numbers:
-                human_numbers = [plt.text(humans[i].center[0] - x_offset, humans[i].center[1] + y_offset, str(i),
-                                          color='black', fontsize=12) for i in range(len(self.humans))]
-                if hasattr(self.robot.policy, 'get_attention_weights'):
-                    attentions =[plt.text(robot.center[0] + x_offset, robot.center[1] + y_offset,
-                                          '{:.2f}'.format(self.attention_weights[0][0]),color='black',fontsize=12)] + \
-                                [plt.text(humans[i].center[0] + x_offset, humans[i].center[1] + y_offset, '{:.2f}'.format(self.attention_weights[0][i+1]),
-                              color='black',fontsize=12) for i in range(len(self.humans))]
-            for i, human in enumerate(humans):
-                ax.add_artist(human)
+            if len(self.humans) == 0:
                 if display_numbers:
-                    ax.add_artist(human_numbers[i])
-
-            # add time annotation
-            time = plt.text(0.4, 1.02, 'Time: {}'.format(0), fontsize=16, transform=ax.transAxes)
-            ax.add_artist(time)
-
-            # visualize attention scores
-            # if hasattr(self.robot.policy, 'get_attention_weights'):
-            #     attention_scores = [plt.text(-5.5, 5, 'robot {}: {:.2f}'.format(0, self.attention_weights[0][0]),
-            #                  fontsize=16)] + [plt.text(-5.5, 5 - 0.5 * (i+1), 'Human {}: {:.2f}'.format(i+1, self.attention_weights[0][i+1]),
-            #                  fontsize=16) for i in range(len(self.humans))]
-
-            # compute orientation in each step and use arrow to show the direction
-            radius = self.robot.radius
-            orientations = []
-            for i in range(self.human_num + 1):
-                orientation = []
-                for state in self.states:
-                    agent_state = state[0] if i == 0 else state[1][i - 1]
-                    if self.robot.kinematics == 'unicycle' and i == 0:
-                        direction = (
-                        (agent_state.px, agent_state.py), (agent_state.px + radius * np.cos(agent_state.theta),
-                                                           agent_state.py + radius * np.sin(agent_state.theta)))
+                    if hasattr(self.robot.policy, 'get_attention_weights'):
+                        attentions =[plt.text(robot.center[0] + x_offset, robot.center[1] + y_offset,
+                                              '{:.2f}'.format(self.attention_weights[0][0]),color='black',fontsize=12)]
+                # add time annotation
+                time = plt.text(0.4, 1.02, 'Time: {}'.format(0), fontsize=16, transform=ax.transAxes)
+                ax.add_artist(time)
+                radius = self.robot.radius
+                orientations = []
+                for i in range(self.human_num + 1):
+                    orientation = []
+                    for state in self.states:
+                        agent_state = state[0] if i == 0 else state[1][i - 1]
+                        if self.robot.kinematics == 'unicycle' and i == 0:
+                            direction = (
+                            (agent_state.px, agent_state.py), (agent_state.px + radius * np.cos(agent_state.theta),
+                                                               agent_state.py + radius * np.sin(agent_state.theta)))
+                        else:
+                            theta = np.arctan2(agent_state.vy, agent_state.vx)
+                            direction = ((agent_state.px, agent_state.py), (agent_state.px + 1.5*radius * np.cos(theta),
+                                                                            agent_state.py + 1.5*radius * np.sin(theta)))
+                        orientation.append(direction)
+                    orientations.append(orientation)
+                    if i == 0:
+                        robot_arrow_color = 'red'
+                        arrows = [patches.FancyArrowPatch(*orientation[0], color=robot_arrow_color, arrowstyle=arrow_style)]
                     else:
-                        theta = np.arctan2(agent_state.vy, agent_state.vx)
-                        direction = ((agent_state.px, agent_state.py), (agent_state.px + 1.5*radius * np.cos(theta),
-                                                                        agent_state.py + 1.5*radius * np.sin(theta)))
-                    orientation.append(direction)
-                orientations.append(orientation)
-                if i == 0:
-                    robot_arrow_color = 'red'
-                    arrows = [patches.FancyArrowPatch(*orientation[0], color=robot_arrow_color, arrowstyle=arrow_style)]
-                else:
-                    human_arrow_color = 'red'
-                    arrows.extend(
-                        [patches.FancyArrowPatch(*orientation[0], color=human_arrow_color, arrowstyle=arrow_style)])
+                        human_arrow_color = 'red'
+                        arrows.extend(
+                            [patches.FancyArrowPatch(*orientation[0], color=human_arrow_color, arrowstyle=arrow_style)])
 
-            for arrow in arrows:
-                ax.add_artist(arrow)
-            global_step = 0
+                for arrow in arrows:
+                    ax.add_artist(arrow)
+                global_step = 0
+            else:
+                # add humans and their numbers
+                human_positions = [[state[1][j].position for j in range(len(self.humans))] for state in self.states]
+                humans = [plt.Circle(human_positions[0][i], self.humans[i].radius, fill=False, color=human_colors[i])
+                          for i in range(len(self.humans))]
+                plt.legend([robot, humans[0], goal], ['Robot', 'Human', 'Goal'], fontsize=14)
+                # disable showing human numbers
+                if display_numbers:
+                    human_numbers = [plt.text(humans[i].center[0] - x_offset, humans[i].center[1] + y_offset, str(i),
+                                              color='black', fontsize=12) for i in range(len(self.humans))]
+                    if hasattr(self.robot.policy, 'get_attention_weights'):
+                        attentions =[plt.text(robot.center[0] + x_offset, robot.center[1] + y_offset,
+                                              '{:.2f}'.format(self.attention_weights[0][0]),color='black',fontsize=12)] + \
+                                    [plt.text(humans[i].center[0] + x_offset, humans[i].center[1] + y_offset, '{:.2f}'.format(self.attention_weights[0][i+1]),
+                                  color='black',fontsize=12) for i in range(len(self.humans))]
+                for i, human in enumerate(humans):
+                    ax.add_artist(human)
+                    if display_numbers:
+                        ax.add_artist(human_numbers[i])
+
+                # add time annotation
+                time = plt.text(0.4, 1.02, 'Time: {}'.format(0), fontsize=16, transform=ax.transAxes)
+                ax.add_artist(time)
+
+                # visualize attention scores
+                # if hasattr(self.robot.policy, 'get_attention_weights'):
+                #     attention_scores = [plt.text(-5.5, 5, 'robot {}: {:.2f}'.format(0, self.attention_weights[0][0]),
+                #                  fontsize=16)] + [plt.text(-5.5, 5 - 0.5 * (i+1), 'Human {}: {:.2f}'.format(i+1, self.attention_weights[0][i+1]),
+                #                  fontsize=16) for i in range(len(self.humans))]
+
+                # compute orientation in each step and use arrow to show the direction
+                radius = self.robot.radius
+                orientations = []
+                for i in range(self.human_num + 1):
+                    orientation = []
+                    for state in self.states:
+                        agent_state = state[0] if i == 0 else state[1][i - 1]
+                        if self.robot.kinematics == 'unicycle' and i == 0:
+                            direction = (
+                            (agent_state.px, agent_state.py), (agent_state.px + radius * np.cos(agent_state.theta),
+                                                               agent_state.py + radius * np.sin(agent_state.theta)))
+                        else:
+                            theta = np.arctan2(agent_state.vy, agent_state.vx)
+                            direction = ((agent_state.px, agent_state.py), (agent_state.px + 1.5*radius * np.cos(theta),
+                                                                            agent_state.py + 1.5*radius * np.sin(theta)))
+                        orientation.append(direction)
+                    orientations.append(orientation)
+                    if i == 0:
+                        robot_arrow_color = 'red'
+                        arrows = [patches.FancyArrowPatch(*orientation[0], color=robot_arrow_color, arrowstyle=arrow_style)]
+                    else:
+                        human_arrow_color = 'red'
+                        arrows.extend(
+                            [patches.FancyArrowPatch(*orientation[0], color=human_arrow_color, arrowstyle=arrow_style)])
+
+                for arrow in arrows:
+                    ax.add_artist(arrow)
+                global_step = 0
 
             # if len(self.trajs) != 0:
             #     human_future_positions = []
@@ -697,15 +732,16 @@ class CrowdSim(gym.Env):
                 # nonlocal scores
                 global_step = frame_num
                 robot.center = robot_positions[frame_num]
-                for i, human in enumerate(humans):
-                    human.center = human_positions[frame_num][i]
-                    if display_numbers:
-                        human_numbers[i].set_position((human.center[0], human.center[1]))
+                if self.human_num >0:
+                    for i, human in enumerate(humans):
+                        human.center = human_positions[frame_num][i]
+                        if display_numbers:
+                            human_numbers[i].set_position((human.center[0], human.center[1]))
                 # if hasattr(self.robot.policy, 'get_attention_weights'):
                     # self_attention_scores = [plt.text(robot.center[0] - x_offset, robot.center[1] + y_offset,
                     #                                   '{:.2f}'.format(self.attention_weights[0][0]), color='black')]
                 if hasattr(self.robot.policy, 'get_attention_weights'):
-                    for i in range(len(humans)+1):
+                    for i in range(self.human_num + 1):
                         if i ==0:
                             attentions[i].set_position((robot.center[0]- 0.05, robot.center[1] - x_offset))
                             attentions[i].set_text('{:.2f}'.format(self.attention_weights[frame_num][i]))
