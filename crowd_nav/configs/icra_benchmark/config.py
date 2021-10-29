@@ -42,14 +42,14 @@ class BaseEnvConfig(object):
     humans.visible = True
     humans.policy = 'orca'
     humans.radius = 0.3
-    humans.v_pref = 0.7
+    humans.v_pref = 1.0
     humans.sensor = 'coordinates'
 
     robot = Config()
     robot.visible = False
     robot.policy = 'none'
     robot.radius = 0.3
-    robot.v_pref = 0.7
+    robot.v_pref = 1.0
     robot.sensor = 'coordinates'
     robot.rotation_constraint = rotation_constraint
 

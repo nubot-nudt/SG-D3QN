@@ -431,7 +431,8 @@ class VNRLTrainer(object):
         if self.optimizer is None:
             raise ValueError('Learning rate is not set!')
         if self.data_loader is None:
-            self.data_loader = DataLoader(self.memory, self.batch_size, shuffle=True, collate_fn=pad_batch)
+            self.data_loader = DataLoader(self.memory, self.batch_size, shuffle=True)
+            # self.data_loader = DataLoader(self.memory, self.batch_size, shuffle=True, collate_fn=pad_batch)
         average_epoch_loss = 0
         for epoch in range(num_epochs):
             epoch_loss = 0
@@ -456,7 +457,8 @@ class VNRLTrainer(object):
         if self.optimizer is None:
             raise ValueError('Learning rate is not set!')
         if self.data_loader is None:
-            self.data_loader = DataLoader(self.memory, self.batch_size, shuffle=True, collate_fn=pad_batch)
+            self.data_loader = DataLoader(self.memory, self.batch_size, shuffle=True)
+            # self.data_loader = DataLoader(self.memory, self.batch_size, shuffle=True, collate_fn=pad_batch)
         losses = 0
         batch_count = 0
         for data in self.data_loader:
