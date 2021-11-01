@@ -25,7 +25,7 @@ class BaseEnvConfig(object):
     reward.collision_penalty = -0.25
     reward.success_reward = 0.25
     reward.goal_factor = 0.2
-    reward.discomfort_penalty_factor = 1.25
+    reward.discomfort_penalty_factor = 1.0
     reward.discomfort_dist = 0.2
 
 
@@ -34,7 +34,7 @@ class BaseEnvConfig(object):
     sim.test_scenario = 'circle_crossing'
     sim.square_width = 10
     sim.circle_radius = 4
-    sim.human_num = 10
+    sim.human_num = 5
     sim.nonstop_human = True
     sim.centralized_planning = True
 
