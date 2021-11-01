@@ -55,6 +55,7 @@ class CrowdSim(gym.Env):
         self.nonstop_human = None
         self.centralized_planning = None
         self.centralized_planner = None
+        self.test_changing_size = False
 
         # for visualization
         self.states = None
@@ -491,7 +492,12 @@ class CrowdSim(gym.Env):
         if agent == self.robot:
             ob = []
             for human in self.humans:
-                ob.append(human.get_observable_state())
+                if self.test_changing_size is False:
+                    ob.append(human.get_observable_state())
+                else:
+                    dis2 = (human.px - agent.px) * (human.px - agent.px) + (human.py - agent.py) * (human.py - agent.py)
+                    if dis2 < self.robot_sensor_range * self.robot_sensor_range:
+                        ob.append(human.get_observable_state())
         else:
             ob = [other_human.get_observable_state() for other_human in self.humans if other_human != agent]
             if self.robot.visible:
@@ -661,10 +667,33 @@ class CrowdSim(gym.Env):
                     human_numbers = [plt.text(humans[i].center[0] - x_offset, humans[i].center[1] + y_offset, str(i),
                                               color='black', fontsize=12) for i in range(len(self.humans))]
                     if hasattr(self.robot.policy, 'get_attention_weights'):
-                        attentions =[plt.text(robot.center[0] + x_offset, robot.center[1] + y_offset,
-                                              '{:.2f}'.format(self.attention_weights[0][0]),color='black',fontsize=12)] + \
-                                    [plt.text(humans[i].center[0] + x_offset, humans[i].center[1] + y_offset, '{:.2f}'.format(self.attention_weights[0][i+1]),
-                                  color='black',fontsize=12) for i in range(len(self.humans))]
+                        if self.test_changing_size is True:
+                            robot_attention = [plt.text(robot.center[0] + x_offset, robot.center[1] + y_offset,
+                                                        '{:.2f}'.format(self.attention_weights[0][0]), color='black',
+                                                        fontsize=12)]
+                            human_attentions = []
+                            count = 0
+                            for i in range(len(self.humans)):
+                                human = humans[i]
+                                dis2 = (human.center[0] - robot.center[0]) * (human.center[0] - robot.center[0]) + (
+                                            human.center[1] - robot.center[1]) * (human.center[1] - robot.center[1])
+                                if dis2 < self.robot_sensor_range * self.robot_sensor_range:
+                                    human_attentions = human_attentions + [
+                                        plt.text(humans[i].center[0] + x_offset, humans[i].center[1] + y_offset,
+                                                 '{:.2f}'.format(self.attention_weights[0][count + 1]),
+                                                 color='black', fontsize=12)]
+                                    count = count + 1
+                                else:
+                                    human_attentions = human_attentions + [
+                                        plt.text(humans[i].center[0] + x_offset, humans[i].center[1] + y_offset,
+                                                 'n',
+                                                 color='red', fontsize=12)]
+                            attentions = robot_attention + human_attentions
+                        else:
+                            attentions =[plt.text(robot.center[0] + x_offset, robot.center[1] + y_offset,
+                                                  '{:.2f}'.format(self.attention_weights[0][0]),color='black',fontsize=12)] + \
+                                        [plt.text(humans[i].center[0] + x_offset, humans[i].center[1] + y_offset, '{:.2f}'.format(self.attention_weights[0][i+1]),
+                                      color='black',fontsize=12) for i in range(len(self.humans))]
                 for i, human in enumerate(humans):
                     ax.add_artist(human)
                     if display_numbers:
@@ -741,16 +770,34 @@ class CrowdSim(gym.Env):
                     # self_attention_scores = [plt.text(robot.center[0] - x_offset, robot.center[1] + y_offset,
                     #                                   '{:.2f}'.format(self.attention_weights[0][0]), color='black')]
                 if hasattr(self.robot.policy, 'get_attention_weights'):
+                    human_attentions = []
+                    count = 0
                     for i in range(self.human_num + 1):
                         if i ==0:
                             attentions[i].set_position((robot.center[0]- 0.05, robot.center[1] - x_offset))
                             attentions[i].set_text('{:.2f}'.format(self.attention_weights[frame_num][i]))
                         else:
-                            attentions[i].set_position((humans[i-1].center[0] - 0.05 , humans[i-1].center[1] - x_offset))
-                            attentions[i].set_text('{:.2f}'.format(self.attention_weights[frame_num][i]))
-#                    self_attention_dis = plt.text(robot.center[0] - x_offset, robot.center[1] + y_offset,
-#                                               '{:.2f}'.format(self.attention_weights[0][0]), color='black')
-#                    ax.add_artist(self_attention_dis)
+                            if self.test_changing_size is True:
+                                human = humans[i-1]
+                                dis2 = (human.center[0] - robot.center[0]) * (human.center[0] - robot.center[0]) + (
+                                        human.center[1] - robot.center[1]) * (human.center[1] - robot.center[1])
+                                if dis2 < self.robot_sensor_range * self.robot_sensor_range:
+                                    attentions[i].set_position(
+                                        (humans[i - 1].center[0] - 0.05, humans[i - 1].center[1] - x_offset))
+                                    attentions[i].set_text('{:.2f}'.format(self.attention_weights[frame_num][count]))
+                                    attentions[i].set_color('black')
+                                else:
+                                    attentions[i].set_position(
+                                        (humans[i - 1].center[0] - 0.05, humans[i - 1].center[1] - x_offset))
+                                    attentions[i].set_text('n')
+                                    attentions[i].set_color('red')
+                            else:
+                                attentions[i].set_position(
+                                    (humans[i - 1].center[0] - 0.05, humans[i - 1].center[1] - x_offset))
+                                attentions[i].set_text('{:.2f}'.format(self.attention_weights[frame_num][i]))
+    #                    self_attention_dis = plt.text(robot.center[0] - x_offset, robot.center[1] + y_offset,
+    #                                               '{:.2f}'.format(self.attention_weights[0][0]), color='black')
+    #                    ax.add_artist(self_attention_dis)
 
                 for arrow in arrows:
                     arrow.remove()
