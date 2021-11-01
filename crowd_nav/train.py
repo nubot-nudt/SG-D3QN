@@ -103,6 +103,8 @@ def main(args):
     env_config.reward.success_reward = args.re_arrival
     env_config.reward.goal_factor = args.goal_weight
     env_config.reward.discomfort_penalty_factor = args.safe_weight
+    env_config.sim.human_num = args.human_num
+    print(env_config.sim.human_num)
 
     env = gym.make('CrowdSim-v0')
     env.configure(env_config)

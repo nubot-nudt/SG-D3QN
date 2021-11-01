@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 from torch.nn.functional import softmax, relu
 from torch.nn import Parameter
-from crowd_nav.policy.helpers import mlp, GAT
+from crowd_nav.policy.helpers import mlp, GAT #, GraphAttentionLayer
 
 
 class RGL(nn.Module):

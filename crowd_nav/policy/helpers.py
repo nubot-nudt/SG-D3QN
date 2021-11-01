@@ -162,12 +162,12 @@ class GraphAttentionLayer(nn.Module):
     Simple GAT layer, similar to https://arxiv.org/abs/1710.10903
     """
 
-    def __init__(self, in_features, out_features, dropout, alpha, concat=True):
+    def __init__(self, in_features, out_features, concat=True):
         super(GraphAttentionLayer, self).__init__()
-        self.dropout = dropout
+        # self.dropout = dropout
         self.in_features = in_features
         self.out_features = out_features
-        self.alpha = alpha
+        self.alpha = 0.2
         self.concat = concat
 
         self.W = nn.Parameter(torch.zeros(size=(in_features, out_features)))
@@ -194,10 +194,9 @@ class GraphAttentionLayer(nn.Module):
         zero_vec = -9e15*torch.ones_like(e)
         attention = torch.where(adj > 0, e, zero_vec)
         attention = nn.functional.softmax(attention, dim=2)
-        attention = nn.functional.dropout(attention, self.dropout, training=self.training)
         h_prime = torch.matmul(attention, h)
         h_prime = h_prime + self.bias
-        return nn.functional.elu(h_prime)
+        return nn.functional.elu(h_prime), attention[0, 0, :].data.cpu().numpy()
 
 class GraphAttentionLayerSim(nn.Module):
     """

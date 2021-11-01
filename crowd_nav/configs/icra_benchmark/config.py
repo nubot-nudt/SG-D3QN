@@ -19,7 +19,7 @@ class BaseEnvConfig(object):
     env.test_size = 1000
     env.train_size = np.iinfo(np.uint32).max - 2000
     env.randomize_attributes = False
-    env.robot_sensor_range = 5
+    env.robot_sensor_range = 4
 
     reward = Config()
     reward.collision_penalty = -0.25
@@ -34,7 +34,7 @@ class BaseEnvConfig(object):
     sim.test_scenario = 'circle_crossing'
     sim.square_width = 10
     sim.circle_radius = 4
-    sim.human_num = 5
+    sim.human_num = 10
     sim.nonstop_human = True
     sim.centralized_planning = True
 
