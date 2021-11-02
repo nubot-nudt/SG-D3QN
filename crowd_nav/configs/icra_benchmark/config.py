@@ -10,7 +10,7 @@ class Config(object):
     def __init__(self):
         pass
 
-rotation_constraint = np.pi/6
+rotation_constraint = np.pi
 class BaseEnvConfig(object):
     env = Config()
     env.time_limit = 30
@@ -69,8 +69,8 @@ class BasePolicyConfig(object):
     om.om_channel_size = 3
 
     action_space = Config()
-    action_space.kinematics = 'holonomic'
-    # action_space.kinematics = 'unicycle'
+    # action_space.kinematics = 'holonomic'
+    action_space.kinematics = 'unicycle'
     action_space.speed_samples = 5
     action_space.rotation_samples = 16
     action_space.sampling = 'exponential'
