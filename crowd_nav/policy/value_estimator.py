@@ -46,10 +46,12 @@ class ValueEstimator(nn.Module):
         radius_r = robot_state[:, :, 4].unsqueeze(1)
         dg = torch.norm(torch.cat([dx, dy], dim=2), 2, dim=2, keepdim=True)
         rot = torch.atan2(dy, dx)
-        vx = (robot_state[:, :, 2].unsqueeze(1) * torch.cos(rot) +
-              robot_state[:, :, 3].unsqueeze(1) * torch.sin(rot)).reshape((batch, 1, -1))
-        vy = (robot_state[:, :, 3].unsqueeze(1) * torch.cos(rot) -
-              robot_state[:, :, 2].unsqueeze(1) * torch.sin(rot)).reshape((batch, 1, -1))
+        cos_rot = torch.cos(rot)
+        sin_rot = torch.sin(rot)
+        vx = (robot_state[:, :, 2].unsqueeze(1) * cos_rot +
+              robot_state[:, :, 3].unsqueeze(1) * sin_rot).reshape((batch, 1, -1))
+        vy = (robot_state[:, :, 3].unsqueeze(1) * cos_rot -
+              robot_state[:, :, 2].unsqueeze(1) * sin_rot).reshape((batch, 1, -1))
         v_pref = robot_state[:, :, 7].unsqueeze(1)
         theta = robot_state[:, :, 8].unsqueeze(1)
         new_robot_state = torch.cat((theta, theta, vx, vy, radius_r, dg, rot, v_pref, theta), dim=2)
@@ -59,12 +61,12 @@ class ValueEstimator(nn.Module):
             dy1 = human_state[:, i, 1].unsqueeze(1) - robot_state[:, :, 1]
             dx1 = dx1.unsqueeze(1)
             dy1 = dy1.unsqueeze(1)
-            px1 = (dx1 * torch.cos(rot) + dy1 * torch.sin(rot)).reshape((batch, 1, -1))
-            py1 = (-dx1 * torch.sin(rot) + dy1 * torch.cos(rot)).reshape((batch, 1, -1))
-            vx1 = (human_state[:, i, 2].unsqueeze(1).unsqueeze(2) * torch.cos(rot) +
-                   human_state[:, i, 3].unsqueeze(1).unsqueeze(2) * torch.sin(rot)).reshape((batch, 1, -1))
-            vy1 = (-human_state[:, i, 2].unsqueeze(1).unsqueeze(2) * torch.sin(rot) +
-                   human_state[:, i, 3].unsqueeze(1).unsqueeze(2) * torch.cos(rot)).reshape((batch, 1, -1))
+            px1 = (dx1 * cos_rot + dy1 * sin_rot).reshape((batch, 1, -1))
+            py1 = (-dx1 * sin_rot + dy1 * cos_rot).reshape((batch, 1, -1))
+            vx1 = (human_state[:, i, 2].unsqueeze(1).unsqueeze(2) * cos_rot +
+                   human_state[:, i, 3].unsqueeze(1).unsqueeze(2) * sin_rot).reshape((batch, 1, -1))
+            vy1 = (-human_state[:, i, 2].unsqueeze(1).unsqueeze(2) * sin_rot +
+                   human_state[:, i, 3].unsqueeze(1).unsqueeze(2) * cos_rot).reshape((batch, 1, -1))
             radius_h = human_state[:, i, 4].unsqueeze(1).unsqueeze(2)
             cur_human_state = torch.cat((px1, py1, vx1, vy1, radius_h), dim=2)
             if new_human_state is None:
@@ -139,7 +141,7 @@ class DQNNetwork(nn.Module):
         # assert len(state[1].shape) == 3
 
         # only use the feature of robot node as state representation
-        state_embedding = self.graph_model(self.trans_no_rotation(state))[:, 0, :]
+        state_embedding = self.graph_model(self.rotate(state))[:, 0, :]
         value = self.value_network(state_embedding)
         return value
 
@@ -239,7 +241,7 @@ class DQNNetwork(nn.Module):
         #  'px', 'py', 'vx', 'vy', 'radius'
         #  0     1      2     3      4
         assert len(state[0].shape) == 3
-        if state[1] == None:
+        if state[1] is None:
             robot_state = state[0]
             dx = robot_state[:, :, 5] - robot_state[:, :, 0]
             dy = robot_state[:, :, 6] - robot_state[:, :, 1]

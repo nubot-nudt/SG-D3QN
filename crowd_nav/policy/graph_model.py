@@ -191,7 +191,7 @@ class GAT_RL(nn.Module):
         :return:
         """
         robot_state, human_states = state
-        if human_states == None:
+        if human_states is None:
             robot_state_embedings = self.w_r(robot_state)
             adj = torch.ones((1, 1))
             adj = adj.repeat(robot_state.size()[0], 1, 1)
