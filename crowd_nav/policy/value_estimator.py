@@ -1,5 +1,6 @@
 import torch.nn as nn
 import torch
+import numpy as np
 from crowd_nav.policy.helpers import mlp, DQN, DuelingDQN, NoisyDuelingDQN
 
 
@@ -179,7 +180,7 @@ class DQNNetwork(nn.Module):
             v_pref = robot_state[:, :, 7].unsqueeze(1)
             target_heading = torch.zeros_like(radius_r)
             pos_r = torch.zeros_like(robot_velocities)
-            cur_heading = robot_state[:, :, 8].unsqueeze(1) - rot
+            cur_heading = (robot_state[:, :, 8].unsqueeze(1) - rot) % (2 * np.pi)
             new_robot_state = torch.cat((pos_r, robot_velocities, radius_r, dg, target_heading, v_pref, cur_heading), dim=2)
             human_positions = human_state[:, :, 0:2] - robot_state[:, :, 0:2]
             human_positions = torch.bmm(human_positions, transform_matrix)
