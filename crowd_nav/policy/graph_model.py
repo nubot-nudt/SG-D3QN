@@ -235,7 +235,7 @@ class GraphAttentionLayer(nn.Module):
         self.concat = concat
 
         self.w_a = mlp(2 * self.in_features, [2 * self.in_features, 1], last_relu=False)
-        self.leakyrelu = nn.LeakyReLU(negative_slope=0.2)
+        self.leakyrelu = nn.LeakyReLU(negative_slope=0.04)
 
     def forward(self, input, adj):
 
