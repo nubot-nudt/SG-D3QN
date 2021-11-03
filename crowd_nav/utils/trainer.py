@@ -138,6 +138,7 @@ class TSRLTrainer(object):
         if self.data_loader is None:
             self.data_loader = DataLoader(self.memory, self.batch_size, shuffle=True)
         v_losses = 0
+        sim_v_losses = 0
         s_losses = 0
         batch_count = 0
         self.target_model.value_network.eval()
@@ -164,11 +165,28 @@ class TSRLTrainer(object):
             # for DQN
             done_infos = (1-done)
             target_values = rewards + torch.mul(done_infos, next_Q_value * gamma_bar)
-            clip_base = outputs - target_values
+            # clip_base = outputs - target_values
             value_loss = self.criterion(outputs, target_values)
             value_loss.backward()
             self.v_optimizer.step()
             v_losses += value_loss.data.item()
+
+
+            # optimization with simulated trajectories
+            self.v_optimizer.zero_grad()
+            sim_robot_states, sim_human_states, sim_actions, sim_done, sim_rewards, sim_next_robot_states, sim_next_human_states = self.generate_simulated_batch(
+                robot_states, human_states, next_human_states)
+            sim_outputs = self.value_estimator((sim_robot_states, sim_human_states)).gather(1, sim_actions.unsqueeze(1))
+            sim_max_next_Q_index = torch.max(self.value_estimator((sim_next_robot_states, sim_next_human_states)), dim=1)[1]
+            #利用target model估计最优动作对应的q_value
+            #这就是一个double DQN版本，而不是dqn版本
+            sim_next_Q_value = self.target_model((sim_next_robot_states, sim_next_human_states)).gather(1, sim_max_next_Q_index.unsqueeze(1))
+            sim_done_infos = (1 - sim_done)
+            sim_target_values = sim_rewards + torch.mul(sim_done_infos, sim_next_Q_value * gamma_bar)
+            sim_value_loss = self.criterion(sim_outputs, sim_target_values)
+            sim_value_loss.backward()
+            self.v_optimizer.step()
+            sim_v_losses += sim_value_loss.data.item()
 
             # optimize state predictor
             if self.state_predictor.trainable:
@@ -204,6 +222,28 @@ class TSRLTrainer(object):
         self.writer.add_scalar('RL/average_s_loss', average_s_loss, episode)
         self.value_estimator.value_network.train()
         return average_v_loss, average_s_loss
+
+    def generate_simulated_batch(self, robot_state, human_state, next_human_state):
+        q_values = self.value_estimator((robot_state, human_state))
+        expand_width = 10
+        batch = robot_state.shape[0]
+        robot_dim = robot_state.shape[2]
+        human_dim = human_state.shape[2]
+        robot_num = robot_state.shape[1]
+        human_num = human_state.shape[1]
+
+        expand_robot_state = robot_state.repeat(1, expand_width, 1).reshape(batch*expand_width, robot_num, robot_dim)
+        expand_human_state = human_state.repeat(1, expand_width, 1).reshape(batch*expand_width, human_num, human_dim)
+        state_action_values, actions = torch.topk(q_values, expand_width, dim=1)
+        actions = actions.reshape(batch*expand_width, 1).squeeze(1)
+        expand_next_human_state = next_human_state.repeat(1, expand_width, 1).reshape(
+            batch*expand_width, human_num, human_dim)
+        expand_next_robot_state, expand_reward, expand_done = self.target_policy.generate_simulated_trajectory(
+            expand_robot_state, expand_human_state, actions, expand_next_human_state)
+
+        return expand_robot_state, expand_human_state, actions, expand_done, \
+               expand_reward, expand_next_robot_state, expand_next_human_state
+
 
 class MPRLTrainer(object):
     def __init__(self, value_estimator, state_predictor, memory, device, policy, writer, batch_size, optimizer_str, human_num,
@@ -707,6 +747,7 @@ class TD3RLTrainer(object):
                 target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
             for param, target_param in zip(self.actor_network.parameters(), self.target_actor_network.parameters()):
                 target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
+
 
         average_v_loss = v_losses / num_batches
         average_s_loss = s_losses / num_batches

@@ -2,6 +2,7 @@ import numpy as np
 from numpy.linalg import norm
 from crowd_sim.envs.utils.state import tensor_to_joint_state
 from crowd_sim.envs.utils.utils import point_to_segment_dist
+from crowd_sim.envs.utils.info import *
 
 class Reward_Estimator(object):
     def __init__(self):
@@ -22,6 +23,7 @@ class Reward_Estimator(object):
         """ If the time step is small enough, it's okay to model agent as linear movement during this period
         """
         # collision detection
+        info = Nothing()
         if isinstance(state, list) or isinstance(state, tuple):
             state = tensor_to_joint_state(state)
         human_states = state.human_states
@@ -74,10 +76,12 @@ class Reward_Estimator(object):
         reward_arrival = 0
         if collision:
             reward_col = re_collision
+            info = Collision()
         elif reaching_goal:
             reward_arrival = re_arrival
+            info = ReachGoal()
         reward_terminal = reward_col + reward_arrival
         reward = weight_terminal * reward_terminal + weight_goal * reward_goal + weight_safe * safety_penalty
         # if collision:
         # reward = reward - 100
-        return reward
+        return reward, info
