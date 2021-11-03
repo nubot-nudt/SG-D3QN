@@ -169,7 +169,6 @@ class DQNNetwork(nn.Module):
             dy = robot_state[:, :, 6] - robot_state[:, :, 1]
             dx = dx.unsqueeze(1)
             dy = dy.unsqueeze(1)
-
             dg = torch.norm(torch.cat([dx, dy], dim=2), 2, dim=2, keepdim=True)
             rot = torch.atan2(dy, dx)
             cos_rot = torch.cos(rot)
@@ -180,13 +179,13 @@ class DQNNetwork(nn.Module):
             v_pref = robot_state[:, :, 7].unsqueeze(1)
             target_heading = torch.zeros_like(radius_r)
             pos_r = torch.zeros_like(robot_velocities)
-            cur_heading = (robot_state[:, :, 8].unsqueeze(1) - rot) % (2 * np.pi)
+            cur_heading = (robot_state[:, :, 8].unsqueeze(1) - rot + np.pi) % (2 * np.pi) - np.pi
             new_robot_state = torch.cat((pos_r, robot_velocities, radius_r, dg, target_heading, v_pref, cur_heading), dim=2)
             human_positions = human_state[:, :, 0:2] - robot_state[:, :, 0:2]
             human_positions = torch.bmm(human_positions, transform_matrix)
             human_velocities = human_state[:, :, 2:4]
             human_velocities = torch.bmm(human_velocities, transform_matrix)
-            human_radius = human_state[:, :, 4].unsqueeze(2)
+            human_radius = human_state[:, :, 4].unsqueeze(2) + 0.3
             new_human_state = torch.cat((human_positions, human_velocities, human_radius), dim=2)
             new_state = (new_robot_state, new_human_state)
             return new_state
