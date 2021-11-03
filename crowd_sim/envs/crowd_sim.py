@@ -138,6 +138,7 @@ class CrowdSim(gym.Env):
                 high=np.array([1, self.robot.rotation_constraint]),
                 dtype=np.float32
             )
+        logging.info('rotation constraint: {}'.format(self.robot.rotation_constraint))
 
     def generate_human(self, human=None, non_stop=False, square=False):
         if human is None:

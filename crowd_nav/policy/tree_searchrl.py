@@ -6,6 +6,7 @@ import itertools
 from crowd_sim.envs.policy.policy import Policy
 from crowd_sim.envs.utils.action import ActionRot, ActionXY
 from crowd_sim.envs.utils.state import tensor_to_joint_state
+from crowd_sim.envs.utils.info import  *
 from crowd_sim.envs.utils.utils import point_to_segment_dist
 from crowd_nav.policy.state_predictor import StatePredictor, LinearStatePredictor_batch
 from crowd_nav.policy.graph_model import RGL,GAT_RL
@@ -269,7 +270,7 @@ class TreeSearchRL(Policy):
                         next_robot_state_batch = next_robot_state
                     else:
                         next_robot_state_batch = torch.cat((next_robot_state_batch, next_robot_state), dim=0)
-                    reward_est[i][j] = self.reward_estimator.estimate_reward_on_predictor(
+                    reward_est[i][j], _ = self.reward_estimator.estimate_reward_on_predictor(
                         tensor_to_joint_state(cur_state), tensor_to_joint_state((next_robot_state, next_human_state)))
 
             next_state_batch = (next_robot_state_batch, next_human_state_batch)
@@ -331,7 +332,7 @@ class TreeSearchRL(Policy):
                     else:
                         next_robot_state_batch = torch.cat((next_robot_state_batch, next_robot_state), dim=0)
                         next_human_state_batch = torch.cat((next_human_state_batch, next_human_state), dim=0)
-                    reward_est[i][j] = self.reward_estimator.estimate_reward_on_predictor(
+                    reward_est[i][j], _ = self.reward_estimator.estimate_reward_on_predictor(
                         tensor_to_joint_state(cur_state), tensor_to_joint_state((next_robot_state, next_human_state)))
             next_state_batch = (next_robot_state_batch, next_human_state_batch)
             if self.planning_depth - depth >= 2 and self.planning_depth > 2:
@@ -374,5 +375,53 @@ class TreeSearchRL(Policy):
             next_state[2] = np.cos(next_state[8]) * action.v
             next_state[3] = np.sin(next_state[8]) * action.v
         return next_state.unsqueeze(0).unsqueeze(0)
+
+    def generate_simulated_trajectory(self, robot_state_batch, human_state_batch, action_batch, next_human_state_batch):
+        # next_state = robot_state.clone()
+        # action_list = []
+        # if self.kinematics == 'holonomic':
+        #     for i in range(next_state.shape[0]):
+        #         action = self.action_space[action_index[i]]
+        #         action_list.append([action.vx, action.vy])
+        #     action_tensor = torch.tensor(action_list)
+        #     next_state[:, :, 0:2] = next_state[:, :, 0:2] + action_tensor * self.time_step
+        #     next_state[:, :, 2:4] = action_tensor
+        # else:
+        #     for i in range(next_state.shape[0]):
+        #         action = self.action_space[action_index[i]]
+        #         action_list.append([action.v, action.r])
+        #     action_tensor = torch.tensor(action_list)
+        #     next_state[:, :, 8] = (next_state[:, :, 8] + action_tensor[:, 1]) % (2 * np.pi)
+        #     next_state[:, :, 2] = np.cos(next_state[:, :, 8]) * action_tensor[:, 0]
+        #     next_state[:, :, 3] = np.sin(next_state[:, :, 8]) * action_tensor[:, 0]
+        #     next_state[:, :, 0:2] = next_state[:, :, 0:2] + next_state[:, :, 2:4] * self.time_step
+        # return next_state
+        expand_next_robot_state = None
+        expand_reward = []
+        expand_done = []
+        for i in range(robot_state_batch.shape[0]):
+            action = self.action_space[action_batch[i]]
+            cur_robot_state = robot_state_batch[i, :, :]
+            cur_human_state = human_state_batch[i, :, :]
+            cur_state = tensor_to_joint_state((cur_robot_state, cur_human_state))
+            next_robot_state = self.compute_next_robot_state(cur_robot_state, action)
+            next_human_state = next_human_state_batch[i, :, :]
+            next_state = tensor_to_joint_state((next_robot_state, next_human_state))
+            reward, info = self.reward_estimator.estimate_reward_on_predictor(cur_state, next_state)
+            expand_reward.append(reward)
+            done = False
+            if info is ReachGoal() or info is Collision():
+                done = True
+            expand_done.append(done)
+            if expand_next_robot_state is None:
+                expand_next_robot_state = next_robot_state
+            else:
+                expand_next_robot_state = torch.cat((expand_next_robot_state, next_robot_state), dim=0)
+            # expand_next_robot_state.append(next_robot_state)
+        # expand_next_robot_state = torch.Tensor(expand_next_robot_state)
+        expand_reward = torch.Tensor(expand_reward)
+        expand_done = torch.Tensor(expand_done)
+        return expand_next_robot_state, expand_reward, expand_done
+
     def get_attention_weights(self):
         return self.value_estimator.graph_model.attention_weights

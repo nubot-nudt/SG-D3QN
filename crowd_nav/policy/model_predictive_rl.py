@@ -231,7 +231,7 @@ class ModelPredictiveRL(Policy):
                     next_robot_states = torch.cat((next_robot_states, next_robot_state), dim=0)
                     next_human_states = torch.cat((next_human_states, next_human_state), dim=0)
                 next_state = tensor_to_joint_state((next_robot_state, next_human_state))
-                reward_est = self.reward_estimator.estimate_reward_on_predictor(state, next_state)
+                reward_est, _ = self.reward_estimator.estimate_reward_on_predictor(state, next_state)
                 # reward_est = self.estimate_reward(state, action)
                 rewards.append(reward_est)
                 # next_state = self.state_predictor(state_tensor, action)
@@ -313,7 +313,7 @@ class ModelPredictiveRL(Policy):
         for action in action_space_clipped:
             next_state_est = self.state_predictor(state, action)
             # reward_est = self.estimate_reward(state, action)
-            reward_est = self.reward_estimator.estimate_reward_on_predictor(state, next_state_est)
+            reward_est, _ = self.reward_estimator.estimate_reward_on_predictor(state, next_state_est)
             next_value, next_traj = self.V_planning(next_state_est, depth - 1, self.planning_width)
             return_value = current_state_value / depth + (depth - 1) / depth * (self.get_normalized_gamma() * next_value + reward_est)
             returns.append(return_value)
