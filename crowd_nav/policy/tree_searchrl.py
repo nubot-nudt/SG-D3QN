@@ -419,8 +419,8 @@ class TreeSearchRL(Policy):
                 expand_next_robot_state = torch.cat((expand_next_robot_state, next_robot_state), dim=0)
             # expand_next_robot_state.append(next_robot_state)
         # expand_next_robot_state = torch.Tensor(expand_next_robot_state)
-        expand_reward = torch.Tensor(expand_reward)
-        expand_done = torch.Tensor(expand_done)
+        expand_reward = torch.Tensor(expand_reward).unsqueeze(dim=1)
+        expand_done = torch.Tensor(expand_done).unsqueeze(dim=1)
         return expand_next_robot_state, expand_reward, expand_done
 
     def get_attention_weights(self):

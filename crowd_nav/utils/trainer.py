@@ -225,7 +225,7 @@ class TSRLTrainer(object):
 
     def generate_simulated_batch(self, robot_state, human_state, next_human_state):
         q_values = self.value_estimator((robot_state, human_state))
-        expand_width = 10
+        expand_width = 5
         batch = robot_state.shape[0]
         robot_dim = robot_state.shape[2]
         human_dim = human_state.shape[2]
