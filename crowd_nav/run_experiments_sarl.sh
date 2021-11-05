@@ -1,10 +1,10 @@
 #!/bin/bash
 day=`date +%m%d`
 echo "The Script begin at $day"
-a=0.1
-b=-2.5
-c=10
-d=1.25
+a=0.2
+b=-0.25
+c=0.25
+d=1.0
 # Script to reproduce results
 for ((i=0;i<3;i+=1))
 do
