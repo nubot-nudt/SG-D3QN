@@ -217,6 +217,7 @@ def main(args):
         logging.info('Experience set size: %d/%d', len(memory), memory.capacity)
     episode = 0
     best_val_reward = -1
+    best_val_return = -1
     best_val_model = None
     # evaluate the model after imitation learning
 
@@ -293,11 +294,11 @@ def main(args):
             trainer.update_target_model(model)
         # evaluate the model
         if episode % evaluation_interval == 0:
-            _, _, _, reward, _, _, _ = explorer.run_k_episodes(env.case_size['val'], 'val', episode=episode)
+            _, _, _, reward, average_return, _, _ = explorer.run_k_episodes(env.case_size['val'], 'val', episode=episode)
             explorer.log('val', episode // evaluation_interval)
 
-            if episode % checkpoint_interval == 0 and reward > best_val_reward:
-                best_val_reward = reward
+            if episode % checkpoint_interval == 0 and average_return > best_val_return:
+                best_val_return = average_return
                 best_val_model = copy.deepcopy(policy.get_state_dict())
         # test after every evaluation to check how the generalization performance evolves
             if args.test_after_every_eval:
@@ -314,7 +315,7 @@ def main(args):
     if best_val_model is not None:
         policy.load_state_dict(best_val_model)
         torch.save(best_val_model, os.path.join(args.output_dir, 'best_val.pth'))
-        logging.info('Save the best val model with the reward: {}'.format(best_val_reward))
+        logging.info('Save the best val model with the return: {}'.format(best_val_return))
     explorer.run_k_episodes(env.case_size['test'], 'test', episode=episode, print_failure=True)
 
 
@@ -333,8 +334,8 @@ if __name__ == '__main__':
     parser.add_argument('--human_num', type=int, default=5)
     parser.add_argument('--safe_weight', type=float, default=1.0)
     parser.add_argument('--goal_weight', type=float, default=0.2)
-    parser.add_argument('--re_collision', type=float, default=-0.5)
-    parser.add_argument('--re_arrival', type=float, default=1.0)
+    parser.add_argument('--re_collision', type=float, default=-0.25)
+    parser.add_argument('--re_arrival', type=float, default=0.25)
 
 
     # arguments for GCN
