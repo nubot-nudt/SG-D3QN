@@ -99,7 +99,10 @@ class CADRL(Policy):
         if holonomic:
             rotations = np.linspace(0, 2 * np.pi, self.rotation_samples, endpoint=False)
         else:
-            rotations = np.linspace(-self.rotation_constraint, self.rotation_constraint, self.rotation_samples)
+            if self.rotation_constraint == np.pi:
+                rotations = np.linspace(-self.rotation_constraint, self.rotation_constraint, self.rotation_samples, endpoint=False)
+            else:
+                rotations = np.linspace(-self.rotation_constraint, self.rotation_constraint, self.rotation_samples)
 
         action_space = [ActionXY(0, 0) if holonomic else ActionRot(0, 0)]
         self.action_group_index.append(0)
