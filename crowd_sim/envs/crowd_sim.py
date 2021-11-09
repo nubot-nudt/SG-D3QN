@@ -359,6 +359,7 @@ class CrowdSim(gym.Env):
         dmin = float('inf')
         collision = False
         safety_penalty = 0.0
+        num_discom = 0
         for i, human in enumerate(self.humans):
             px = human.px - self.robot.px
             py = human.py - self.robot.py
@@ -379,6 +380,7 @@ class CrowdSim(gym.Env):
                 dmin = closest_dist
             if closest_dist < self.discomfort_dist:
                 safety_penalty = safety_penalty + (closest_dist - self.discomfort_dist)
+                num_discom = num_discom + 1
             # dis_begin = np.sqrt(px**2 + py**2) - human.radius - self.robot.radius
             # dis_end = np.sqrt(ex**2 + ey**2) - human.radius - self.robot.radius
             # penalty_begin = 0
@@ -427,6 +429,7 @@ class CrowdSim(gym.Env):
         elif dmin < self.discomfort_dist:
             done = False
             info = Discomfort(dmin)
+            info.num = num_discom
         else:
             done = False
             info = Nothing()

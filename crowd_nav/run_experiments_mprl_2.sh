@@ -11,7 +11,7 @@ do
 	--policy model-predictive-rl \
 	--output_dir data/$day/mprl/$i \
 	--randomseed $i  \
-	--config configs/icra_benchmark/mp_separate.py \
+	--config configs/icra_benchmark/mp_separate_dp.py \
 	--safe_weight $d \
 	--goal_weight $a \
 	--re_collision $b \

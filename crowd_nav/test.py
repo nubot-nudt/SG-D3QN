@@ -11,6 +11,7 @@ from crowd_nav.policy.policy_factory import policy_factory
 from crowd_sim.envs.utils.robot import Robot
 from crowd_sim.envs.policy.orca import ORCA
 from crowd_nav.policy.reward_estimate import Reward_Estimator
+from crowd_sim.envs.utils.info import *
 
 def main(args):
     # configure logging and device
@@ -126,6 +127,8 @@ def main(args):
         while not done:
             action, action_index = robot.act(ob)
             ob, _, done, info = env.step(action)
+            if isinstance(info, Timeout):
+                _ = _ - 0.25
             rewards.append(_)
             current_pos = np.array(robot.get_position())
             logging.debug('Speed: %.2f', np.linalg.norm(current_pos - last_pos) / robot.time_step)

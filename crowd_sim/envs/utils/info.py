@@ -17,6 +17,7 @@ class ReachGoal(object):
 class Discomfort(object):
     def __init__(self, min_dist):
         self.min_dist = min_dist
+        self.num = 0
 
     def __str__(self):
         return 'Discomfort'

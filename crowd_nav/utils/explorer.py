@@ -31,8 +31,10 @@ class Explorer(object):
         min_dist = []
         cumulative_rewards = []
         average_returns = []
+        returns_list = []
         collision_cases = []
         timeout_cases = []
+        discomfort_nums = []
         if phase in ['test', 'val'] or imitation_learning:
             pbar = tqdm(total=k)
         else:
@@ -50,7 +52,9 @@ class Explorer(object):
             actions = []
             rewards = []
             dones = []
+            num_discoms =[]
             while not done:
+                num_discom = 0
                 action, action_index = self.robot.act(ob)
                 ob, reward, done, info = self.env.step(action)
                 states.append(self.robot.policy.last_state)
@@ -60,16 +64,18 @@ class Explorer(object):
 
                 # for TD3rl, append the velocity and theta
                 actions.append(action_index)
-                rewards.append(reward)
+                # rewards.append(reward)
                 # actually, final states of timeout cases is not terminal states
                 if isinstance(info, Timeout):
                     dones.append(False)
                 else:
                     dones.append(done)
-
+                rewards.append(reward)
                 if isinstance(info, Discomfort):
                     discomfort += 1
                     min_dist.append(info.min_dist)
+                    num_discom = info.num
+                num_discoms.append(num_discom)
             # add the terminal state
             states.append(self.robot.get_state(ob))
             if isinstance(info, ReachGoal):
@@ -84,6 +90,9 @@ class Explorer(object):
             elif isinstance(info, Timeout):
                 timeout += 1
                 timeout_cases.append(i)
+                if phase in ['test']:
+                    print('timeout happen %f', self.env.global_time)
+                    rewards[-1] = rewards[-1]-0.25
                 timeout_times.append(self.env.time_limit)
             else:
                 raise ValueError('Invalid end signal from environment')
@@ -92,7 +101,7 @@ class Explorer(object):
                 # if isinstance(info, ReachGoal) or isinstance(info, Collision):
                     # only add positive(success) or negative(collision) experience in experience set
                 self.update_memory(states, actions, rewards, dones, imitation_learning)
-
+            discomfort_nums.append(sum(num_discoms))
             # cumulative_rewards.append(sum([pow(self.gamma, t * self.robot.time_step * self.robot.v_pref)
             #                                * reward for t, reward in enumerate(rewards)]))
             cumulative_rewards.append(sum(rewards))
@@ -101,6 +110,7 @@ class Explorer(object):
                 step_return = sum([pow(self.gamma, t * self.robot.time_step * self.robot.v_pref)
                                    * reward for t, reward in enumerate(rewards[step:])])
                 returns.append(step_return)
+            returns_list = returns_list + returns
             average_returns.append(average(returns))
 
             if pbar:
@@ -123,7 +133,8 @@ class Explorer(object):
         total_time = sum(success_times + collision_times + timeout_times) / self.robot.time_step
         logging.info('Frequency of being in danger: %.3f and average min separate distance in danger: %.2f',
                     discomfort / total_time, average(min_dist))
-
+        logging.info('discomfor nums is %.0f and return is %.04f and length is %.0f', sum(discomfort_nums),
+                     average(returns_list), len(returns_list))
         if print_failure:
             logging.info('Collision cases: ' + ' '.join([str(x) for x in collision_cases]))
             logging.info('Timeout cases: ' + ' '.join([str(x) for x in timeout_cases]))
