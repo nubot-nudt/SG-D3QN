@@ -274,8 +274,12 @@ class ModelPredictiveRL(Policy):
         else:
             actions.append(ActionRot(0, 0))
         # actions.append(ActionXY(0, 0))
+        next_robot_states = None
+        next_human_states = None
         pre_next_state = self.state_predictor(state, actions)
         for action in action_space:
+            # actions = []
+            # actions.append(action)
             next_robot_state = self.compute_next_robot_state(state[0], action)
             next_human_state = pre_next_state[1]
             if next_robot_states is None and next_human_states is None:
