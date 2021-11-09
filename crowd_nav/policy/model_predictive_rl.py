@@ -268,11 +268,26 @@ class ModelPredictiveRL(Policy):
 
     def action_clip(self, state, action_space, width, depth=1):
         values = []
-
+        actions = []
+        if self.kinematics == "holonomic":
+            actions.append(ActionXY(0, 0))
+        else:
+            actions.append(ActionRot(0, 0))
+        # actions.append(ActionXY(0, 0))
+        pre_next_state = self.state_predictor(state, actions)
         for action in action_space:
-            next_state_est = self.state_predictor(state, action)
-            next_return, _ = self.V_planning(next_state_est, depth, width)
-            reward_est = self.estimate_reward(state, action)
+            next_robot_state = self.compute_next_robot_state(state[0], action)
+            next_human_state = pre_next_state[1]
+            if next_robot_states is None and next_human_states is None:
+                next_robot_states = next_robot_state
+                next_human_states = next_human_state
+            else:
+                next_robot_states = torch.cat((next_robot_states, next_robot_state), dim=0)
+                next_human_states = torch.cat((next_human_states, next_human_state), dim=0)
+            next_state_tensor = (next_robot_state, next_human_state)
+            next_state = tensor_to_joint_state(next_state_tensor)
+            reward_est, _ = self.reward_estimator.estimate_reward_on_predictor(state, next_state)
+            next_return, _ = self.V_planning(next_state_tensor, depth, width)
             value = reward_est + self.get_normalized_gamma() * next_return
             values.append(value)
 
@@ -325,6 +340,135 @@ class ModelPredictiveRL(Policy):
         max_return = returns[max_index]
         max_traj = trajs[max_index]
         return max_return, max_traj
+
+    # def V_planning(self, state, depth, width):
+    #     """ Plans n steps into future based on state action value function. Computes the value for the current state as well as the trajectories
+    #     defined as a list of (state, action, reward) triples
+    #     """
+    #     # current_state_value = self.value_estimator(state)
+    #     robot_state_batch = state[0]
+    #     human_state_batch = state[1]
+    #     if state[1] is None:
+    #         if depth == 0:
+    #             q_value = torch.Tensor(self.value_estimator(state))
+    #             max_action_value, max_action_indexes = torch.max(q_value, dim=1)
+    #             trajs = []
+    #             for i in range(robot_state_batch.shape[0]):
+    #                 cur_state = (robot_state_batch[i, :, :].unsqueeze(0), None)
+    #                 trajs.append([(cur_state, None, None)])
+    #             return max_action_value, max_action_indexes, trajs
+    #         else:
+    #             q_value = torch.Tensor(self.value_estimator(state))
+    #             max_action_value, max_action_indexes = torch.topk(q_value, width, dim=1)
+    #         action_stay = []
+    #         for i in range(robot_state_batch.shape[0]):
+    #             if self.kinematics == "holonomic":
+    #                 action_stay.append(ActionXY(0, 0))
+    #             else:
+    #                 action_stay.append(ActionRot(0, 0))
+    #         pre_next_state = None
+    #         next_robot_state_batch = None
+    #         next_human_state_batch = None
+    #         reward_est = torch.zeros(state[0].shape[0], width) * float('inf')
+    #
+    #         for i in range(robot_state_batch.shape[0]):
+    #             cur_state = (robot_state_batch[i, :, :].unsqueeze(0), None)
+    #             next_human_state = None
+    #             for j in range(width):
+    #                 cur_action = self.action_space[max_action_indexes[i][j]]
+    #                 next_robot_state = self.compute_next_robot_state(cur_state[0], cur_action)
+    #                 if next_robot_state_batch is None:
+    #                     next_robot_state_batch = next_robot_state
+    #                 else:
+    #                     next_robot_state_batch = torch.cat((next_robot_state_batch, next_robot_state), dim=0)
+    #                 reward_est[i][j], _ = self.reward_estimator.estimate_reward_on_predictor(
+    #                     tensor_to_joint_state(cur_state), tensor_to_joint_state((next_robot_state, next_human_state)))
+    #
+    #         next_state_batch = (next_robot_state_batch, next_human_state_batch)
+    #         if self.planning_depth - depth >= 2 and self.planning_depth > 2:
+    #             cur_width = 1
+    #         else:
+    #             cur_width = int(self.planning_width / 2)
+    #         next_values, next_action_indexes, next_trajs = self.V_planning(next_state_batch, depth - 1, cur_width)
+    #         next_values = next_values.view(state[0].shape[0], width)
+    #         returns = (reward_est + self.get_normalized_gamma() * next_values + max_action_value) / 2
+    #
+    #         max_action_return, max_action_index = torch.max(returns, dim=1)
+    #         trajs = []
+    #         max_returns = []
+    #         max_actions = []
+    #         for i in range(robot_state_batch.shape[0]):
+    #             cur_state = (robot_state_batch[i, :, :].unsqueeze(0), None)
+    #             action_id = max_action_index[i]
+    #             trajs_id = i * width + action_id
+    #             action = max_action_indexes[i][action_id]
+    #             next_traj = next_trajs[trajs_id]
+    #             trajs.append([(cur_state, action, reward_est)] + next_traj)
+    #             max_returns.append(max_action_return[i].data)
+    #             max_actions.append(action)
+    #         max_returns = torch.tensor(max_returns)
+    #         return max_returns, max_actions, trajs
+    #     else:
+    #         if depth == 0:
+    #             q_value = torch.Tensor(self.value_estimator(state))
+    #             max_action_value, max_action_indexes = torch.max(q_value, dim=1)
+    #             trajs = []
+    #             for i in range(robot_state_batch.shape[0]):
+    #                 cur_state = (robot_state_batch[i, :, :].unsqueeze(0), human_state_batch[i, :, :].unsqueeze(0))
+    #                 trajs.append([(cur_state, None, None)])
+    #             return max_action_value, max_action_indexes, trajs
+    #         else:
+    #             q_value = torch.Tensor(self.value_estimator(state))
+    #             max_action_value, max_action_indexes = torch.topk(q_value, width, dim=1)
+    #         action_stay = []
+    #         for i in range(robot_state_batch.shape[0]):
+    #             if self.kinematics == "holonomic":
+    #                 action_stay.append(ActionXY(0, 0))
+    #             else:
+    #                 action_stay.append(ActionRot(0, 0))
+    #         _, pre_next_state = self.state_predictor(state, action_stay)
+    #         next_robot_state_batch = None
+    #         next_human_state_batch = None
+    #         reward_est = torch.zeros(state[0].shape[0], width) * float('inf')
+    #
+    #         for i in range(robot_state_batch.shape[0]):
+    #             cur_state = (robot_state_batch[i, :, :].unsqueeze(0), human_state_batch[i, :, :].unsqueeze(0))
+    #             next_human_state = pre_next_state[i, :, :].unsqueeze(0)
+    #             for j in range(width):
+    #                 cur_action = self.action_space[max_action_indexes[i][j]]
+    #                 next_robot_state = self.compute_next_robot_state(cur_state[0], cur_action)
+    #                 if next_robot_state_batch is None:
+    #                     next_robot_state_batch = next_robot_state
+    #                     next_human_state_batch = next_human_state
+    #                 else:
+    #                     next_robot_state_batch = torch.cat((next_robot_state_batch, next_robot_state), dim=0)
+    #                     next_human_state_batch = torch.cat((next_human_state_batch, next_human_state), dim=0)
+    #                 reward_est[i][j], _ = self.reward_estimator.estimate_reward_on_predictor(
+    #                     tensor_to_joint_state(cur_state), tensor_to_joint_state((next_robot_state, next_human_state)))
+    #         next_state_batch = (next_robot_state_batch, next_human_state_batch)
+    #         if self.planning_depth - depth >= 2 and self.planning_depth > 2:
+    #             cur_width = 1
+    #         else:
+    #             cur_width = int(self.planning_width/2)
+    #         next_values, next_action_indexes, next_trajs = self.V_planning(next_state_batch, depth-1, cur_width)
+    #         next_values = next_values.view(state[0].shape[0], width)
+    #         returns = (reward_est + self.get_normalized_gamma()*next_values + max_action_value) / 2
+    #
+    #         max_action_return, max_action_index = torch.max(returns, dim=1)
+    #         trajs = []
+    #         max_returns = []
+    #         max_actions = []
+    #         for i in range(robot_state_batch.shape[0]):
+    #             cur_state = (robot_state_batch[i, :, :].unsqueeze(0), human_state_batch[i, :, :].unsqueeze(0))
+    #             action_id = max_action_index[i]
+    #             trajs_id = i * width + action_id
+    #             action = max_action_indexes[i][action_id]
+    #             next_traj = next_trajs[trajs_id]
+    #             trajs.append([(cur_state, action, reward_est)] + next_traj)
+    #             max_returns.append(max_action_return[i].data)
+    #             max_actions.append(action)
+    #         max_returns = torch.tensor(max_returns)
+    #         return max_returns, max_actions, trajs
 
     def compute_next_robot_state(self, robot_state, action):
         if robot_state.shape[0] != 1:
