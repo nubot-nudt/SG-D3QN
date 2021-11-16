@@ -575,13 +575,18 @@ class CrowdSim(gym.Env):
                     for time in times:
                        ax.add_artist(time)
                 if k != 0:
-                    nav_direction = plt.Line2D((self.states[k - 1][0].px, self.states[k][0].px),
-                                               (self.states[k - 1][0].py, self.states[k][0].py),
-                                               color='black', ls='solid')
-                    human_directions = [plt.Line2D((self.states[k - 1][1][i].px, self.states[k][1][i].px),
-                                                   (self.states[k - 1][1][i].py, self.states[k][1][i].py),
-                                                   color=human_colors[i], ls='solid')
-                                        for i in range(self.human_num)]
+                    nav_direction = plt.arrow(self.states[k - 1][0].px, self.states[k - 1][0].py,
+                                              self.states[k][0].px - self.states[k - 1][0].px,
+                                              self.states[k][0].py - self.states[k - 1][0].py,
+                                            length_includes_head=True, head_width=0.08, lw=0.8, color='black')
+                    human_directions = [plt.arrow(self.states[k - 1][1][i].px, self.states[k - 1][1][i].py, self.states[k][1][i].px - self.states[k - 1][1][i].px,self.states[k][1][i].py - self.states[k - 1][1][i].py,
+                              length_includes_head=True, head_width=0.08, lw=0.5,
+                              color=human_colors[i]) for i in range(self.human_num)]
+                    #
+                    # human_directions = [plt.Line2D((self.states[k - 1][1][i].px, self.states[k][1][i].px),
+                    #                                (self.states[k - 1][1][i].py, self.states[k][1][i].py),
+                    #                                color=human_colors[i], ls='solid')
+                    #                     for i in range(self.human_num)]
                     ax.add_artist(nav_direction)
                     for human_direction in human_directions:
                         ax.add_artist(human_direction)
@@ -668,7 +673,7 @@ class CrowdSim(gym.Env):
                 plt.legend([robot, humans[0], goal], ['Robot', 'Human', 'Goal'], fontsize=14)
                 # disable showing human numbers
                 if display_numbers:
-                    human_numbers = [plt.text(humans[i].center[0] - x_offset, humans[i].center[1] + y_offset, str(i),
+                    human_numbers = [plt.text(humans[i].center[0] - x_offset, humans[i].center[1] + y_offset, str(i+1),
                                               color='black', fontsize=12) for i in range(len(self.humans))]
                     if hasattr(self.robot.policy, 'get_attention_weights'):
                         if self.test_changing_size is True:
