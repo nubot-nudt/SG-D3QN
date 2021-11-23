@@ -332,6 +332,7 @@ class ModelPredictiveRL(Policy):
         defined as a list of (state, action, reward) triples
 
         """
+
         current_state_value = self.value_estimator(state)
         if depth == 1:
             return current_state_value, [(state, None, None)]
