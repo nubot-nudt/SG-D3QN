@@ -153,7 +153,6 @@ class TD3RL(Policy):
         if self.reach_destination(state):
             return ActionXY(0, 0) if self.kinematics == 'holonomic' else ActionRot(0, 0)
         state_tensor = state.to_tensor(add_batch_size=True, device=self.device)
-        probability = np.random.random()
         if self.phase == 'train':
             action = (
                     self.actor(state_tensor).squeeze().detach().numpy()
