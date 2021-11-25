@@ -51,6 +51,7 @@ class TD3RL(Policy):
         # max_action must be a tensor
         self.max_action = None
         self.min_action = None
+        self.expl_noise = 0.05
 
     def set_common_parameters(self, config):
         self.gamma = config.rl.gamma
@@ -153,13 +154,16 @@ class TD3RL(Policy):
             return ActionXY(0, 0) if self.kinematics == 'holonomic' else ActionRot(0, 0)
         state_tensor = state.to_tensor(add_batch_size=True, device=self.device)
         probability = np.random.random()
-        if self.phase == 'train' and probability < self.epsilon and self.use_noisy_net is False:
-            random_action = (np.random.random(self.action_dim) * 2.0 - 1.0) * self.max_action
-            speed = random_action[0]
-            theta = random_action[1]
+        if self.phase == 'train':
+            action = (
+                    self.actor(state_tensor).squeeze().detach().numpy()
+                    + np.random.normal(0, self.max_action * self.expl_noise, size=self.action_dim)
+            ).clip(-self.max_action, self.max_action)
+            speed = action[0]
+            theta = action[1]
             Action = ActionXY(speed * np.cos(theta), speed * np.sin(theta)) \
                 if self.kinematics == 'holonomic' else ActionRot(speed, theta)
-            return Action, torch.tensor(random_action).float()
+            return Action, torch.tensor(action).float()
         else:
             with torch.no_grad():
                 action = self.actor(state_tensor).squeeze().numpy()

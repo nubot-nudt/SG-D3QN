@@ -589,7 +589,7 @@ class TD3RLTrainer(object):
             raise NotImplementedError
 
     def optimize_batch(self, num_batches, episode):
-        self.total_iteration += 1
+        self.total_iteration = 0
         if self.actor_optimizer is None or self.critic_network is None:
             raise ValueError('Learning rate is not set!')
         if self.data_loader is None:
@@ -606,6 +606,7 @@ class TD3RLTrainer(object):
         self.critic_network.train()
         self.target_critic_network.train()
         for data in self.data_loader:
+            self.total_iteration += 1
             batch_num = int(self.data_loader.sampler.num_samples // self.batch_size)
             robot_states, human_states, actions, _, done, rewards, next_robot_states, next_human_states = data
             with torch.no_grad():
@@ -646,23 +647,23 @@ class TD3RLTrainer(object):
             # Delayed policy updates
             if self.total_iteration % self.policy_freq == 0:
                 # Compute actor loss
-
                 actor_loss = -self.critic_network.Q1(cur_states, self.actor_network(cur_states)).mean()
                 # Optimize the actor
                 self.actor_optimizer.zero_grad()
                 actor_loss.backward()
                 self.actor_optimizer.step()
+                # Update the frozen target models
+                for param, target_param in zip(self.critic_network.parameters(),
+                                               self.target_critic_network.parameters()):
+                    target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
+                for param, target_param in zip(self.actor_network.parameters(), self.target_actor_network.parameters()):
+                    target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
 
             batch_count += 1
             if batch_count > num_batches or batch_count == batch_num:
                 break
 
-        if self.total_iteration % self.policy_freq == 0:
-            # Update the frozen target models
-            for param, target_param in zip(self.critic_network.parameters(), self.target_critic_network.parameters()):
-                target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
-            for param, target_param in zip(self.actor_network.parameters(), self.target_actor_network.parameters()):
-                target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
+
 
 
         average_v_loss = v_losses / num_batches
