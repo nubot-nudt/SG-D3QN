@@ -12,6 +12,7 @@ from crowd_sim.envs.utils.robot import Robot
 from crowd_sim.envs.policy.orca import ORCA
 from crowd_nav.policy.reward_estimate import Reward_Estimator
 from crowd_sim.envs.utils.info import *
+from crowd_sim.envs.utils.action import ActionRot
 
 def main(args):
     # configure logging and device
@@ -121,6 +122,7 @@ def main(args):
         if robot.policy.name in ['tree_search_rl']:
             policy.model[2].eval()
         rewards = []
+        actions = []
         ob = env.reset(args.phase, args.test_case)
         done = False
         last_pos = np.array(robot.get_position())
@@ -133,6 +135,7 @@ def main(args):
             current_pos = np.array(robot.get_position())
             logging.debug('Speed: %.2f', np.linalg.norm(current_pos - last_pos) / robot.time_step)
             last_pos = current_pos
+            actions.append(action)
         gamma = 0.9
         cumulative_reward = sum([pow(gamma, t * robot.time_step * robot.v_pref)
              * reward for t, reward in enumerate(rewards)])
@@ -160,18 +163,30 @@ def main(args):
             plt.savefig(os.path.join(args.model_dir, 'test_scene_hist.png'))
             plt.close()
 
+    positions = []
+    velocity_rec = []
+    rotation_rec = []
+    for i in range(len(actions)):
+        positions.append(i)
+        action = actions[i]
+        velocity_rec.append(action.v)
+        rotation_rec.append(action.r)
+    plt.plot(positions, velocity_rec, color='r', marker='.', linestyle='dashed')
+    plt.plot(positions, rotation_rec, color='b', marker='.', linestyle='dashed')
+    plt.show()
+    print('finish')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('Parse configuration file')
     parser.add_argument('--config', type=str, default=None)
     parser.add_argument('--policy', type=str, default='tree_search_rl')
-    parser.add_argument('-m', '--model_dir', type=str, default='data/0916/tsrl/3')#None
+    parser.add_argument('-m', '--model_dir', type=str, default='data/tsrl10rot/1')#None
     parser.add_argument('--il', default=False, action='store_true')
     parser.add_argument('--rl', default=False, action='store_true')
     parser.add_argument('--gpu', default=False, action='store_true')
-    parser.add_argument('-v', '--visualize', default=False, action='store_true')
+    parser.add_argument('-v', '--visualize', default=True, action='store_true')
     parser.add_argument('--phase', type=str, default='test')
-    parser.add_argument('-c', '--test_case', type=int, default=None)
+    parser.add_argument('-c', '--test_case', type=int, default=10)
     parser.add_argument('--square', default=False, action='store_true')
     parser.add_argument('--circle', default=False, action='store_true')
     parser.add_argument('--video_file', type=str, default=None)

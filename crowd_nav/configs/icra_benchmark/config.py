@@ -9,8 +9,8 @@ import numpy as np
 class Config(object):
     def __init__(self):
         pass
-
-rotation_constraint = np.pi
+v_pref = 0.7
+rotation_constraint = np.pi/6
 class BaseEnvConfig(object):
     env = Config()
     env.time_limit = 30
@@ -42,14 +42,14 @@ class BaseEnvConfig(object):
     humans.visible = True
     humans.policy = 'orca'
     humans.radius = 0.3
-    humans.v_pref = 1.0
+    humans.v_pref = v_pref
     humans.sensor = 'coordinates'
 
     robot = Config()
     robot.visible = False
     robot.policy = 'none'
     robot.radius = 0.3
-    robot.v_pref = 1.0
+    robot.v_pref = v_pref
     robot.sensor = 'coordinates'
     robot.rotation_constraint = rotation_constraint
 
@@ -76,6 +76,7 @@ class BasePolicyConfig(object):
     action_space.sampling = 'exponential'
     action_space.query_env = False
     action_space.rotation_constraint = rotation_constraint
+    action_space.v_pref = v_pref
 
     cadrl = Config()
     cadrl.mlp_dims = [150, 100, 100, 1]

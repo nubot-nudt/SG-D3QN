@@ -94,6 +94,7 @@ class TreeSearchRL(Policy):
         self.sampling = config.action_space.sampling
         self.speed_samples = config.action_space.speed_samples
         self.rotation_samples = config.action_space.rotation_samples
+        self.v_pref = config.action_space.v_pref
         self.rotation_constraint = config.action_space.rotation_constraint
 
     def set_device(self, device):
@@ -205,7 +206,7 @@ class TreeSearchRL(Policy):
             raise AttributeError('Phase, device attributes have to be set!')
         if self.phase == 'train' and self.epsilon is None:
             raise AttributeError('Epsilon attribute has to be set in training phase')
-        self.v_pref = state.robot_state.v_pref
+        # self.v_pref = state.robot_state.v_pref
         if self.reach_destination(state):
             return ActionXY(0, 0) if self.kinematics == 'holonomic' else ActionRot(0, 0)
         if self.action_space is None:

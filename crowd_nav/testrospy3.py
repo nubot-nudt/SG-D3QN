@@ -1,8 +1,9 @@
+#!/usr/bin/env python
 import rospy
 import numpy as np
 #from test_py_ros.msg import test
 from std_msgs.msg import String
-from sgdqn_common.msg import ObserveInfo, VelInfo, AgentVel, RobotState, PedState
+from sgdqn_common.msg import ObserveInfo, RobotState, PedState
 def talker():
     pub = rospy.Publisher('observe_info', ObserveInfo, queue_size=10)
     rospy.init_node('test_node', anonymous=True)
@@ -25,10 +26,10 @@ def talker():
         human1_state.vel_x = 0.0
         human1_state.vel_y = 0.0
         human1_state.radius = 0.3
-        human1_state.goal_x = -4.0
-        human1_state.goal_y = 0.0
-        human1_state.vmax = 1.0
-        human1_state.theta = 0.0
+        # human1_state.goal_x = -4.0
+        # human1_state.goal_y = 0.0
+        # human1_state.vmax = 1.0
+        # human1_state.theta = 0.0
 
         theta = np.pi / 4.0
         human2_state = PedState()
@@ -37,10 +38,10 @@ def talker():
         human2_state.vel_x = 0.0
         human2_state.vel_y = 0.0
         human2_state.radius = 0.3
-        human2_state.goal_x = - 4.0 * np.cos(theta)
-        human2_state.goal_y = - 4.0 * np.sin(theta)
-        human2_state.vmax = 1.0
-        human2_state.theta = 0.0
+        # human2_state.goal_x = - 4.0 * np.cos(theta)
+        # human2_state.goal_y = - 4.0 * np.sin(theta)
+        # human2_state.vmax = 1.0
+        # human2_state.theta = 0.0
 
         theta = np.pi / 3.0
         human3_state = PedState()
@@ -49,10 +50,10 @@ def talker():
         human3_state.vel_x = 0.0
         human3_state.vel_y = 0.0
         human3_state.radius = 0.3
-        human3_state.goal_x = - 4.0 * np.cos(theta)
-        human3_state.goal_y = - 4.0 * np.sin(theta)
-        human3_state.vmax = 1.0
-        human3_state.theta = 0.0
+        # human3_state.goal_x = - 4.0 * np.cos(theta)
+        # human3_state.goal_y = - 4.0 * np.sin(theta)
+        # human3_state.vmax = 1.0
+        # human3_state.theta = 0.0
 
         theta = - np.pi / 3.0
         human4_state = PedState()
@@ -61,10 +62,10 @@ def talker():
         human4_state.vel_x = 0.0
         human4_state.vel_y = 0.0
         human4_state.radius = 0.3
-        human4_state.goal_x = - 4.0 * np.cos(theta)
-        human4_state.goal_y = - 4.0 * np.sin(theta)
-        human4_state.vmax = 1.0
-        human4_state.theta = 0.0
+        # human4_state.goal_x = - 4.0 * np.cos(theta)
+        # human4_state.goal_y = - 4.0 * np.sin(theta)
+        # human4_state.vmax = 1.0
+        # human4_state.theta = 0.0
 
         observe_info = ObserveInfo()
         observe_info.robot_state = robot_state
