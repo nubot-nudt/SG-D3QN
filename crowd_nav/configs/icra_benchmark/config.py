@@ -9,7 +9,7 @@ import numpy as np
 class Config(object):
     def __init__(self):
         pass
-v_pref = 0.7
+v_pref = 1.0
 rotation_constraint = np.pi/6
 class BaseEnvConfig(object):
     env = Config()

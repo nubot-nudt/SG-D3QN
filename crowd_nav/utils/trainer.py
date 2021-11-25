@@ -555,14 +555,14 @@ class TD3RLTrainer(object):
 
         policy_noise = 0.1
         noise_clip = 0.3
-        policy_freq = 5
+        policy_freq = 4
         # parameter for TD3
         self.policy_noise = policy_noise
         self.noise_clip = noise_clip
         self.policy_freq = policy_freq
         self.action_dim = policy.action_dim
         self.max_action = policy.max_action
-        self.tau = 0.005
+        self.tau = 0.001
         # for value update
         self.gamma = 0.9
         self.time_step = 0.25
@@ -580,8 +580,6 @@ class TD3RLTrainer(object):
         if self.optimizer_str == 'Adam':
             self.actor_optimizer = optim.Adam(self.actor_network.parameters(), lr=learning_rate)
             self.critic_optimizer = optim.Adam(self.critic_network.parameters(), lr=learning_rate)
-            if self.state_predictor.trainable:
-                self.state_optimizer = optim.Adam(self.state_predictor.parameters(), lr=learning_rate)
         elif self.optimizer_str == 'SGD':
             self.actor_optimizer = optim.SGD(self.actor_network.parameters(), lr=learning_rate, momentum=0.9)
             self.critic_optimizer = optim.SGD(self.critic_network.parameters(), lr=learning_rate, momentum=0.9)
@@ -589,66 +587,6 @@ class TD3RLTrainer(object):
                 self.state_optimizer = optim.SGD(self.state_predictor.parameters(), lr=learning_rate, momentum=0.9)
         else:
             raise NotImplementedError
-
-        if self.state_predictor.trainable:
-            logging.info('Lr: {} for parameters {} with {} optimizer'.format(learning_rate, ' '.join(
-                [name for name, param in
-                 list(self.actor_network.named_parameters()) + list(self.critic_network.named_parameters())
-                 + list(self.state_predictor.named_parameters())]), self.optimizer_str))
-        else:
-            logging.info('Lr: {} for parameters {} with {} optimizer'.format(learning_rate, ' '.join(
-                [name for name, param in list(self.actor_network.named_parameters()) +
-                 list(self.critic_network.named_parameters())]), self.optimizer_str))
-    # wait for revise
-    # def optimize_epoch(self, num_epochs):
-    #     if self.v_optimizer is None:
-    #         raise ValueError('Learning rate is not set!')
-    #     if self.data_loader is None:
-    #         self.data_loader = DataLoader(self.memory, self.batch_size, shuffle=True)
-    #     for epoch in range(num_epochs):
-    #         epoch_v_loss = 0
-    #         epoch_s_loss = 0
-    #         logging.debug('{}-th epoch starts'.format(epoch))
-    #
-    #         update_counter = 0
-    #         for data in self.data_loader:
-    #             robot_states, human_states, actions, values, dones, rewards, next_robot_state, next_human_states = data
-    #
-    #             # optimize value estimator
-    #             self.v_optimizer.zero_grad()
-    #             actions = actions.to(self.device)
-    #             outputs = self.value_estimator((robot_states, human_states))
-    #             values = values.to(self.device)
-    #             loss = self.criterion(outputs, values)
-    #             loss.backward()
-    #             self.v_optimizer.step()
-    #             epoch_v_loss += loss.data.item()
-    #
-    #             # optimize state predictor
-    #             if self.state_predictor.trainable:
-    #                 update_state_predictor = True
-    #                 if update_counter % self.state_predictor_update_interval != 0:
-    #                     update_state_predictor = False
-    #
-    #                 if update_state_predictor:
-    #                     self.s_optimizer.zero_grad()
-    #                     _, next_human_states_est = self.state_predictor((robot_states, human_states), None)
-    #                     loss = self.criterion(next_human_states_est, next_human_states)
-    #                     loss.backward()
-    #                     self.s_optimizer.step()
-    #                     epoch_s_loss += loss.data.item()
-    #                 update_counter += 1
-    #             else:
-    #                 _, next_human_states_est = self.state_predictor((robot_states, human_states), ActionXY(0, 0))
-    #                 loss = self.criterion(next_human_states_est, next_human_states)
-    #                 epoch_s_loss += loss.data.item()
-    #
-    #         logging.debug('{}-th epoch ends'.format(epoch))
-    #         self.writer.add_scalar('IL/epoch_v_loss', epoch_v_loss / len(self.memory), epoch)
-    #         self.writer.add_scalar('IL/epoch_s_loss', epoch_s_loss / len(self.memory), epoch)
-    #         logging.info('Average loss in epoch %d: %.2E, %.2E', epoch, epoch_v_loss / len(self.memory),
-    #                      epoch_s_loss / len(self.memory))
-    #     return
 
     def optimize_batch(self, num_batches, episode):
         self.total_iteration += 1
@@ -714,28 +652,6 @@ class TD3RLTrainer(object):
                 self.actor_optimizer.zero_grad()
                 actor_loss.backward()
                 self.actor_optimizer.step()
-
-            # # optimize state predictor
-            # if self.state_predictor.trainable:
-            #     update_state_predictor = True
-            #     if self.freeze_state_predictor:
-            #         update_state_predictor = False
-            #     elif self.reduce_sp_update_frequency and batch_count % self.state_predictor_update_interval == 0:
-            #         update_state_predictor = False
-            #
-            #     if update_state_predictor:
-            #         self.state_optimizer.zero_grad()
-            #         _, next_human_states_est = self.state_predictor((robot_states, human_states), None,
-            #                                                         detach=self.detach_state_predictor)
-            #         loss = self.criterion(next_human_states_est, next_human_states)
-            #         loss.backward()
-            #         self.state_optimizer.step()
-            #         s_losses += loss.data.item()
-            # else:
-            #     _, next_human_states_est = self.state_predictor((robot_states, human_states), None,
-            #                                                     detach=self.detach_state_predictor)
-            #     loss = self.criterion(next_human_states_est, next_human_states)
-            #     s_losses += loss.data.item()
 
             batch_count += 1
             if batch_count > num_batches or batch_count == batch_num:
