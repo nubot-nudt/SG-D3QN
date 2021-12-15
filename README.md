@@ -2,7 +2,7 @@
 
 # SG-D3QN
 
-This repository contains the codes for our paper, which is in submission. The demo vedio can be found in doc folder.
+This repository contains the codes for our paper, which is in submission.
 
 
 ## Abstract
