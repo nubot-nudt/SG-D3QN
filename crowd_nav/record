@@ -1,0 +1,719 @@
+for ((i=3;i<5;i+=1))
+do
+	for((j=1;j<3;j+=1))
+	do
+		python test.py \
+		--policy model-predictive-rl \
+		--model_dir data/5human_invisible_holonomic/mprl/$i \
+		--planning_depth $j \
+		--planning_width  2 
+	done
+done
+
+for ((i=2;i<5;i+=1))
+do
+	for((j=1;j<4;j+=1))
+	do
+		python test.py \
+		--policy tree-search-rl \
+		--model_dir data/5human_invisible_holonomic/tsrl/$i \
+		--planning_depth $j 
+
+	done
+done
+
+for ((i=0;i<3;i+=1))
+do
+	for((j=1;j<3;j+=1))
+	do
+		python test.py \
+		--policy model-predictive-rl \
+		--model_dir data/5human_invisible_holonomic/mprl/$i \
+		--planning_depth $j \
+		--planning_width  2 
+	done
+done
+
+The Script begin at 1110
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/torch/cuda/__init__.py:52: UserWarning: CUDA initialization: Unexpected error from cudaGetDeviceCount(). Did you run some cuda functions before calling NumCudaDevices() that might have already set an error? Error 804: forward compatibility was attempted on non supported HW (Triggered internally at  /pytorch/c10/cuda/CUDAFunctions.cpp:115.)
+  return torch._C._cuda_getDeviceCount() > 0
+2021-11-10 09:24:41, INFO: Using device: cpu
+2021-11-10 09:24:41, INFO: Loaded RL weights with best VAL
+2021-11-10 09:24:41, INFO: Similarity_func: embedded_gaussian
+2021-11-10 09:24:41, INFO: Layerwise_graph: False
+2021-11-10 09:24:41, INFO: Skip_connection: True
+2021-11-10 09:24:41, INFO: Number of layers: 2
+2021-11-10 09:24:41, INFO: Similarity_func: embedded_gaussian
+2021-11-10 09:24:41, INFO: Layerwise_graph: False
+2021-11-10 09:24:41, INFO: Skip_connection: True
+2021-11-10 09:24:41, INFO: Number of layers: 2
+2021-11-10 09:24:41, INFO: Planning depth: 1
+2021-11-10 09:24:41, INFO: Planning width: 2
+2021-11-10 09:24:41, INFO: Sparse search: None
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/gym/logger.py:30: UserWarning: WARN: Box bound precision lowered by casting to float32
+  warnings.warn(colorize('%s: %s'%('WARN', msg % args), 'yellow'))
+2021-11-10 09:24:41, INFO: human number: 5
+2021-11-10 09:24:41, INFO: Not randomize human's radius and preferred speed
+2021-11-10 09:24:41, INFO: Training simulation: circle_crossing, test simulation: circle_crossing
+2021-11-10 09:24:41, INFO: Square width: 10, circle width: 4
+2021-11-10 09:24:41, INFO: rotation constraint: 3.141592653589793
+2021-11-10 09:24:41, INFO: Agent is invisible and has unicycle kinematic constraint
+ 14%|█████████████▍                                                                                | 143/1000 [03:09<17:23,  1.22s/it]collision happen %f 11.25
+ 25%|███████████████████████                                                                       | 246/1000 [05:23<17:19,  1.38s/it]timeout happen %f 29.25
+ 29%|███████████████████████████▎                                                                  | 290/1000 [06:21<14:35,  1.23s/it]collision happen %f 7.5
+ 65%|█████████████████████████████████████████████████████████████▍                                | 653/1000 [14:14<07:34,  1.31s/it]collision happen %f 5.75
+ 84%|██████████████████████████████████████████████████████████████████████████████▌               | 836/1000 [18:07<03:27,  1.26s/it]collision happen %f 10.75
+100%|█████████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [21:48<00:00,  1.35s/it]2021-11-10 09:46:30, INFO: TEST  has success rate: 0.995, collision rate: 0.004, nav time: 10.475, total reward: 1787.9098, average return: 0.7421
+2021-11-10 09:46:30, INFO: Frequency of being in danger: 0.036 and average min separate distance in danger: 0.19
+2021-11-10 09:46:30, INFO: discomfor nums is 1530 and return is 0.7346 and length is 41950
+2021-11-10 09:46:30, INFO: Collision cases: 143 290 653 836
+2021-11-10 09:46:30, INFO: Timeout cases: 246
+100%|█████████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [21:48<00:00,  1.31s/it]
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/torch/cuda/__init__.py:52: UserWarning: CUDA initialization: Unexpected error from cudaGetDeviceCount(). Did you run some cuda functions before calling NumCudaDevices() that might have already set an error? Error 804: forward compatibility was attempted on non supported HW (Triggered internally at  /pytorch/c10/cuda/CUDAFunctions.cpp:115.)
+  return torch._C._cuda_getDeviceCount() > 0
+2021-11-10 09:46:32, INFO: Using device: cpu
+2021-11-10 09:46:32, INFO: Loaded RL weights with best VAL
+2021-11-10 09:46:32, INFO: Similarity_func: embedded_gaussian
+2021-11-10 09:46:32, INFO: Layerwise_graph: False
+2021-11-10 09:46:32, INFO: Skip_connection: True
+2021-11-10 09:46:32, INFO: Number of layers: 2
+2021-11-10 09:46:32, INFO: Similarity_func: embedded_gaussian
+2021-11-10 09:46:32, INFO: Layerwise_graph: False
+2021-11-10 09:46:32, INFO: Skip_connection: True
+2021-11-10 09:46:32, INFO: Number of layers: 2
+2021-11-10 09:46:32, INFO: Planning depth: 2
+2021-11-10 09:46:32, INFO: Planning width: 2
+2021-11-10 09:46:32, INFO: Sparse search: None
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/gym/logger.py:30: UserWarning: WARN: Box bound precision lowered by casting to float32
+  warnings.warn(colorize('%s: %s'%('WARN', msg % args), 'yellow'))
+2021-11-10 09:46:32, INFO: human number: 5
+2021-11-10 09:46:32, INFO: Not randomize human's radius and preferred speed
+2021-11-10 09:46:32, INFO: Training simulation: circle_crossing, test simulation: circle_crossing
+2021-11-10 09:46:32, INFO: Square width: 10, circle width: 4
+2021-11-10 09:46:32, INFO: rotation constraint: 3.141592653589793
+2021-11-10 09:46:32, INFO: Agent is invisible and has unicycle kinematic constraint
+ 29%|███████████████████████████▎                                                                  | 290/1000 [18:52<41:43,  3.53s/it]collision happen %f 7.75
+ 44%|█████████████████████████████████████████▎                                                    | 440/1000 [28:27<35:30,  3.80s/it]collision happen %f 13.0
+ 71%|██████████████████████████████████████████████████████████████████▍                           | 707/1000 [46:00<18:55,  3.87s/it]collision happen %f 6.0
+100%|███████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [1:05:01<00:00,  3.70s/it]2021-11-10 10:51:34, INFO: TEST  has success rate: 0.997, collision rate: 0.003, nav time: 10.291, total reward: 1792.9668, average return: 0.7493
+2021-11-10 10:51:34, INFO: Frequency of being in danger: 0.029 and average min separate distance in danger: 0.19
+2021-11-10 10:51:34, INFO: discomfor nums is 1228 and return is 0.7447 and length is 41148
+2021-11-10 10:51:34, INFO: Collision cases: 290 440 707
+2021-11-10 10:51:34, INFO: Timeout cases: 
+100%|███████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [1:05:01<00:00,  3.90s/it]
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/torch/cuda/__init__.py:52: UserWarning: CUDA initialization: Unexpected error from cudaGetDeviceCount(). Did you run some cuda functions before calling NumCudaDevices() that might have already set an error? Error 804: forward compatibility was attempted on non supported HW (Triggered internally at  /pytorch/c10/cuda/CUDAFunctions.cpp:115.)
+  return torch._C._cuda_getDeviceCount() > 0
+2021-11-10 10:51:35, INFO: Using device: cpu
+2021-11-10 10:51:35, INFO: Loaded RL weights with best VAL
+2021-11-10 10:51:35, INFO: Similarity_func: embedded_gaussian
+2021-11-10 10:51:35, INFO: Layerwise_graph: False
+2021-11-10 10:51:35, INFO: Skip_connection: True
+2021-11-10 10:51:35, INFO: Number of layers: 2
+2021-11-10 10:51:35, INFO: Similarity_func: embedded_gaussian
+2021-11-10 10:51:35, INFO: Layerwise_graph: False
+2021-11-10 10:51:35, INFO: Skip_connection: True
+2021-11-10 10:51:35, INFO: Number of layers: 2
+2021-11-10 10:51:35, INFO: Planning depth: 1
+2021-11-10 10:51:35, INFO: Planning width: 2
+2021-11-10 10:51:35, INFO: Sparse search: None
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/gym/logger.py:30: UserWarning: WARN: Box bound precision lowered by casting to float32
+  warnings.warn(colorize('%s: %s'%('WARN', msg % args), 'yellow'))
+2021-11-10 10:51:35, INFO: human number: 5
+2021-11-10 10:51:35, INFO: Not randomize human's radius and preferred speed
+2021-11-10 10:51:35, INFO: Training simulation: circle_crossing, test simulation: circle_crossing
+2021-11-10 10:51:35, INFO: Square width: 10, circle width: 4
+2021-11-10 10:51:35, INFO: rotation constraint: 3.141592653589793
+2021-11-10 10:51:35, INFO: Agent is invisible and has unicycle kinematic constraint
+ 67%|██████████████████████████████████████████████████████████████▋                               | 667/1000 [15:07<07:18,  1.32s/it]collision happen %f 6.0
+100%|█████████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [22:40<00:00,  1.47s/it]2021-11-10 11:14:16, INFO: TEST  has success rate: 0.999, collision rate: 0.001, nav time: 10.600, total reward: 1790.9464, average return: 0.7360
+2021-11-10 11:14:16, INFO: Frequency of being in danger: 0.033 and average min separate distance in danger: 0.18
+2021-11-10 11:14:16, INFO: discomfor nums is 1471 and return is 0.7304 and length is 42381
+2021-11-10 11:14:16, INFO: Collision cases: 667
+2021-11-10 11:14:16, INFO: Timeout cases: 
+100%|█████████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [22:40<00:00,  1.36s/it]
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/torch/cuda/__init__.py:52: UserWarning: CUDA initialization: Unexpected error from cudaGetDeviceCount(). Did you run some cuda functions before calling NumCudaDevices() that might have already set an error? Error 804: forward compatibility was attempted on non supported HW (Triggered internally at  /pytorch/c10/cuda/CUDAFunctions.cpp:115.)
+  return torch._C._cuda_getDeviceCount() > 0
+2021-11-10 11:14:18, INFO: Using device: cpu
+2021-11-10 11:14:18, INFO: Loaded RL weights with best VAL
+2021-11-10 11:14:18, INFO: Similarity_func: embedded_gaussian
+2021-11-10 11:14:18, INFO: Layerwise_graph: False
+2021-11-10 11:14:18, INFO: Skip_connection: True
+2021-11-10 11:14:18, INFO: Number of layers: 2
+2021-11-10 11:14:18, INFO: Similarity_func: embedded_gaussian
+2021-11-10 11:14:18, INFO: Layerwise_graph: False
+2021-11-10 11:14:18, INFO: Skip_connection: True
+2021-11-10 11:14:18, INFO: Number of layers: 2
+2021-11-10 11:14:18, INFO: Planning depth: 2
+2021-11-10 11:14:18, INFO: Planning width: 2
+2021-11-10 11:14:18, INFO: Sparse search: None
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/gym/logger.py:30: UserWarning: WARN: Box bound precision lowered by casting to float32
+  warnings.warn(colorize('%s: %s'%('WARN', msg % args), 'yellow'))
+2021-11-10 11:14:18, INFO: human number: 5
+2021-11-10 11:14:18, INFO: Not randomize human's radius and preferred speed
+2021-11-10 11:14:18, INFO: Training simulation: circle_crossing, test simulation: circle_crossing
+2021-11-10 11:14:18, INFO: Square width: 10, circle width: 4
+2021-11-10 11:14:18, INFO: rotation constraint: 3.141592653589793
+2021-11-10 11:14:18, INFO: Agent is invisible and has unicycle kinematic constraint
+ 54%|██████████████████████████████████████████████████▍                                           | 536/1000 [35:01<28:42,  3.71s/it]collision happen %f 7.75
+ 55%|███████████████████████████████████████████████████▌                                          | 548/1000 [35:49<33:07,  4.40s/it]collision happen %f 11.0
+100%|███████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [1:05:07<00:00,  3.81s/it]2021-11-10 12:19:25, INFO: TEST  has success rate: 0.998, collision rate: 0.002, nav time: 10.423, total reward: 1798.4600, average return: 0.7443
+2021-11-10 12:19:25, INFO: Frequency of being in danger: 0.028 and average min separate distance in danger: 0.19
+2021-11-10 12:19:25, INFO: discomfor nums is 1207 and return is 0.7392 and length is 41685
+2021-11-10 12:19:25, INFO: Collision cases: 536 548
+2021-11-10 12:19:25, INFO: Timeout cases: 
+100%|███████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [1:05:07<00:00,  3.91s/it]
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/torch/cuda/__init__.py:52: UserWarning: CUDA initialization: Unexpected error from cudaGetDeviceCount(). Did you run some cuda functions before calling NumCudaDevices() that might have already set an error? Error 804: forward compatibility was attempted on non supported HW (Triggered internally at  /pytorch/c10/cuda/CUDAFunctions.cpp:115.)
+  return torch._C._cuda_getDeviceCount() > 0
+2021-11-10 12:19:26, INFO: Using device: cpu
+2021-11-10 12:19:26, INFO: Loaded RL weights with best VAL
+2021-11-10 12:19:26, INFO: Similarity_func: concatenation
+2021-11-10 12:19:26, INFO: Layerwise_graph: False
+2021-11-10 12:19:26, INFO: Skip_connection: True
+2021-11-10 12:19:26, INFO: Number of layers: 1
+2021-11-10 12:19:26, INFO: Similarity_func: concatenation
+2021-11-10 12:19:26, INFO: Layerwise_graph: False
+2021-11-10 12:19:26, INFO: Skip_connection: True
+2021-11-10 12:19:26, INFO: Number of layers: 1
+2021-11-10 12:19:26, INFO: Planning depth: 1
+2021-11-10 12:19:26, INFO: Planning width: 10
+2021-11-10 12:19:26, INFO: Sparse search: None
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/gym/logger.py:30: UserWarning: WARN: Box bound precision lowered by casting to float32
+  warnings.warn(colorize('%s: %s'%('WARN', msg % args), 'yellow'))
+2021-11-10 12:19:26, INFO: human number: 5
+2021-11-10 12:19:26, INFO: Not randomize human's radius and preferred speed
+2021-11-10 12:19:26, INFO: Training simulation: circle_crossing, test simulation: circle_crossing
+2021-11-10 12:19:26, INFO: Square width: 10, circle width: 4
+2021-11-10 12:19:26, INFO: rotation constraint: 3.141592653589793
+2021-11-10 12:19:26, INFO: Agent is invisible and has unicycle kinematic constraint
+ 55%|███████████████████████████████████████████████████▌                                          | 548/1000 [02:30<02:04,  3.62it/s]collision happen %f 2.25
+ 81%|████████████████████████████████████████████████████████████████████████████▏                 | 810/1000 [03:43<00:52,  3.61it/s]collision happen %f 5.0
+ 90%|█████████████████████████████████████████████████████████████████████████████████████         | 905/1000 [04:09<00:27,  3.45it/s]collision happen %f 4.5
+100%|█████████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [04:35<00:00,  3.66it/s]2021-11-10 12:24:02, INFO: TEST  has success rate: 0.997, collision rate: 0.003, nav time: 10.172, total reward: 1779.5206, average return: 0.7429
+2021-11-10 12:24:02, INFO: Frequency of being in danger: 0.022 and average min separate distance in danger: 0.18
+2021-11-10 12:24:02, INFO: discomfor nums is 927 and return is 0.7413 and length is 40612
+2021-11-10 12:24:02, INFO: Collision cases: 548 810 905
+2021-11-10 12:24:02, INFO: Timeout cases: 
+100%|█████████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [04:35<00:00,  3.62it/s]
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/torch/cuda/__init__.py:52: UserWarning: CUDA initialization: Unexpected error from cudaGetDeviceCount(). Did you run some cuda functions before calling NumCudaDevices() that might have already set an error? Error 804: forward compatibility was attempted on non supported HW (Triggered internally at  /pytorch/c10/cuda/CUDAFunctions.cpp:115.)
+  return torch._C._cuda_getDeviceCount() > 0
+2021-11-10 12:24:04, INFO: Using device: cpu
+2021-11-10 12:24:04, INFO: Loaded RL weights with best VAL
+2021-11-10 12:24:04, INFO: Similarity_func: concatenation
+2021-11-10 12:24:04, INFO: Layerwise_graph: False
+2021-11-10 12:24:04, INFO: Skip_connection: True
+2021-11-10 12:24:04, INFO: Number of layers: 1
+2021-11-10 12:24:04, INFO: Similarity_func: concatenation
+2021-11-10 12:24:04, INFO: Layerwise_graph: False
+2021-11-10 12:24:04, INFO: Skip_connection: True
+2021-11-10 12:24:04, INFO: Number of layers: 1
+2021-11-10 12:24:04, INFO: Planning depth: 2
+2021-11-10 12:24:04, INFO: Planning width: 10
+2021-11-10 12:24:04, INFO: Sparse search: None
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/gym/logger.py:30: UserWarning: WARN: Box bound precision lowered by casting to float32
+  warnings.warn(colorize('%s: %s'%('WARN', msg % args), 'yellow'))
+2021-11-10 12:24:04, INFO: human number: 5
+2021-11-10 12:24:04, INFO: Not randomize human's radius and preferred speed
+2021-11-10 12:24:04, INFO: Training simulation: circle_crossing, test simulation: circle_crossing
+2021-11-10 12:24:04, INFO: Square width: 10, circle width: 4
+2021-11-10 12:24:04, INFO: rotation constraint: 3.141592653589793
+2021-11-10 12:24:04, INFO: Agent is invisible and has unicycle kinematic constraint
+  7%|██████▍                                                                                        | 68/1000 [01:14<16:16,  1.05s/it]collision happen %f 4.75
+ 26%|████████████████████████▉                                                                     | 265/1000 [04:49<12:32,  1.02s/it]collision happen %f 4.25
+ 81%|████████████████████████████████████████████████████████████████████████████▏                 | 810/1000 [14:41<03:26,  1.09s/it]collision happen %f 5.0
+ 94%|████████████████████████████████████████████████████████████████████████████████████████      | 937/1000 [16:58<01:10,  1.13s/it]collision happen %f 4.5
+ 95%|█████████████████████████████████████████████████████████████████████████████████████████▍    | 952/1000 [17:14<00:52,  1.09s/it]collision happen %f 4.5
+100%|█████████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [18:05<00:00,  1.07s/it]2021-11-10 12:42:10, INFO: TEST  has success rate: 0.995, collision rate: 0.005, nav time: 9.959, total reward: 1781.6846, average return: 0.7508
+2021-11-10 12:42:10, INFO: Frequency of being in danger: 0.016 and average min separate distance in danger: 0.18
+2021-11-10 12:42:10, INFO: discomfor nums is 657 and return is 0.7502 and length is 39727
+2021-11-10 12:42:10, INFO: Collision cases: 68 265 810 937 952
+2021-11-10 12:42:10, INFO: Timeout cases: 
+100%|█████████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [18:05<00:00,  1.09s/it]
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/torch/cuda/__init__.py:52: UserWarning: CUDA initialization: Unexpected error from cudaGetDeviceCount(). Did you run some cuda functions before calling NumCudaDevices() that might have already set an error? Error 804: forward compatibility was attempted on non supported HW (Triggered internally at  /pytorch/c10/cuda/CUDAFunctions.cpp:115.)
+  return torch._C._cuda_getDeviceCount() > 0
+2021-11-10 12:42:11, INFO: Using device: cpu
+2021-11-10 12:42:11, INFO: Loaded RL weights with best VAL
+2021-11-10 12:42:11, INFO: Similarity_func: concatenation
+2021-11-10 12:42:11, INFO: Layerwise_graph: False
+2021-11-10 12:42:11, INFO: Skip_connection: True
+2021-11-10 12:42:11, INFO: Number of layers: 1
+2021-11-10 12:42:11, INFO: Similarity_func: concatenation
+2021-11-10 12:42:11, INFO: Layerwise_graph: False
+2021-11-10 12:42:11, INFO: Skip_connection: True
+2021-11-10 12:42:11, INFO: Number of layers: 1
+2021-11-10 12:42:11, INFO: Planning depth: 3
+2021-11-10 12:42:11, INFO: Planning width: 10
+2021-11-10 12:42:11, INFO: Sparse search: None
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/gym/logger.py:30: UserWarning: WARN: Box bound precision lowered by casting to float32
+  warnings.warn(colorize('%s: %s'%('WARN', msg % args), 'yellow'))
+2021-11-10 12:42:11, INFO: human number: 5
+2021-11-10 12:42:11, INFO: Not randomize human's radius and preferred speed
+2021-11-10 12:42:11, INFO: Training simulation: circle_crossing, test simulation: circle_crossing
+2021-11-10 12:42:11, INFO: Square width: 10, circle width: 4
+2021-11-10 12:42:11, INFO: rotation constraint: 3.141592653589793
+2021-11-10 12:42:11, INFO: Agent is invisible and has unicycle kinematic constraint
+  7%|██████▎                                                                                      | 68/1000 [05:39<1:11:26,  4.60s/it]collision happen %f 4.75
+ 26%|████████████████████████▉                                                                     | 265/1000 [21:52<57:35,  4.70s/it]collision happen %f 4.25
+ 81%|██████████████████████████████████████████████████████████████████████████▌                 | 810/1000 [1:06:26<15:12,  4.80s/it]collision happen %f 5.0
+ 97%|█████████████████████████████████████████████████████████████████████████████████████████▏  | 969/1000 [1:19:17<02:33,  4.94s/it]collision happen %f 10.75
+100%|███████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [1:21:47<00:00,  4.82s/it]2021-11-10 14:03:59, INFO: TEST  has success rate: 0.996, collision rate: 0.004, nav time: 9.902, total reward: 1785.5789, average return: 0.7546
+2021-11-10 14:03:59, INFO: Frequency of being in danger: 0.017 and average min separate distance in danger: 0.18
+2021-11-10 14:03:59, INFO: discomfor nums is 680 and return is 0.7530 and length is 39547
+2021-11-10 14:03:59, INFO: Collision cases: 68 265 810 969
+2021-11-10 14:03:59, INFO: Timeout cases: 
+100%|███████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [1:21:47<00:00,  4.91s/it]
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/torch/cuda/__init__.py:52: UserWarning: CUDA initialization: Unexpected error from cudaGetDeviceCount(). Did you run some cuda functions before calling NumCudaDevices() that might have already set an error? Error 804: forward compatibility was attempted on non supported HW (Triggered internally at  /pytorch/c10/cuda/CUDAFunctions.cpp:115.)
+  return torch._C._cuda_getDeviceCount() > 0
+2021-11-10 14:04:01, INFO: Using device: cpu
+2021-11-10 14:04:01, INFO: Loaded RL weights with best VAL
+2021-11-10 14:04:01, INFO: Similarity_func: concatenation
+2021-11-10 14:04:01, INFO: Layerwise_graph: False
+2021-11-10 14:04:01, INFO: Skip_connection: True
+2021-11-10 14:04:01, INFO: Number of layers: 1
+2021-11-10 14:04:01, INFO: Similarity_func: concatenation
+2021-11-10 14:04:01, INFO: Layerwise_graph: False
+2021-11-10 14:04:01, INFO: Skip_connection: True
+2021-11-10 14:04:01, INFO: Number of layers: 1
+2021-11-10 14:04:01, INFO: Planning depth: 1
+2021-11-10 14:04:01, INFO: Planning width: 10
+2021-11-10 14:04:01, INFO: Sparse search: None
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/gym/logger.py:30: UserWarning: WARN: Box bound precision lowered by casting to float32
+  warnings.warn(colorize('%s: %s'%('WARN', msg % args), 'yellow'))
+2021-11-10 14:04:01, INFO: human number: 5
+2021-11-10 14:04:01, INFO: Not randomize human's radius and preferred speed
+2021-11-10 14:04:01, INFO: Training simulation: circle_crossing, test simulation: circle_crossing
+2021-11-10 14:04:01, INFO: Square width: 10, circle width: 4
+2021-11-10 14:04:01, INFO: rotation constraint: 3.141592653589793
+2021-11-10 14:04:01, INFO: Agent is invisible and has unicycle kinematic constraint
+ 15%|██████████████▎                                                                               | 152/1000 [00:41<03:49,  3.69it/s]collision happen %f 5.75
+ 30%|████████████████████████████▍                                                                 | 303/1000 [01:22<02:54,  3.99it/s]collision happen %f 4.75
+ 32%|██████████████████████████████▎                                                               | 322/1000 [01:27<03:14,  3.48it/s]collision happen %f 5.0
+ 41%|██████████████████████████████████████▋                                                       | 411/1000 [01:52<02:36,  3.77it/s]collision happen %f 4.25
+ 55%|███████████████████████████████████████████████████▌                                          | 548/1000 [02:29<02:05,  3.61it/s]collision happen %f 2.25
+ 65%|█████████████████████████████████████████████████████████████▎                                | 652/1000 [02:57<01:43,  3.37it/s]collision happen %f 3.25
+ 66%|█████████████████████████████████████████████████████████████▋                                | 656/1000 [02:58<01:28,  3.90it/s]collision happen %f 3.25
+ 82%|█████████████████████████████████████████████████████████████████████████████▎                | 822/1000 [03:43<00:48,  3.65it/s]collision happen %f 7.75
+100%|█████████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [04:32<00:00,  3.74it/s]2021-11-10 14:08:33, INFO: TEST  has success rate: 0.992, collision rate: 0.008, nav time: 10.075, total reward: 1773.4770, average return: 0.7410
+2021-11-10 14:08:33, INFO: Frequency of being in danger: 0.016 and average min separate distance in danger: 0.17
+2021-11-10 14:08:33, INFO: discomfor nums is 666 and return is 0.7420 and length is 40122
+2021-11-10 14:08:33, INFO: Collision cases: 152 303 322 411 548 652 656 822
+2021-11-10 14:08:33, INFO: Timeout cases: 
+100%|█████████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [04:32<00:00,  3.67it/s]
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/torch/cuda/__init__.py:52: UserWarning: CUDA initialization: Unexpected error from cudaGetDeviceCount(). Did you run some cuda functions before calling NumCudaDevices() that might have already set an error? Error 804: forward compatibility was attempted on non supported HW (Triggered internally at  /pytorch/c10/cuda/CUDAFunctions.cpp:115.)
+  return torch._C._cuda_getDeviceCount() > 0
+2021-11-10 14:08:34, INFO: Using device: cpu
+2021-11-10 14:08:34, INFO: Loaded RL weights with best VAL
+2021-11-10 14:08:34, INFO: Similarity_func: concatenation
+2021-11-10 14:08:34, INFO: Layerwise_graph: False
+2021-11-10 14:08:34, INFO: Skip_connection: True
+2021-11-10 14:08:34, INFO: Number of layers: 1
+2021-11-10 14:08:34, INFO: Similarity_func: concatenation
+2021-11-10 14:08:34, INFO: Layerwise_graph: False
+2021-11-10 14:08:34, INFO: Skip_connection: True
+2021-11-10 14:08:34, INFO: Number of layers: 1
+2021-11-10 14:08:34, INFO: Planning depth: 2
+2021-11-10 14:08:34, INFO: Planning width: 10
+2021-11-10 14:08:34, INFO: Sparse search: None
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/gym/logger.py:30: UserWarning: WARN: Box bound precision lowered by casting to float32
+  warnings.warn(colorize('%s: %s'%('WARN', msg % args), 'yellow'))
+2021-11-10 14:08:34, INFO: human number: 5
+2021-11-10 14:08:34, INFO: Not randomize human's radius and preferred speed
+2021-11-10 14:08:34, INFO: Training simulation: circle_crossing, test simulation: circle_crossing
+2021-11-10 14:08:34, INFO: Square width: 10, circle width: 4
+2021-11-10 14:08:34, INFO: rotation constraint: 3.141592653589793
+2021-11-10 14:08:34, INFO: Agent is invisible and has unicycle kinematic constraint
+ 66%|█████████████████████████████████████████████████████████████▋                                | 656/1000 [11:56<06:24,  1.12s/it]collision happen %f 3.75
+100%|█████████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [18:13<00:00,  1.05s/it]2021-11-10 14:26:48, INFO: TEST  has success rate: 0.999, collision rate: 0.001, nav time: 9.899, total reward: 1780.6627, average return: 0.7498
+2021-11-10 14:26:48, INFO: Frequency of being in danger: 0.013 and average min separate distance in danger: 0.17
+2021-11-10 14:26:48, INFO: discomfor nums is 576 and return is 0.7471 and length is 39573
+2021-11-10 14:26:48, INFO: Collision cases: 656
+2021-11-10 14:26:48, INFO: Timeout cases: 
+100%|█████████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [18:13<00:00,  1.09s/it]
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/torch/cuda/__init__.py:52: UserWarning: CUDA initialization: Unexpected error from cudaGetDeviceCount(). Did you run some cuda functions before calling NumCudaDevices() that might have already set an error? Error 804: forward compatibility was attempted on non supported HW (Triggered internally at  /pytorch/c10/cuda/CUDAFunctions.cpp:115.)
+  return torch._C._cuda_getDeviceCount() > 0
+2021-11-10 14:26:50, INFO: Using device: cpu
+2021-11-10 14:26:50, INFO: Loaded RL weights with best VAL
+2021-11-10 14:26:50, INFO: Similarity_func: concatenation
+2021-11-10 14:26:50, INFO: Layerwise_graph: False
+2021-11-10 14:26:50, INFO: Skip_connection: True
+2021-11-10 14:26:50, INFO: Number of layers: 1
+2021-11-10 14:26:50, INFO: Similarity_func: concatenation
+2021-11-10 14:26:50, INFO: Layerwise_graph: False
+2021-11-10 14:26:50, INFO: Skip_connection: True
+2021-11-10 14:26:50, INFO: Number of layers: 1
+2021-11-10 14:26:50, INFO: Planning depth: 3
+2021-11-10 14:26:50, INFO: Planning width: 10
+2021-11-10 14:26:50, INFO: Sparse search: None
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/gym/logger.py:30: UserWarning: WARN: Box bound precision lowered by casting to float32
+  warnings.warn(colorize('%s: %s'%('WARN', msg % args), 'yellow'))
+2021-11-10 14:26:50, INFO: human number: 5
+2021-11-10 14:26:50, INFO: Not randomize human's radius and preferred speed
+2021-11-10 14:26:50, INFO: Training simulation: circle_crossing, test simulation: circle_crossing
+2021-11-10 14:26:50, INFO: Square width: 10, circle width: 4
+2021-11-10 14:26:50, INFO: rotation constraint: 3.141592653589793
+2021-11-10 14:26:50, INFO: Agent is invisible and has unicycle kinematic constraint
+ 39%|████████████████████████████████████▋                                                         | 390/1000 [31:56<52:57,  5.21s/it]collision happen %f 5.75
+ 42%|███████████████████████████████████████▍                                                      | 420/1000 [34:30<53:53,  5.57s/it] 49%|██████████████████████████████████████████████▏                                               | 491/1000 [40:27<43:28,  5.12s/it]^CTraceback (most recent call last):
+  File "test.py", line 189, in <module>
+    main(sys_args)
+  File "test.py", line 155, in main
+    explorer.run_k_episodes(env.case_size[args.phase], args.phase, print_failure=True)
+  File "/home/nubot1/workspace/2021TITS2/crowd_nav/utils/explorer.py", line 58, in run_k_episodes
+    action, action_index = self.robot.act(ob)
+  File "/home/nubot1/workspace/2021TITS2/crowd_sim/envs/utils/robot.py", line 14, in act
+    action, action_index = self.policy.predict(state)
+  File "/home/nubot1/workspace/2021TITS2/crowd_nav/policy/tree_searchrl.py", line 223, in predict
+    max_value, max_action_index, max_traj = self.V_planning(state_tensor, self.planning_depth, self.planning_width)
+  File "/home/nubot1/workspace/2021TITS2/crowd_nav/policy/tree_searchrl.py", line 345, in V_planning
+    next_values, next_action_indexes, next_trajs = self.V_planning(next_state_batch, depth-1, cur_width)
+  File "/home/nubot1/workspace/2021TITS2/crowd_nav/policy/tree_searchrl.py", line 345, in V_planning
+    next_values, next_action_indexes, next_trajs = self.V_planning(next_state_batch, depth-1, cur_width)
+  File "/home/nubot1/workspace/2021TITS2/crowd_nav/policy/tree_searchrl.py", line 339, in V_planning
+    tensor_to_joint_state(cur_state), tensor_to_joint_state((next_robot_state, next_human_state)))
+  File "/home/nubot1/workspace/2021TITS2/crowd_nav/policy/reward_estimate.py", line 58, in estimate_reward_on_predictor
+    closest_dist = point_to_segment_dist(px, py, ex, ey, 0, 0) - human.radius - robot_state.radius
+  File "/home/nubot1/workspace/2021TITS2/crowd_sim/envs/utils/utils.py", line 15, in point_to_segment_dist
+    u = ((x3 - x1) * px + (y3 - y1) * py) / (px * px + py * py)
+KeyboardInterrupt
+ 49%|██████████████████████████████████████████████▏                                               | 491/1000 [40:30<41:59,  4.95s/it]
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/torch/cuda/__init__.py:52: UserWarning: CUDA initialization: Unexpected error from cudaGetDeviceCount(). Did you run some cuda functions before calling NumCudaDevices() that might have already set an error? Error 804: forward compatibility was attempted on non supported HW (Triggered internally at  /pytorch/c10/cuda/CUDAFunctions.cpp:115.)
+  return torch._C._cuda_getDeviceCount() > 0
+2021-11-10 15:07:21, INFO: Using device: cpu
+2021-11-10 15:07:21, INFO: Loaded RL weights with best VAL
+2021-11-10 15:07:21, INFO: Similarity_func: concatenation
+2021-11-10 15:07:21, INFO: Layerwise_graph: False
+2021-11-10 15:07:21, INFO: Skip_connection: True
+2021-11-10 15:07:21, INFO: Number of layers: 1
+2021-11-10 15:07:21, INFO: Similarity_func: concatenation
+2021-11-10 15:07:21, INFO: Layerwise_graph: False
+2021-11-10 15:07:21, INFO: Skip_connection: True
+2021-11-10 15:07:21, INFO: Number of layers: 1
+2021-11-10 15:07:21, INFO: Planning depth: 1
+2021-11-10 15:07:21, INFO: Planning width: 10
+2021-11-10 15:07:21, INFO: Sparse search: None
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/gym/logger.py:30: UserWarning: WARN: Box bound precision lowered by casting to float32
+  warnings.warn(colorize('%s: %s'%('WARN', msg % args), 'yellow'))
+2021-11-10 15:07:21, INFO: human number: 5
+2021-11-10 15:07:21, INFO: Not randomize human's radius and preferred speed
+2021-11-10 15:07:21, INFO: Training simulation: circle_crossing, test simulation: circle_crossing
+2021-11-10 15:07:21, INFO: Square width: 10, circle width: 4
+2021-11-10 15:07:21, INFO: rotation constraint: 3.141592653589793
+2021-11-10 15:07:21, INFO: Agent is invisible and has unicycle kinematic constraint
+ 15%|█████████████▋                                                                                | 146/1000 [00:41<03:57,  3.59it/s]collision happen %f 5.25
+ 41%|██████████████████████████████████████▋                                                       | 411/1000 [01:58<02:53,  3.39it/s]collision happen %f 4.25
+ 78%|█████████████████████████████████████████████████████████████████████████▋                    | 784/1000 [03:45<00:56,  3.85it/s]collision happen %f 5.0
+ 87%|█████████████████████████████████████████████████████████████████████████████████▌            | 868/1000 [04:09<00:35,  3.72it/s]collision happen %f 4.5
+100%|█████████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [04:46<00:00,  3.52it/s]2021-11-10 15:12:08, INFO: TEST  has success rate: 0.996, collision rate: 0.004, nav time: 10.118, total reward: 1774.9803, average return: 0.7366
+2021-11-10 15:12:08, INFO: Frequency of being in danger: 0.024 and average min separate distance in danger: 0.18
+2021-11-10 15:12:08, INFO: discomfor nums is 999 and return is 0.7340 and length is 40387
+2021-11-10 15:12:08, INFO: Collision cases: 146 411 784 868
+2021-11-10 15:12:08, INFO: Timeout cases: 
+100%|█████████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [04:46<00:00,  3.49it/s]
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/torch/cuda/__init__.py:52: UserWarning: CUDA initialization: Unexpected error from cudaGetDeviceCount(). Did you run some cuda functions before calling NumCudaDevices() that might have already set an error? Error 804: forward compatibility was attempted on non supported HW (Triggered internally at  /pytorch/c10/cuda/CUDAFunctions.cpp:115.)
+  return torch._C._cuda_getDeviceCount() > 0
+2021-11-10 15:12:09, INFO: Using device: cpu
+2021-11-10 15:12:09, INFO: Loaded RL weights with best VAL
+2021-11-10 15:12:09, INFO: Similarity_func: concatenation
+2021-11-10 15:12:09, INFO: Layerwise_graph: False
+2021-11-10 15:12:09, INFO: Skip_connection: True
+2021-11-10 15:12:09, INFO: Number of layers: 1
+2021-11-10 15:12:09, INFO: Similarity_func: concatenation
+2021-11-10 15:12:09, INFO: Layerwise_graph: False
+2021-11-10 15:12:09, INFO: Skip_connection: True
+2021-11-10 15:12:09, INFO: Number of layers: 1
+2021-11-10 15:12:09, INFO: Planning depth: 2
+2021-11-10 15:12:09, INFO: Planning width: 10
+2021-11-10 15:12:09, INFO: Sparse search: None
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/gym/logger.py:30: UserWarning: WARN: Box bound precision lowered by casting to float32
+  warnings.warn(colorize('%s: %s'%('WARN', msg % args), 'yellow'))
+2021-11-10 15:12:09, INFO: human number: 5
+2021-11-10 15:12:09, INFO: Not randomize human's radius and preferred speed
+2021-11-10 15:12:09, INFO: Training simulation: circle_crossing, test simulation: circle_crossing
+2021-11-10 15:12:09, INFO: Square width: 10, circle width: 4
+2021-11-10 15:12:09, INFO: rotation constraint: 3.141592653589793
+2021-11-10 15:12:09, INFO: Agent is invisible and has unicycle kinematic constraint
+100%|█████████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [18:43<00:00,  1.11s/it]2021-11-10 15:30:53, INFO: TEST  has success rate: 1.000, collision rate: 0.000, nav time: 9.938, total reward: 1785.8073, average return: 0.7474
+2021-11-10 15:30:53, INFO: Frequency of being in danger: 0.020 and average min separate distance in danger: 0.18
+2021-11-10 15:30:53, INFO: discomfor nums is 818 and return is 0.7433 and length is 39751
+2021-11-10 15:30:53, INFO: Collision cases: 
+2021-11-10 15:30:53, INFO: Timeout cases: 
+100%|█████████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [18:43<00:00,  1.12s/it]
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/torch/cuda/__init__.py:52: UserWarning: CUDA initialization: Unexpected error from cudaGetDeviceCount(). Did you run some cuda functions before calling NumCudaDevices() that might have already set an error? Error 804: forward compatibility was attempted on non supported HW (Triggered internally at  /pytorch/c10/cuda/CUDAFunctions.cpp:115.)
+  return torch._C._cuda_getDeviceCount() > 0
+2021-11-10 15:30:55, INFO: Using device: cpu
+2021-11-10 15:30:55, INFO: Loaded RL weights with best VAL
+2021-11-10 15:30:55, INFO: Similarity_func: concatenation
+2021-11-10 15:30:55, INFO: Layerwise_graph: False
+2021-11-10 15:30:55, INFO: Skip_connection: True
+2021-11-10 15:30:55, INFO: Number of layers: 1
+2021-11-10 15:30:55, INFO: Similarity_func: concatenation
+2021-11-10 15:30:55, INFO: Layerwise_graph: False
+2021-11-10 15:30:55, INFO: Skip_connection: True
+2021-11-10 15:30:55, INFO: Number of layers: 1
+2021-11-10 15:30:55, INFO: Planning depth: 3
+2021-11-10 15:30:55, INFO: Planning width: 10
+2021-11-10 15:30:55, INFO: Sparse search: None
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/gym/logger.py:30: UserWarning: WARN: Box bound precision lowered by casting to float32
+  warnings.warn(colorize('%s: %s'%('WARN', msg % args), 'yellow'))
+2021-11-10 15:30:55, INFO: human number: 5
+2021-11-10 15:30:55, INFO: Not randomize human's radius and preferred speed
+2021-11-10 15:30:55, INFO: Training simulation: circle_crossing, test simulation: circle_crossing
+2021-11-10 15:30:55, INFO: Square width: 10, circle width: 4
+2021-11-10 15:30:55, INFO: rotation constraint: 3.141592653589793
+2021-11-10 15:30:55, INFO: Agent is invisible and has unicycle kinematic constraint
+100%|███████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [1:25:17<00:00,  5.71s/it]2021-11-10 16:56:12, INFO: TEST  has success rate: 1.000, collision rate: 0.000, nav time: 9.872, total reward: 1786.5664, average return: 0.7503
+2021-11-10 16:56:12, INFO: Frequency of being in danger: 0.019 and average min separate distance in danger: 0.18
+2021-11-10 16:56:12, INFO: discomfor nums is 775 and return is 0.7465 and length is 39489
+2021-11-10 16:56:12, INFO: Collision cases: 
+2021-11-10 16:56:12, INFO: Timeout cases: 
+100%|███████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [1:25:17<00:00,  5.12s/it]
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/torch/cuda/__init__.py:52: UserWarning: CUDA initialization: Unexpected error from cudaGetDeviceCount(). Did you run some cuda functions before calling NumCudaDevices() that might have already set an error? Error 804: forward compatibility was attempted on non supported HW (Triggered internally at  /pytorch/c10/cuda/CUDAFunctions.cpp:115.)
+  return torch._C._cuda_getDeviceCount() > 0
+2021-11-10 16:56:13, INFO: Using device: cpu
+2021-11-10 16:56:13, INFO: Loaded RL weights with best VAL
+2021-11-10 16:56:13, INFO: Similarity_func: embedded_gaussian
+2021-11-10 16:56:13, INFO: Layerwise_graph: False
+2021-11-10 16:56:13, INFO: Skip_connection: True
+2021-11-10 16:56:13, INFO: Number of layers: 2
+2021-11-10 16:56:13, INFO: Similarity_func: embedded_gaussian
+2021-11-10 16:56:13, INFO: Layerwise_graph: False
+2021-11-10 16:56:13, INFO: Skip_connection: True
+2021-11-10 16:56:13, INFO: Number of layers: 2
+2021-11-10 16:56:13, INFO: Planning depth: 1
+2021-11-10 16:56:13, INFO: Planning width: 2
+2021-11-10 16:56:13, INFO: Sparse search: None
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/gym/logger.py:30: UserWarning: WARN: Box bound precision lowered by casting to float32
+  warnings.warn(colorize('%s: %s'%('WARN', msg % args), 'yellow'))
+2021-11-10 16:56:13, INFO: human number: 5
+2021-11-10 16:56:13, INFO: Not randomize human's radius and preferred speed
+2021-11-10 16:56:13, INFO: Training simulation: circle_crossing, test simulation: circle_crossing
+2021-11-10 16:56:13, INFO: Square width: 10, circle width: 4
+2021-11-10 16:56:13, INFO: rotation constraint: 3.141592653589793
+2021-11-10 16:56:13, INFO: Agent is invisible and has unicycle kinematic constraint
+ 27%|█████████████████████████▊                                                                    | 274/1000 [06:20<15:43,  1.30s/it]collision happen %f 5.25
+ 38%|███████████████████████████████████▌                                                          | 378/1000 [08:50<16:29,  1.59s/it]timeout happen %f 29.25
+ 53%|█████████████████████████████████████████████████▍                                            | 526/1000 [12:26<11:33,  1.46s/it]collision happen %f 6.0
+100%|█████████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [23:25<00:00,  1.44s/it]2021-11-10 17:19:39, INFO: TEST  has success rate: 0.997, collision rate: 0.002, nav time: 10.814, total reward: 1791.0935, average return: 0.7254
+2021-11-10 17:19:39, INFO: Frequency of being in danger: 0.018 and average min separate distance in danger: 0.18
+2021-11-10 17:19:39, INFO: discomfor nums is 819 and return is 0.7167 and length is 43290
+2021-11-10 17:19:39, INFO: Collision cases: 274 526
+2021-11-10 17:19:39, INFO: Timeout cases: 378
+100%|█████████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [23:25<00:00,  1.41s/it]
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/torch/cuda/__init__.py:52: UserWarning: CUDA initialization: Unexpected error from cudaGetDeviceCount(). Did you run some cuda functions before calling NumCudaDevices() that might have already set an error? Error 804: forward compatibility was attempted on non supported HW (Triggered internally at  /pytorch/c10/cuda/CUDAFunctions.cpp:115.)
+  return torch._C._cuda_getDeviceCount() > 0
+2021-11-10 17:19:41, INFO: Using device: cpu
+2021-11-10 17:19:41, INFO: Loaded RL weights with best VAL
+2021-11-10 17:19:41, INFO: Similarity_func: embedded_gaussian
+2021-11-10 17:19:41, INFO: Layerwise_graph: False
+2021-11-10 17:19:41, INFO: Skip_connection: True
+2021-11-10 17:19:41, INFO: Number of layers: 2
+2021-11-10 17:19:41, INFO: Similarity_func: embedded_gaussian
+2021-11-10 17:19:41, INFO: Layerwise_graph: False
+2021-11-10 17:19:41, INFO: Skip_connection: True
+2021-11-10 17:19:41, INFO: Number of layers: 2
+2021-11-10 17:19:41, INFO: Planning depth: 2
+2021-11-10 17:19:41, INFO: Planning width: 2
+2021-11-10 17:19:41, INFO: Sparse search: None
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/gym/logger.py:30: UserWarning: WARN: Box bound precision lowered by casting to float32
+  warnings.warn(colorize('%s: %s'%('WARN', msg % args), 'yellow'))
+2021-11-10 17:19:41, INFO: human number: 5
+2021-11-10 17:19:41, INFO: Not randomize human's radius and preferred speed
+2021-11-10 17:19:41, INFO: Training simulation: circle_crossing, test simulation: circle_crossing
+2021-11-10 17:19:41, INFO: Square width: 10, circle width: 4
+2021-11-10 17:19:41, INFO: rotation constraint: 3.141592653589793
+2021-11-10 17:19:41, INFO: Agent is invisible and has unicycle kinematic constraint
+ 40%|█████████████████████████████████████▊                                                        | 402/1000 [25:57<40:20,  4.05s/it]collision happen %f 3.5
+100%|███████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [1:04:16<00:00,  3.94s/it]2021-11-10 18:23:57, INFO: TEST  has success rate: 0.999, collision rate: 0.001, nav time: 10.550, total reward: 1797.8591, average return: 0.7373
+2021-11-10 18:23:57, INFO: Frequency of being in danger: 0.016 and average min separate distance in danger: 0.18
+2021-11-10 18:23:57, INFO: discomfor nums is 697 and return is 0.7314 and length is 42173
+2021-11-10 18:23:57, INFO: Collision cases: 402
+2021-11-10 18:23:57, INFO: Timeout cases: 
+100%|███████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [1:04:16<00:00,  3.86s/it]
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/torch/cuda/__init__.py:52: UserWarning: CUDA initialization: Unexpected error from cudaGetDeviceCount(). Did you run some cuda functions before calling NumCudaDevices() that might have already set an error? Error 804: forward compatibility was attempted on non supported HW (Triggered internally at  /pytorch/c10/cuda/CUDAFunctions.cpp:115.)
+  return torch._C._cuda_getDeviceCount() > 0
+2021-11-10 18:23:59, INFO: Using device: cpu
+2021-11-10 18:23:59, INFO: Loaded RL weights with best VAL
+2021-11-10 18:23:59, INFO: Similarity_func: embedded_gaussian
+2021-11-10 18:23:59, INFO: Layerwise_graph: False
+2021-11-10 18:23:59, INFO: Skip_connection: True
+2021-11-10 18:23:59, INFO: Number of layers: 2
+2021-11-10 18:23:59, INFO: Similarity_func: embedded_gaussian
+2021-11-10 18:23:59, INFO: Layerwise_graph: False
+2021-11-10 18:23:59, INFO: Skip_connection: True
+2021-11-10 18:23:59, INFO: Number of layers: 2
+2021-11-10 18:23:59, INFO: Planning depth: 1
+2021-11-10 18:23:59, INFO: Planning width: 2
+2021-11-10 18:23:59, INFO: Sparse search: None
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/gym/logger.py:30: UserWarning: WARN: Box bound precision lowered by casting to float32
+  warnings.warn(colorize('%s: %s'%('WARN', msg % args), 'yellow'))
+2021-11-10 18:23:59, INFO: human number: 5
+2021-11-10 18:23:59, INFO: Not randomize human's radius and preferred speed
+2021-11-10 18:23:59, INFO: Training simulation: circle_crossing, test simulation: circle_crossing
+2021-11-10 18:23:59, INFO: Square width: 10, circle width: 4
+2021-11-10 18:23:59, INFO: rotation constraint: 3.141592653589793
+2021-11-10 18:23:59, INFO: Agent is invisible and has unicycle kinematic constraint
+ 17%|███████████████▊                                                                              | 168/1000 [03:45<19:45,  1.43s/it]timeout happen %f 29.25
+ 46%|██████████████████████████████████████████▊                                                   | 455/1000 [10:15<11:53,  1.31s/it]collision happen %f 7.75
+ 66%|█████████████████████████████████████████████████████████████▋                                | 656/1000 [14:50<07:46,  1.36s/it]collision happen %f 11.0
+ 71%|██████████████████████████████████████████████████████████████████▍                           | 707/1000 [15:57<06:01,  1.23s/it]collision happen %f 6.0
+ 84%|██████████████████████████████████████████████████████████████████████████████▌               | 836/1000 [18:47<03:21,  1.23s/it]collision happen %f 11.0
+100%|█████████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [22:26<00:00,  1.33s/it]2021-11-10 18:46:25, INFO: TEST  has success rate: 0.995, collision rate: 0.004, nav time: 10.475, total reward: 1787.0371, average return: 0.7393
+2021-11-10 18:46:25, INFO: Frequency of being in danger: 0.018 and average min separate distance in danger: 0.17
+2021-11-10 18:46:25, INFO: discomfor nums is 778 and return is 0.7323 and length is 41950
+2021-11-10 18:46:25, INFO: Collision cases: 455 656 707 836
+2021-11-10 18:46:25, INFO: Timeout cases: 168
+100%|█████████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [22:26<00:00,  1.35s/it]
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/torch/cuda/__init__.py:52: UserWarning: CUDA initialization: Unexpected error from cudaGetDeviceCount(). Did you run some cuda functions before calling NumCudaDevices() that might have already set an error? Error 804: forward compatibility was attempted on non supported HW (Triggered internally at  /pytorch/c10/cuda/CUDAFunctions.cpp:115.)
+  return torch._C._cuda_getDeviceCount() > 0
+2021-11-10 18:46:27, INFO: Using device: cpu
+2021-11-10 18:46:27, INFO: Loaded RL weights with best VAL
+2021-11-10 18:46:27, INFO: Similarity_func: embedded_gaussian
+2021-11-10 18:46:27, INFO: Layerwise_graph: False
+2021-11-10 18:46:27, INFO: Skip_connection: True
+2021-11-10 18:46:27, INFO: Number of layers: 2
+2021-11-10 18:46:27, INFO: Similarity_func: embedded_gaussian
+2021-11-10 18:46:27, INFO: Layerwise_graph: False
+2021-11-10 18:46:27, INFO: Skip_connection: True
+2021-11-10 18:46:27, INFO: Number of layers: 2
+2021-11-10 18:46:27, INFO: Planning depth: 2
+2021-11-10 18:46:27, INFO: Planning width: 2
+2021-11-10 18:46:27, INFO: Sparse search: None
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/gym/logger.py:30: UserWarning: WARN: Box bound precision lowered by casting to float32
+  warnings.warn(colorize('%s: %s'%('WARN', msg % args), 'yellow'))
+2021-11-10 18:46:27, INFO: human number: 5
+2021-11-10 18:46:27, INFO: Not randomize human's radius and preferred speed
+2021-11-10 18:46:27, INFO: Training simulation: circle_crossing, test simulation: circle_crossing
+2021-11-10 18:46:27, INFO: Square width: 10, circle width: 4
+2021-11-10 18:46:27, INFO: rotation constraint: 3.141592653589793
+2021-11-10 18:46:27, INFO: Agent is invisible and has unicycle kinematic constraint
+ 17%|███████████████▊                                                                              | 168/1000 [10:38<57:22,  4.14s/it]timeout happen %f 29.25
+ 46%|██████████████████████████████████████████▊                                                   | 455/1000 [29:14<33:04,  3.64s/it]collision happen %f 7.75
+ 50%|███████████████████████████████████████████████▍                                              | 505/1000 [32:20<31:05,  3.77s/it]collision happen %f 11.5
+ 75%|██████████████████████████████████████████████████████████████████████▋                       | 752/1000 [48:08<15:13,  3.68s/it]collision happen %f 10.0
+ 84%|██████████████████████████████████████████████████████████████████████████████▌               | 836/1000 [53:28<10:43,  3.92s/it]collision happen %f 11.0
+ 90%|████████████████████████████████████████████████████████████████████████████████████▎         | 897/1000 [57:26<06:49,  3.97s/it]collision happen %f 5.0
+100%|███████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [1:04:25<00:00,  3.91s/it]2021-11-10 19:50:52, INFO: TEST  has success rate: 0.994, collision rate: 0.005, nav time: 10.233, total reward: 1792.4722, average return: 0.7486
+2021-11-10 19:50:52, INFO: Frequency of being in danger: 0.016 and average min separate distance in danger: 0.18
+2021-11-10 19:50:52, INFO: discomfor nums is 674 and return is 0.7439 and length is 40985
+2021-11-10 19:50:52, INFO: Collision cases: 455 505 752 836 897
+2021-11-10 19:50:52, INFO: Timeout cases: 168
+100%|███████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [1:04:25<00:00,  3.87s/it]
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/torch/cuda/__init__.py:52: UserWarning: CUDA initialization: Unexpected error from cudaGetDeviceCount(). Did you run some cuda functions before calling NumCudaDevices() that might have already set an error? Error 804: forward compatibility was attempted on non supported HW (Triggered internally at  /pytorch/c10/cuda/CUDAFunctions.cpp:115.)
+  return torch._C._cuda_getDeviceCount() > 0
+2021-11-10 19:50:54, INFO: Using device: cpu
+2021-11-10 19:50:54, INFO: Loaded RL weights with best VAL
+2021-11-10 19:50:54, INFO: Similarity_func: embedded_gaussian
+2021-11-10 19:50:54, INFO: Layerwise_graph: False
+2021-11-10 19:50:54, INFO: Skip_connection: True
+2021-11-10 19:50:54, INFO: Number of layers: 2
+2021-11-10 19:50:54, INFO: Similarity_func: embedded_gaussian
+2021-11-10 19:50:54, INFO: Layerwise_graph: False
+2021-11-10 19:50:54, INFO: Skip_connection: True
+2021-11-10 19:50:54, INFO: Number of layers: 2
+2021-11-10 19:50:54, INFO: Planning depth: 1
+2021-11-10 19:50:54, INFO: Planning width: 2
+2021-11-10 19:50:54, INFO: Sparse search: None
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/gym/logger.py:30: UserWarning: WARN: Box bound precision lowered by casting to float32
+  warnings.warn(colorize('%s: %s'%('WARN', msg % args), 'yellow'))
+2021-11-10 19:50:54, INFO: human number: 5
+2021-11-10 19:50:54, INFO: Not randomize human's radius and preferred speed
+2021-11-10 19:50:54, INFO: Training simulation: circle_crossing, test simulation: circle_crossing
+2021-11-10 19:50:54, INFO: Square width: 10, circle width: 4
+2021-11-10 19:50:54, INFO: rotation constraint: 3.141592653589793
+2021-11-10 19:50:54, INFO: Agent is invisible and has unicycle kinematic constraint
+ 12%|██████████▉                                                                                   | 116/1000 [02:50<21:47,  1.48s/it]collision happen %f 4.75
+ 30%|████████████████████████████▏                                                                 | 300/1000 [07:15<21:06,  1.81s/it]timeout happen %f 29.25
+ 31%|█████████████████████████████▍                                                                | 313/1000 [07:37<17:01,  1.49s/it]collision happen %f 10.5
+ 39%|████████████████████████████████████▋                                                         | 390/1000 [09:27<16:36,  1.63s/it]collision happen %f 5.25
+ 49%|██████████████████████████████████████████████▏                                               | 492/1000 [11:55<11:53,  1.41s/it]timeout happen %f 29.25
+ 63%|██████████████████████████████████████████████████████████▉                                   | 627/1000 [15:11<09:19,  1.50s/it]timeout happen %f 29.25
+ 66%|█████████████████████████████████████████████████████████████▋                                | 656/1000 [15:54<07:45,  1.35s/it]collision happen %f 6.25
+ 70%|█████████████████████████████████████████████████████████████████▊                            | 700/1000 [16:55<07:04,  1.42s/it]timeout happen %f 29.25
+ 70%|█████████████████████████████████████████████████████████████████▉                            | 702/1000 [17:01<09:33,  1.92s/it]timeout happen %f 29.25
+ 70%|██████████████████████████████████████████████████████████████████                            | 703/1000 [17:04<12:15,  2.48s/it]timeout happen %f 29.25
+ 80%|██████████████████████████████████████████████████████████████████████████▉                   | 797/1000 [19:21<04:44,  1.40s/it]timeout happen %f 29.25
+ 86%|████████████████████████████████████████████████████████████████████████████████▉             | 861/1000 [20:53<03:23,  1.46s/it]collision happen %f 12.0
+ 94%|████████████████████████████████████████████████████████████████████████████████████████      | 937/1000 [22:36<01:27,  1.39s/it]timeout happen %f 29.25
+100%|█████████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [24:06<00:00,  1.40s/it]2021-11-10 20:15:01, INFO: TEST  has success rate: 0.987, collision rate: 0.005, nav time: 10.816, total reward: 1773.6182, average return: 0.7183
+2021-11-10 20:15:01, INFO: Frequency of being in danger: 0.020 and average min separate distance in danger: 0.18
+2021-11-10 20:15:01, INFO: discomfor nums is 900 and return is 0.7046 and length is 43794
+2021-11-10 20:15:01, INFO: Collision cases: 116 313 390 656 861
+2021-11-10 20:15:01, INFO: Timeout cases: 300 492 627 700 702 703 797 937
+100%|█████████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [24:06<00:00,  1.45s/it]
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/torch/cuda/__init__.py:52: UserWarning: CUDA initialization: Unexpected error from cudaGetDeviceCount(). Did you run some cuda functions before calling NumCudaDevices() that might have already set an error? Error 804: forward compatibility was attempted on non supported HW (Triggered internally at  /pytorch/c10/cuda/CUDAFunctions.cpp:115.)
+  return torch._C._cuda_getDeviceCount() > 0
+2021-11-10 20:15:02, INFO: Using device: cpu
+2021-11-10 20:15:02, INFO: Loaded RL weights with best VAL
+2021-11-10 20:15:02, INFO: Similarity_func: embedded_gaussian
+2021-11-10 20:15:02, INFO: Layerwise_graph: False
+2021-11-10 20:15:02, INFO: Skip_connection: True
+2021-11-10 20:15:02, INFO: Number of layers: 2
+2021-11-10 20:15:02, INFO: Similarity_func: embedded_gaussian
+2021-11-10 20:15:02, INFO: Layerwise_graph: False
+2021-11-10 20:15:02, INFO: Skip_connection: True
+2021-11-10 20:15:02, INFO: Number of layers: 2
+2021-11-10 20:15:02, INFO: Planning depth: 2
+2021-11-10 20:15:02, INFO: Planning width: 2
+2021-11-10 20:15:02, INFO: Sparse search: None
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/gym/logger.py:30: UserWarning: WARN: Box bound precision lowered by casting to float32
+  warnings.warn(colorize('%s: %s'%('WARN', msg % args), 'yellow'))
+2021-11-10 20:15:02, INFO: human number: 5
+2021-11-10 20:15:02, INFO: Not randomize human's radius and preferred speed
+2021-11-10 20:15:02, INFO: Training simulation: circle_crossing, test simulation: circle_crossing
+2021-11-10 20:15:02, INFO: Square width: 10, circle width: 4
+2021-11-10 20:15:02, INFO: rotation constraint: 3.141592653589793
+2021-11-10 20:15:02, INFO: Agent is invisible and has unicycle kinematic constraint
+  1%|█                                                                                            | 12/1000 [00:48<1:09:32,  4.22s/it]collision happen %f 11.75
+  2%|█▊                                                                                           | 19/1000 [01:18<1:07:24,  4.12s/it]collision happen %f 4.0
+ 12%|██████████▉                                                                                   | 116/1000 [07:37<59:22,  4.03s/it]collision happen %f 5.0
+ 28%|██████████████████████████▏                                                                   | 278/1000 [18:21<46:55,  3.90s/it]timeout happen %f 29.25
+ 30%|████████████████████████████▏                                                                 | 300/1000 [19:55<51:16,  4.39s/it]timeout happen %f 29.25
+ 39%|████████████████████████████████████▎                                                         | 386/1000 [25:46<41:54,  4.09s/it]collision happen %f 12.25
+ 39%|████████████████████████████████████▋                                                         | 390/1000 [26:03<42:15,  4.16s/it]collision happen %f 6.0
+ 49%|██████████████████████████████████████████████▏                                               | 492/1000 [32:53<33:19,  3.94s/it]timeout happen %f 29.25
+ 66%|█████████████████████████████████████████████████████████████▋                                | 656/1000 [43:39<22:06,  3.86s/it]collision happen %f 6.25
+ 70%|█████████████████████████████████████████████████████████████████▉                            | 702/1000 [46:30<19:09,  3.86s/it]timeout happen %f 29.25
+ 73%|████████████████████████████████████████████████████████████████████▉                         | 734/1000 [48:45<18:26,  4.16s/it]collision happen %f 9.75
+ 84%|██████████████████████████████████████████████████████████████████████████████▌               | 836/1000 [55:26<10:46,  3.94s/it]collision happen %f 11.0
+ 85%|████████████████████████████████████████████████████████████████████████████████▎             | 854/1000 [56:35<09:19,  3.83s/it]collision happen %f 11.5
+ 88%|██████████████████████████████████████████████████████████████████████████████████▎           | 876/1000 [58:03<07:52,  3.81s/it]timeout happen %f 29.25
+ 94%|██████████████████████████████████████████████████████████████████████████████████████▏     | 937/1000 [1:02:17<04:20,  4.14s/it]timeout happen %f 29.25
+ 96%|███████████████████████████████████████████████████████████████████████████████████████▊    | 955/1000 [1:03:39<03:11,  4.26s/it]collision happen %f 5.25
+100%|███████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [1:06:45<00:00,  3.95s/it]2021-11-10 21:21:48, INFO: TEST  has success rate: 0.984, collision rate: 0.010, nav time: 10.532, total reward: 1769.3109, average return: 0.7225
+2021-11-10 21:21:48, INFO: Frequency of being in danger: 0.017 and average min separate distance in danger: 0.18
+2021-11-10 21:21:48, INFO: discomfor nums is 787 and return is 0.7144 and length is 42488
+2021-11-10 21:21:48, INFO: Collision cases: 12 19 116 386 390 656 734 836 854 955
+2021-11-10 21:21:48, INFO: Timeout cases: 278 300 492 702 876 937
+100%|███████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [1:06:45<00:00,  4.01s/it]
+
+
+
+中间间断的那一次
+
+2021-11-10 21:33:29, INFO: Using device: cpu
+2021-11-10 21:33:29, INFO: Loaded RL weights with best VAL
+2021-11-10 21:33:29, INFO: Similarity_func: concatenation
+2021-11-10 21:33:29, INFO: Layerwise_graph: False
+2021-11-10 21:33:29, INFO: Skip_connection: True
+2021-11-10 21:33:29, INFO: Number of layers: 1
+2021-11-10 21:33:29, INFO: Similarity_func: concatenation
+2021-11-10 21:33:29, INFO: Layerwise_graph: False
+2021-11-10 21:33:29, INFO: Skip_connection: True
+2021-11-10 21:33:29, INFO: Number of layers: 1
+2021-11-10 21:33:29, INFO: Planning depth: 3
+2021-11-10 21:33:29, INFO: Planning width: 10
+2021-11-10 21:33:29, INFO: Sparse search: None
+/home/nubot1/anaconda3/envs/sgdqn/lib/python3.6/site-packages/gym/logger.py:30: UserWarning: WARN: Box bound precision lowered by casting to float32
+  warnings.warn(colorize('%s: %s'%('WARN', msg % args), 'yellow'))
+2021-11-10 21:33:29, INFO: human number: 5
+2021-11-10 21:33:29, INFO: Not randomize human's radius and preferred speed
+2021-11-10 21:33:29, INFO: Training simulation: circle_crossing, test simulation: circle_crossing
+2021-11-10 21:33:29, INFO: Square width: 10, circle width: 4
+2021-11-10 21:33:29, INFO: rotation constraint: 3.141592653589793
+2021-11-10 21:33:29, INFO: Agent is invisible and has unicycle kinematic constraint
+ 39%|████████████████████████████████████▋                                                         | 390/1000 [33:00<55:54,  5.50s/it]collision happen %f 5.75
+ 66%|█████████████████████████████████████████████████████████████▋                                | 656/1000 [55:36<29:21,  5.12s/it]collision happen %f 5.0
+100%|███████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [1:25:02<00:00,  5.05s/it]2021-11-10 22:58:32, INFO: TEST  has success rate: 0.998, collision rate: 0.002, nav time: 9.829, total reward: 1779.4944, average return: 0.7509
+2021-11-10 22:58:32, INFO: Frequency of being in danger: 0.013 and average min separate distance in danger: 0.17
+2021-11-10 22:58:32, INFO: discomfor nums is 574 and return is 0.7487 and length is 39282
+2021-11-10 22:58:32, INFO: Collision cases: 390 656
+2021-11-10 22:58:32, INFO: Timeout cases: 
